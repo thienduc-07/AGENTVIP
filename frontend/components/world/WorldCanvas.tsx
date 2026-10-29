@@ -32,12 +32,15 @@ export default function WorldCanvas() {
         camera={{
           position: WORLD_CONFIG.tacticalCamera.position,
           fov: WORLD_CONFIG.tacticalCamera.fov,
+          near: 0.5,
+          far: 350,
         }}
         gl={{
           antialias: true,
           alpha: false,
+          logarithmicDepthBuffer: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.22,
+          toneMappingExposure: 1.15,
         }}
         onPointerMissed={() => {
           // Deselect when clicking on ocean or empty space
@@ -88,12 +91,12 @@ export default function WorldCanvas() {
           {/* Smooth Free Orbit Camera Controller */}
           <WorldCamera />
 
-          {/* Anime Post-Processing Pipeline (Bloom, Cel Highlights & ToneMapping) */}
-          <EffectComposer multisampling={4} autoClear={false}>
+          {/* Anime Post-Processing Pipeline (Zero-flicker Bloom & ToneMapping) */}
+          <EffectComposer multisampling={0} autoClear={false}>
             <Bloom
-              luminanceThreshold={0.88}
-              luminanceSmoothing={0.25}
-              intensity={0.4}
+              luminanceThreshold={0.92}
+              luminanceSmoothing={0.3}
+              intensity={0.28}
               mipmapBlur
             />
             <ToneMapping />

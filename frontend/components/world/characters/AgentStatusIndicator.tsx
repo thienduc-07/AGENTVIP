@@ -96,7 +96,7 @@ export default function AgentStatusIndicator({
       <mesh
         ref={baseRingRef}
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -0.05, 0]}
+        position={[0, 0.035, 0]}
       >
         <ringGeometry args={[0.72, 0.88, 32]} />
         <meshBasicMaterial
@@ -104,14 +104,21 @@ export default function AgentStatusIndicator({
           side={THREE.DoubleSide}
           transparent
           opacity={status === "idle" ? 0.45 : 0.9}
+          depthWrite={false}
         />
       </mesh>
 
       {/* Selected Indicator Halo */}
       {isSelected && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
           <ringGeometry args={[0.95, 1.08, 32]} />
-          <meshBasicMaterial color="#f59e0b" side={THREE.DoubleSide} transparent opacity={0.85} />
+          <meshBasicMaterial
+            color="#f59e0b"
+            side={THREE.DoubleSide}
+            transparent
+            opacity={0.85}
+            depthWrite={false}
+          />
         </mesh>
       )}
 
@@ -202,12 +209,13 @@ export default function AgentStatusIndicator({
           }}
         >
           {/* Background Pill Plate */}
-          <mesh position={[0, 0, -0.02]}>
+          <mesh position={[0, 0, -0.015]}>
             <planeGeometry args={[1.9, 0.48]} />
             <meshBasicMaterial
               color={isSelected ? "#78350f" : "#090d16"}
               transparent
               opacity={0.9}
+              depthWrite={false}
             />
           </mesh>
           {/* Border Outline */}
@@ -217,6 +225,7 @@ export default function AgentStatusIndicator({
               color={isSelected ? "#fbbf24" : statusColor}
               transparent
               opacity={0.85}
+              depthWrite={false}
             />
           </mesh>
 

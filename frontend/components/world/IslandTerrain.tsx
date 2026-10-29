@@ -17,14 +17,14 @@ function TwoTierWaterfall() {
     const t = state.clock.getElapsedTime();
     if (upperFallRef.current) {
       (upperFallRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
-        0.8 + Math.sin(t * 8.0) * 0.2;
+        0.85 + Math.sin(t * 2.0) * 0.1;
     }
     if (lowerFallRef.current) {
       (lowerFallRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
-        0.85 + Math.sin(t * 9.0) * 0.25;
+        0.9 + Math.sin(t * 2.2) * 0.1;
     }
     if (splashRef.current) {
-      splashRef.current.scale.setScalar(1.0 + Math.sin(t * 12.0) * 0.15);
+      splashRef.current.scale.setScalar(1.0 + Math.sin(t * 3.0) * 0.08);
     }
   });
 

@@ -446,9 +446,9 @@ export function ZoroTwinDragonBladeWaves() {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (waveGroupRef.current) {
-      const flicker = 1.0 + Math.sin(t * 18.0) * 0.06;
+      const flicker = 1.0 + Math.sin(t * 2.5) * 0.02;
       waveGroupRef.current.scale.set(flicker, flicker, 1.0);
-      waveGroupRef.current.position.y = Math.sin(t * 8.0) * 0.015;
+      waveGroupRef.current.position.y = Math.sin(t * 3.0) * 0.01;
     }
   });
 
@@ -456,7 +456,7 @@ export function ZoroTwinDragonBladeWaves() {
     <group ref={waveGroupRef}>
       {/* Left Wing Flame Ribbon */}
       <mesh geometry={leftGeo.geo}>
-        <meshBasicMaterial color="#00ffaa" transparent opacity={0.88} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#00ffaa" transparent opacity={0.88} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
       <mesh geometry={leftSpineGeo}>
         <meshBasicMaterial color="#e0f2fe" />
@@ -464,7 +464,7 @@ export function ZoroTwinDragonBladeWaves() {
 
       {/* Right Wing Flame Ribbon */}
       <mesh geometry={rightGeo.geo}>
-        <meshBasicMaterial color="#00ffaa" transparent opacity={0.88} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#00ffaa" transparent opacity={0.88} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
       <mesh geometry={rightSpineGeo}>
         <meshBasicMaterial color="#e0f2fe" />
@@ -473,16 +473,16 @@ export function ZoroTwinDragonBladeWaves() {
       {/* Secondary Cyan Outer Flare for both wings */}
       <group scale={[1.08, 1.08, 1.08]}>
         <mesh geometry={leftGeo.geo}>
-          <meshBasicMaterial color="#38bdf8" transparent opacity={0.45} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#38bdf8" transparent opacity={0.45} side={THREE.DoubleSide} depthWrite={false} />
         </mesh>
         <mesh geometry={rightGeo.geo}>
-          <meshBasicMaterial color="#38bdf8" transparent opacity={0.45} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#38bdf8" transparent opacity={0.45} side={THREE.DoubleSide} depthWrite={false} />
         </mesh>
       </group>
 
-      {/* Blazing Emerald Green Fire Sparkles & Point Light */}
-      <Sparkles count={45} scale={3.5} size={5.5} speed={1.8} color="#00ffaa" opacity={0.9} />
-      <pointLight position={[0, 1.25, 0.35]} color="#00ffaa" intensity={4.8} distance={7} />
+      {/* Blazing Emerald Green Fire Sparkles & Gentle Steady Point Light */}
+      <Sparkles count={35} scale={3.2} size={4.2} speed={1.2} color="#00ffaa" opacity={0.85} />
+      <pointLight position={[0, 1.25, 0.35]} color="#00ffaa" intensity={2.2} distance={5} />
     </group>
   );
 }
@@ -551,21 +551,21 @@ export function ConquerorsHakiSpear() {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (shockwaveRef.current) {
-      const waveT = (t * 2.2) % 1.0;
-      shockwaveRef.current.scale.setScalar(0.4 + waveT * 2.4);
-      (shockwaveRef.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 1.0 - waveT);
+      const waveT = (t * 1.5) % 1.0;
+      shockwaveRef.current.scale.setScalar(0.4 + waveT * 2.2);
+      (shockwaveRef.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.85 * (1.0 - waveT));
     }
     if (shockwaveRef2.current) {
-      const waveT2 = (t * 2.2 + 0.5) % 1.0;
-      shockwaveRef2.current.scale.setScalar(0.4 + waveT2 * 2.4);
-      (shockwaveRef2.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.85 - waveT2);
+      const waveT2 = (t * 1.5 + 0.5) % 1.0;
+      shockwaveRef2.current.scale.setScalar(0.4 + waveT2 * 2.2);
+      (shockwaveRef2.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.7 * (1.0 - waveT2));
     }
     if (lightningRef.current) {
-      const s = 0.9 + Math.sin(t * 28.0) * 0.2;
+      const s = 0.95 + Math.sin(t * 3.0) * 0.05;
       lightningRef.current.scale.set(s, 1.0, s);
     }
     if (lightRef.current) {
-      lightRef.current.intensity = 4.5 + Math.sin(t * 32.0) * 2.0;
+      lightRef.current.intensity = 3.0 + Math.sin(t * 2.5) * 0.4;
     }
   });
 
@@ -581,24 +581,24 @@ export function ConquerorsHakiSpear() {
         </mesh>
       </group>
 
-      {/* Dynamic Expanding Shockwave Rings on Basalt Ground */}
-      <mesh ref={shockwaveRef} position={[0.45, 0.02, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* Dynamic Expanding Shockwave Rings on Basalt Ground (Raised cleanly above terrain) */}
+      <mesh ref={shockwaveRef} position={[0.45, 0.05, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.3, 0.95, 32]} />
-        <meshBasicMaterial color="#dc2626" transparent opacity={0.85} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#dc2626" transparent opacity={0.85} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
-      <mesh ref={shockwaveRef2} position={[0.45, 0.025, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh ref={shockwaveRef2} position={[0.45, 0.07, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.2, 0.7, 32]} />
-        <meshBasicMaterial color="#000000" transparent opacity={0.7} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#000000" transparent opacity={0.7} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
 
       {/* Fiery Ground Crater Decal */}
-      <mesh position={[0.45, 0.015, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0.45, 0.03, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.35, 20]} />
-        <meshBasicMaterial color="#ffeedd" side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#ffeedd" side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
 
-      <Sparkles count={35} scale={3.2} size={4.8} speed={2.2} color="#dc2626" opacity={0.9} />
-      <pointLight ref={lightRef} position={[0.45, 0.8, 1.25]} color="#ff1111" intensity={5.0} distance={7} />
+      <Sparkles count={25} scale={2.5} size={3.8} speed={1.2} color="#dc2626" opacity={0.8} />
+      <pointLight ref={lightRef} position={[0.45, 0.8, 1.25]} color="#ff1111" intensity={3.0} distance={6} />
     </group>
   );
 }
@@ -668,7 +668,7 @@ export function FrankyRepairProp() {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (sparksRef.current) {
-      sparksRef.current.intensity = 2.0 + Math.sin(t * 24.0) * 2.0;
+      sparksRef.current.intensity = 1.8 + Math.sin(t * 3.0) * 0.4;
     }
   });
 

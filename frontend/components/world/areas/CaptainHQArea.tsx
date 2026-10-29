@@ -1,76 +1,9 @@
 "use client";
 
-import React, { useMemo, useRef } from "react";
+import React from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import { useWorldStore } from "@/store/worldStore";
-
-// Procedural Bajrang Conqueror's Haki Lightning Spear striking the ground (Image 2)
-function BajrangLightning() {
-  const lightningMeshRef = useRef<THREE.Mesh>(null);
-  const glowLightRef = useRef<THREE.PointLight>(null);
-  const craterRef = useRef<THREE.Mesh>(null);
-
-  // Jagged lightning path from Luffy's hand to ground crater
-  const curve = useMemo(() => {
-    const points = [
-      new THREE.Vector3(0.3, 2.8, 0.2),
-      new THREE.Vector3(0.55, 2.2, 0.45),
-      new THREE.Vector3(0.2, 1.6, 0.75),
-      new THREE.Vector3(0.65, 1.1, 1.1),
-      new THREE.Vector3(0.35, 0.6, 1.45),
-      new THREE.Vector3(0.7, 0.05, 1.8),
-    ];
-    return new THREE.CatmullRomCurve3(points);
-  }, []);
-
-  const tubeGeo = useMemo(() => new THREE.TubeGeometry(curve, 32, 0.1, 8, false), [curve]);
-
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (lightningMeshRef.current) {
-      const pulse = 0.85 + Math.sin(t * 22.0) * 0.25;
-      lightningMeshRef.current.scale.set(pulse, 1.0, pulse);
-    }
-    if (glowLightRef.current) {
-      glowLightRef.current.intensity = 4.5 + Math.sin(t * 26.0) * 1.8;
-    }
-    if (craterRef.current) {
-      const s = 1.0 + Math.sin(t * 14.0) * 0.15;
-      craterRef.current.scale.set(s, s, 1.0);
-    }
-  });
-
-  return (
-    <group position={[0, 0, 0]}>
-      {/* Outer Pitch-Black Haki Aura Sheath */}
-      <mesh geometry={tubeGeo}>
-        <meshBasicMaterial color="#1a0000" transparent opacity={0.88} />
-      </mesh>
-      {/* Blazing Red-Black Core Lightning Bolt */}
-      <mesh ref={lightningMeshRef} geometry={tubeGeo} scale={[0.72, 1.0, 0.72]}>
-        <meshBasicMaterial color="#ff1111" />
-      </mesh>
-      {/* Molten Ground Impact Flare Ring (Fiery Crater in Image 2) */}
-      <mesh ref={craterRef} position={[0.7, 0.08, 1.8]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.25, 0.85, 24]} />
-        <meshBasicMaterial color="#ff3b00" transparent opacity={0.9} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[0.7, 0.09, 1.8]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.26, 16]} />
-        <meshBasicMaterial color="#ffcc00" side={THREE.DoubleSide} />
-      </mesh>
-      <pointLight
-        ref={glowLightRef}
-        position={[0.7, 0.8, 1.8]}
-        color="#ff2200"
-        intensity={5.5}
-        distance={8}
-      />
-    </group>
-  );
-}
 
 // Pirate Sign Board / Marker Post behind Luffy (Image 2)
 function PirateMarkerBoard() {
@@ -116,10 +49,10 @@ export default function CaptainHQArea() {
         <cylinderGeometry args={[3.3, 3.7, 0.6, 32]} />
         <meshStandardMaterial color="#2d3139" roughness={0.85} metalness={0.1} />
       </mesh>
-      {/* Tier 1 Gold Rim Bevel */}
-      <mesh position={[0, 0.6, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* Tier 1 Gold Rim Bevel (Raised slightly to prevent any Z-fighting) */}
+      <mesh position={[0, 0.608, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[3.2, 3.35, 32]} />
-        <meshStandardMaterial color="#d97706" roughness={0.3} metalness={0.6} />
+        <meshStandardMaterial color="#d97706" roughness={0.3} metalness={0.6} depthWrite={false} />
       </mesh>
 
       {/* Tier 2: Middle Concentric Basalt Step */}
@@ -128,9 +61,9 @@ export default function CaptainHQArea() {
         <meshStandardMaterial color="#373c46" roughness={0.8} metalness={0.1} />
       </mesh>
       {/* Tier 2 Gold Rim Bevel */}
-      <mesh position={[0, 1.13, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 1.135, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[2.22, 2.34, 32]} />
-        <meshStandardMaterial color="#d97706" roughness={0.3} metalness={0.6} />
+        <meshStandardMaterial color="#d97706" roughness={0.3} metalness={0.6} depthWrite={false} />
       </mesh>
 
       {/* Tier 3: Top Basalt Summit Pedestal (Luffy Gear 5 command stage) */}
@@ -139,28 +72,31 @@ export default function CaptainHQArea() {
         <meshStandardMaterial color="#424855" roughness={0.75} metalness={0.15} />
       </mesh>
       {/* Top Golden Sun Ring Rim */}
-      <mesh position={[0, 1.58, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 1.585, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[1.4, 1.54, 32]} />
-        <meshStandardMaterial color="#f59e0b" roughness={0.25} metalness={0.7} />
+        <meshStandardMaterial color="#f59e0b" roughness={0.25} metalness={0.7} depthWrite={false} />
       </mesh>
 
       {/* Pirate Marker Sign Board behind Luffy */}
       <PirateMarkerBoard />
 
-      {/* Luffy's Blazing Bajrang Conqueror's Haki Lightning Spear striking the crater */}
-      <BajrangLightning />
-
       {/* Divine Sun God Sparkles */}
-      <Sparkles count={45} scale={7} size={4.2} speed={0.8} color="#fef08a" opacity={0.9} />
+      <Sparkles count={30} scale={6} size={3.5} speed={0.6} color="#fef08a" opacity={0.75} />
 
-      {/* Warm Golden Sunlight Focus */}
-      <pointLight position={[0, 4.0, 0]} color="#fff7ed" intensity={4.5} distance={16} />
+      {/* Warm Golden Sunlight Focus (Stable non-strobing point light) */}
+      <pointLight position={[0, 4.0, 0]} color="#fff7ed" intensity={3.5} distance={14} />
 
       {/* Selection Halo */}
       {isSelected && (
-        <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[3.9, 4.4, 36]} />
-          <meshBasicMaterial color="#f59e0b" side={THREE.DoubleSide} transparent opacity={0.85} />
+        <mesh position={[0, 1.62, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[1.8, 2.2, 36]} />
+          <meshBasicMaterial
+            color="#ff4444"
+            side={THREE.DoubleSide}
+            transparent
+            opacity={0.85}
+            depthWrite={false}
+          />
         </mesh>
       )}
     </group>

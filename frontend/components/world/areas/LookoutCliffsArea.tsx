@@ -213,9 +213,6 @@ export default function LookoutCliffsArea() {
         </mesh>
       </group>
 
-      {/* Zoro's Emerald Enma Flames VFX */}
-      <EnmaDragonFlame />
-
       {/* White Coastal Lighthouse beside Zoro's cliff (Image 2) */}
       <CoastalLighthouse position={[4.0, 0, 1.5]} />
 
@@ -223,12 +220,9 @@ export default function LookoutCliffsArea() {
       <BambooForest position={[4.0, 0, 4.0]} />
 
       {/* Emerald Aura & Katana Sparkles */}
-      <Float speed={2} rotationIntensity={0.2} floatIntensity={0.3}>
-        <Sparkles count={35} scale={[6, 4, 6]} size={4} speed={0.8} color="#00ffaa" />
+      <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.2}>
+        <Sparkles count={25} scale={[5, 3, 5]} size={3.5} speed={0.6} color="#00ffaa" opacity={0.7} />
       </Float>
-
-      {/* Emerald Aura Light */}
-      <pointLight position={[0, 2.2, 0]} color="#00ffaa" intensity={3.5} distance={10} />
 
       {/* Tactical Selection Ring */}
       {(isSelected || isHovered) && (

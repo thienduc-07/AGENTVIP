@@ -121,9 +121,11 @@ export default function Pathways() {
           {/* Lantern Core */}
           <mesh position={[0, 1.25, 0]}>
             <boxGeometry args={[0.18, 0.24, 0.18]} />
-            <meshBasicMaterial color="#fef08a" />
+            <meshStandardMaterial color="#fef08a" emissive="#f59e0b" emissiveIntensity={0.8} />
           </mesh>
-          <pointLight position={[0, 1.25, 0]} color="#fef08a" intensity={1.5} distance={6} />
+          {(i === 0 || i === 3) && (
+            <pointLight position={[0, 1.25, 0]} color="#fef08a" intensity={1.2} distance={5} />
+          )}
         </group>
       ))}
     </group>
