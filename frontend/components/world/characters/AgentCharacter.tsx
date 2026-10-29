@@ -100,6 +100,7 @@ export default function AgentCharacter({ agent }: AgentCharacterProps) {
 
       {/* 3D Stylized Straw Hat Anime Character Model with Locomotion State */}
       <AgentCharacterModel
+        agentId={agent.id}
         appearance={agent.appearance}
         color={agent.color}
         status={agent.status}

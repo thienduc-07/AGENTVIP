@@ -164,11 +164,52 @@ export default function LookoutCliffsArea() {
         <meshStandardMaterial color="#3d8f2e" roughness={0.65} />
       </mesh>
 
-      {/* Ancient Stone Sword Tablet / Monument beside Zoro */}
-      <group position={[1.4, 1.5, 0.3]} rotation={[0, -0.4, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.35, 0.9, 0.28]} />
+      {/* Authentic Japanese Stone Lantern (Ishidōrō) from User Reference Image */}
+      <group position={[1.35, 1.22, 0.25]} rotation={[0, -0.3, 0]}>
+        {/* Base Pedestal (Kiso) */}
+        <mesh position={[0, 0.08, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.26, 0.32, 0.16, 8]} />
           <meshStandardMaterial color="#475569" roughness={0.9} />
+        </mesh>
+        {/* Pillar Shaft (Sao) */}
+        <mesh position={[0, 0.32, 0]} castShadow>
+          <cylinderGeometry args={[0.14, 0.16, 0.34, 8]} />
+          <meshStandardMaterial color="#64748b" roughness={0.85} />
+        </mesh>
+        {/* Middle Platform Shelf (Chūdai) */}
+        <mesh position={[0, 0.52, 0]} castShadow>
+          <cylinderGeometry args={[0.28, 0.24, 0.08, 8]} />
+          <meshStandardMaterial color="#475569" roughness={0.9} />
+        </mesh>
+        {/* Fire Chamber Box (Hibukuro) */}
+        <mesh position={[0, 0.68, 0]}>
+          <cylinderGeometry args={[0.18, 0.20, 0.24, 6]} />
+          <meshStandardMaterial color="#334155" roughness={0.8} />
+        </mesh>
+        {/* Warm Internal Lantern Glow */}
+        <pointLight position={[0, 0.68, 0]} color="#fef08a" intensity={1.8} distance={3} />
+        {/* Umbrella Stone Roof Cap (Kasa) */}
+        <mesh position={[0, 0.86, 0]} castShadow>
+          <coneGeometry args={[0.34, 0.16, 8]} />
+          <meshStandardMaterial color="#475569" roughness={0.9} />
+        </mesh>
+        {/* Top Jewel Finial (Hōju) */}
+        <mesh position={[0, 0.98, 0]} castShadow>
+          <sphereGeometry args={[0.07, 8, 8]} />
+          <meshStandardMaterial color="#64748b" roughness={0.8} />
+        </mesh>
+      </group>
+
+      {/* Sliced Bamboo Stalk on Left with clean Katana diagonal cut (Image Reference) */}
+      <group position={[-1.35, 1.22, 0.4]} rotation={[0.12, 0.4, 0.2]}>
+        <mesh position={[0, 0.4, 0]} castShadow>
+          <cylinderGeometry args={[0.10, 0.12, 0.8, 8]} />
+          <meshStandardMaterial color="#16a34a" roughness={0.6} />
+        </mesh>
+        {/* Clean diagonal Katana slash cap */}
+        <mesh position={[0, 0.8, 0]} rotation={[0.45, 0, 0.3]}>
+          <circleGeometry args={[0.10, 8]} />
+          <meshStandardMaterial color="#86efac" />
         </mesh>
       </group>
 

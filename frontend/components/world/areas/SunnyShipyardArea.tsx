@@ -59,6 +59,59 @@ function WoodenMooringPier() {
   );
 }
 
+// 3 Vertical Ocean Geysers / Water Fountains beside Sunny Pier (Exactly matching Image 2)
+function ThreeOceanGeysers() {
+  const geyser1Ref = useRef<THREE.Mesh>(null);
+  const geyser2Ref = useRef<THREE.Mesh>(null);
+  const geyser3Ref = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    if (geyser1Ref.current) {
+      geyser1Ref.current.scale.y = 1.0 + Math.sin(t * 3.5) * 0.25;
+      geyser1Ref.current.rotation.y = t * 1.5;
+    }
+    if (geyser2Ref.current) {
+      geyser2Ref.current.scale.y = 1.0 + Math.sin(t * 3.5 + 1.2) * 0.28;
+      geyser2Ref.current.rotation.y = -t * 1.8;
+    }
+    if (geyser3Ref.current) {
+      geyser3Ref.current.scale.y = 1.0 + Math.sin(t * 3.5 + 2.4) * 0.22;
+      geyser3Ref.current.rotation.y = t * 1.2;
+    }
+  });
+
+  return (
+    <group>
+      {[
+        { ref: geyser1Ref, pos: [-17.2, 0, 12.8], height: 3.2, radius: 0.45 },
+        { ref: geyser2Ref, pos: [-19.8, 0, 11.2], height: 3.8, radius: 0.52 },
+        { ref: geyser3Ref, pos: [-22.5, 0, 13.5], height: 3.4, radius: 0.48 },
+      ].map((g, idx) => (
+        <group key={`geyser-${idx}`} position={g.pos as [number, number, number]}>
+          {/* Vertical Spouting Water Column */}
+          <mesh ref={g.ref} position={[0, g.height * 0.5, 0]}>
+            <cylinderGeometry args={[g.radius * 0.6, g.radius * 1.2, g.height, 12]} />
+            <meshStandardMaterial
+              color="#38bdf8"
+              emissive="#0284c7"
+              emissiveIntensity={0.65}
+              roughness={0.1}
+              transparent
+              opacity={0.88}
+            />
+          </mesh>
+          {/* Surface Foam Splash Ring */}
+          <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[g.radius * 0.8, g.radius * 2.2, 16]} />
+            <meshBasicMaterial color="#ffffff" transparent opacity={0.85} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 export default function SunnyShipyardArea() {
   const selectedAreaId = useWorldStore((s) => s.selectedAreaId);
   const hoveredAreaId = useWorldStore((s) => s.hoveredAreaId);
@@ -76,12 +129,24 @@ export default function SunnyShipyardArea() {
     applyAnimeCelShading(clone);
 
     const box = new THREE.Box3().setFromObject(clone);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
     const size = new THREE.Vector3();
     box.getSize(size);
+
     const maxDim = Math.max(size.x, size.z);
     const scale = THOUSAND_SUNNY_CONFIG.targetLength / Math.max(maxDim, 0.001);
 
-    return { sunnyScene: clone, normalizedScale: scale };
+    // Create centered wrapper with exact waterline calibration
+    const wrapper = new THREE.Group();
+    wrapper.add(clone);
+
+    // Center X & Z so roll/pitch occurs along midship axis
+    // Keel sits at box.min.y. Submerge lower hull by 1.6m so deck sits comfortably at +2.2m above water surface
+    const keelDepthModelUnits = 1.6 / scale;
+    clone.position.set(-center.x, -box.min.y - keelDepthModelUnits, -center.z);
+
+    return { sunnyScene: wrapper, normalizedScale: scale };
   }, [scene]);
 
   // Buoyant wave rocking animation for moored ship
@@ -93,9 +158,10 @@ export default function SunnyShipyardArea() {
         THOUSAND_SUNNY_CONFIG.position[2],
         time
       );
-      shipRef.current.position.y = wave.height * 0.22;
-      shipRef.current.rotation.z = wave.roll * 0.35;
-      shipRef.current.rotation.x = wave.pitch * 0.25;
+      // Gentle buoyant pitch and roll matching ocean surface
+      shipRef.current.position.y = wave.height * 0.15;
+      shipRef.current.rotation.z = wave.roll * 0.22;
+      shipRef.current.rotation.x = wave.pitch * 0.18;
     }
   });
 
@@ -132,6 +198,9 @@ export default function SunnyShipyardArea() {
           </mesh>
         )}
       </group>
+
+      {/* 3 Ocean Splash Geysers / Fountains (Image 2) */}
+      <ThreeOceanGeysers />
 
       {/* Long Wooden Mooring Pier Connecting Southwest Shore to Sunny (Image 2) */}
       <WoodenMooringPier />

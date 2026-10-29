@@ -135,6 +135,8 @@ interface WorldState {
   triggerTaskHandoff: (fromAgentId: string, toAgentId: string, skillName?: string, taskTitle?: string) => void;
   clearTaskHandoff: () => void;
   executeMissionPipeline: (userPrompt: string) => Promise<void>;
+  agentActivities: Record<string, string>;
+  setAgentActivity: (agentId: string, activity: string) => void;
 }
 
 const initialAgentsMap = DEMO_AGENTS.reduce<Record<string, AgentCharacterData>>((acc, agent) => {
@@ -172,6 +174,26 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   executionQueue: [],
   activeDeliverables: [],
   movingAgent: null,
+
+  agentActivities: {
+    "agent-captain-roger": "haki",
+    "agent-zoro-quartermaster": "sword_kata",
+    "agent-sanji-cook": "cooking",
+    "agent-franky-shipwright": "ship_repair",
+    "agent-chopper-doctor": "apothecary",
+    "agent-nami-navigator": "cartography",
+    "agent-usopp-sniper": "sniper_scout",
+    "agent-robin-scholar": "cien_fleurs",
+    "agent-brook-musician": "violin_concert",
+    "agent-jinbe-helmsman": "karate_kata",
+  },
+  setAgentActivity: (agentId: string, activity: string) =>
+    set((state) => ({
+      agentActivities: {
+        ...state.agentActivities,
+        [agentId]: activity,
+      },
+    })),
 
   isMemoryCenterOpen: false,
   memoryRefreshTrigger: 0,

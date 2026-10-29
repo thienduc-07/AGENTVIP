@@ -159,7 +159,7 @@ export const STRAW_HAT_MANIFEST: CharacterPlacement[] = [
 
 export const THOUSAND_SUNNY_CONFIG = {
   modelPath: '/models/ships/thousand-sunny.glb',
-  position: [-24, -0.35, 22] as [number, number, number],
+  position: [-25.5, 0.0, 22.0] as [number, number, number],
   rotation: [0, Math.PI * 0.28, 0] as [number, number, number],
-  targetLength: 14.0
+  targetLength: 16.0
 };

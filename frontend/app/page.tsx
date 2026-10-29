@@ -14,6 +14,7 @@ import TaskCreateModal from "@/components/interface/TaskCreateModal";
 import { MemoryCenterModal } from "@/components/hud/MemoryCenterModal";
 import { ToolCenterModal } from "@/components/hud/ToolCenterModal";
 import InteractiveMissionTerminal from "@/components/hud/InteractiveMissionTerminal";
+import StrawHatCrewDock from "@/components/interface/StrawHatCrewDock";
 import { useWorldStore } from "@/store/worldStore";
 import { Agent, EventLog, PendingAction, Task } from "@/types";
 import { getAgents } from "@/lib/api/agents";
@@ -447,6 +448,9 @@ export default function GrandLine3DWorldPage() {
 
       {/* Minimalist 3D Controls Help at Bottom Left */}
       <WorldControlsHelp />
+
+      {/* Straw Hat Crew Quick Switcher Dock (Multi-character switcher & routines) */}
+      <StrawHatCrewDock />
 
       {/* Captain Authorization Modal (High Risk Sandbox Action) */}
       <CaptainApprovalModal
