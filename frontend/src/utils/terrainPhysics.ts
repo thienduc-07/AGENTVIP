@@ -15,21 +15,33 @@ export function getGroundHeight(x: number, z: number): number {
 
   // 2. Mỏm đá rừng trúc của Zoro
   const distZoro = Math.hypot(x - 6, z - 11);
-  if (distZoro < 4.5) {
-    height = Math.max(height, 3.6 * Math.exp(-Math.pow(distZoro / 3.8, 3)));
+  if (distZoro < 4.8) {
+    height = Math.max(height, 3.6 * Math.exp(-Math.pow(distZoro / 4.0, 2.5)));
   }
 
-  // 3. Đồi Hoa Anh Đào của Chopper
-  const distChopper = Math.hypot(x + 14, z + 6);
-  if (distChopper < 8.5) {
-    height += 2.8 * Math.exp(-Math.pow(distChopper / 6.5, 2));
+  // 3. Đồi Hoa Anh Đào của Chopper (Lush rolling Sakura hill)
+  const distChopper = Math.hypot(x + 13, z + 5);
+  if (distChopper < 9.5) {
+    height += 3.2 * Math.exp(-Math.pow(distChopper / 7.2, 2));
   }
 
-  // 4. Dãy núi đá tai mèo phía Bắc
-  if (z < -7) {
-    const northFactor = Math.min(1, Math.abs(z + 7) / 14);
-    const ridgeWave = Math.abs(Math.sin(x * 0.35) * Math.cos(z * 0.25)) * 11.5;
-    height += northFactor * (5.5 + ridgeWave);
+  // 4. Dãy núi đá vôi hùng vĩ phía Bắc (Smooth Karst Peaks with Waterfall Chute - Image 2)
+  if (z < -6) {
+    const northDepth = Math.min(1, Math.abs(z + 6) / 16);
+    // Western mountain peak (behind Chopper):
+    const peakWest = 12.5 * Math.exp(-((x + 7.5) ** 2 + (z + 15.5) ** 2) / 48);
+    // Eastern mountain peak (behind Franky/Usopp):
+    const peakEast = 13.8 * Math.exp(-((x - 8.5) ** 2 + (z + 16.0) ** 2) / 52);
+    // Far Northern backbone ridge:
+    const peakBack = 11.5 * Math.exp(-((x * 0.55) ** 2 + (z + 21.0) ** 2) / 65);
+    // Rolling base mountain gradient:
+    const mountainBase = northDepth * 4.6 + Math.cos(x * 0.18) * 1.3 * northDepth;
+
+    // Waterfall notch gorge in the middle (x ~ 0): keeps waterfall plunge clear
+    const gorgeFactor = Math.exp(-(x ** 2) / 9.5);
+    const mountainTotal = (mountainBase + peakWest + peakEast + peakBack) * (1.0 - gorgeFactor * 0.42);
+
+    height += mountainTotal;
   }
 
   // 5. Hồ trung tâm dưới chân thác và kênh nước ra biển

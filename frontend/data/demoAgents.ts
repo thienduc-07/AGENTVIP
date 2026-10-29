@@ -24,7 +24,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "2. Roronoa Zoro",
     role: "Core Systems, Algorithms & MCP Builder",
     station: "lookout_cliffs",
-    position: [6, 4.82, 11], // On grassy top of high rock cliff beside lighthouse & bamboo
+    position: [6, 3.6, 11], // On grassy top of high rock cliff beside lighthouse & bamboo
     status: "idle",
     appearance: "zoro",
     color: "#00ffaa",
@@ -42,7 +42,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "3. Nami",
     role: "Data Science, BI & Spreadsheet Analytics",
     station: "strawhat_village",
-    position: [10, 2.8, 1], // In the lush tangerine orchard grove on the eastern hill
+    position: [10, 2.4, 1], // In the lush tangerine orchard grove on the eastern hill
     status: "idle",
     appearance: "nami",
     color: "#ffd700",
@@ -60,7 +60,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "4. Usopp",
     role: "QA Automation, Playwright E2E & Bug Hunting",
     station: "workshop",
-    position: [4.5, 11.0, -8.5], // On the top observation platform of the tall wooden watchtower
+    position: [4.5, 10.95, -8.5], // On the top observation platform of the tall wooden watchtower
     status: "idle",
     appearance: "usopp",
     color: "#ff9900",
@@ -78,7 +78,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "5. Vinsmoke Sanji",
     role: "Frontend Architect, UI/UX & WebGL Shaders",
     station: "strawhat_village",
-    position: [-10, 2.6, 3.3], // On the front timber veranda of the lakeside restaurant
+    position: [-10, 2.55, 3.3], // On the front timber veranda of the lakeside restaurant
     status: "idle",
     appearance: "sanji",
     color: "#ffaa00",
@@ -96,7 +96,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "6. Tony Tony Chopper",
     role: "Code Doctor, Debugger & Memory Optimizer",
     station: "library",
-    position: [-12.5, 4.22, -1.0], // Promontory of Sakura medical hill with clear line-of-sight from default camera
+    position: [-12.5, 2.85, -1.0], // Promontory of Sakura medical hill with clear line-of-sight from default camera
     status: "idle",
     appearance: "chopper",
     color: "#ff66b2",
@@ -114,7 +114,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "7. Nico Robin",
     role: "Deep Research, Technical Writer & Knowledge Base",
     station: "library",
-    position: [19, 2.4, 0], // On the pedestal cradled by 10 blooming lotus arms
+    position: [19, 2.2, 0], // On the pedestal cradled by 10 blooming lotus arms
     status: "idle",
     appearance: "robin",
     color: "#d966ff",
@@ -132,7 +132,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "8. Franky",
     role: "Full-Stack Builder, Docker & Cloud Infrastructure",
     station: "workshop",
-    position: [12, 5.2, -5.5], // On the elevated sandstone ledge in front of the mountain
+    position: [12, 5.1, -5.5], // On the elevated sandstone ledge in front of the mountain
     status: "idle",
     appearance: "franky",
     color: "#ff3333",
@@ -150,7 +150,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "9. Brook",
     role: "Video Producer, Motion Graphics & Audio SFX",
     station: "strawhat_village",
-    position: [-1.5, 2.5, 9.5], // On stepped grass pedestal with glowing ice crystals
+    position: [-1.5, 1.82, 9.5], // On stepped grass pedestal with glowing ice crystals
     status: "idle",
     appearance: "brook",
     color: "#33ffff",
@@ -168,7 +168,7 @@ export const DEMO_AGENTS: AgentCharacterData[] = [
     name: "10. Jinbe",
     role: "API Gateway, Realtime Streams & Web Scraping",
     station: "harbor",
-    position: [-6.5, 1.0, 7.5], // On square timber dock flanked by twin swirling water vortexes
+    position: [-6.5, 0.55, 7.5], // On square timber dock flanked by twin swirling water vortexes
     status: "idle",
     appearance: "jinbe",
     color: "#0099ff",

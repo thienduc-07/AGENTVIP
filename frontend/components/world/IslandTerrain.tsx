@@ -210,16 +210,27 @@ export default function IslandTerrain() {
   // 3. Dense Placements filtered by isInsideCharacterExclusionZone (NO CHARACTER OBSCURATION!)
   const palmTransforms = useMemo(() => {
     const candidates: [number, number, number, number][] = [
+      // Pier & Dock approaches (Image 2)
+      [-12, 14, 1.25, 0.4],
+      [-15, 12, 1.2, 1.1],
+      [-13, 9, 1.15, 2.2],
+      [-8, 12, 1.2, 0.8],
+      // Southern curved beach shoreline
       [-22, 14, 1.2, 0.4],
       [-19, 21, 1.1, 1.2],
-      [-24, 6, 1.25, 2.5],
-      [-14, 18, 1.15, 0.8],
-      [-5, 22, 1.2, 1.5],
+      [-14, 19, 1.15, 0.8],
+      [-6, 22, 1.2, 1.5],
       [1, 23, 1.1, 0.2],
-      [12, 18, 1.25, 1.8],
-      [18, 14, 1.1, 0.7],
-      [22, 8, 1.2, 2.4],
+      [7, 22, 1.15, 1.8],
+      [13, 19, 1.25, 1.4],
+      [18, 15, 1.1, 0.7],
+      [22, 9, 1.2, 2.4],
       [24, -2, 1.15, 1.1],
+      // Baratie shore & central hill grove
+      [-7, 2.5, 1.1, 2.6],
+      [-13, 5, 1.15, 0.9],
+      [-1, -2.8, 1.2, 1.3],
+      [4.5, -2.5, 1.1, 0.5],
       [-12, -22, 1.05, 2.8],
       [10, -22, 1.1, 0.9],
     ];
@@ -234,6 +245,7 @@ export default function IslandTerrain() {
 
   const sakuraTransforms = useMemo(() => {
     const candidates: [number, number, number, number][] = [
+      // Dense pink Sakura canopy on northwestern hill (Image 2)
       [-18, -4, 1.25, 0.3],
       [-16, -9, 1.35, 1.5],
       [-12, -10, 1.2, 2.1],
@@ -241,6 +253,11 @@ export default function IslandTerrain() {
       [-17, -2, 1.2, 2.7],
       [-11, -4, 1.1, 1.2],
       [-22, -4, 1.3, 0.5],
+      [-19, 0, 1.2, 1.9],
+      [-15, -6, 1.25, 2.4],
+      [-14, -13, 1.3, 0.7],
+      [-18, -12, 1.2, 1.6],
+      [-21, -1, 1.15, 2.9],
     ];
     return candidates
       .filter(([x, z]) => !isInsideCharacterExclusionZone(x, z, 0.4))
@@ -259,6 +276,9 @@ export default function IslandTerrain() {
       [10, -3, 1.1],
       [7, -2, 1.05],
       [14, 2, 1.2],
+      [9, 6.5, 1.15],
+      [13, 5.5, 1.2],
+      [15, -2, 1.1],
     ];
     return candidates
       .filter(([x, z]) => !isInsideCharacterExclusionZone(x, z, 0.4))
@@ -270,8 +290,8 @@ export default function IslandTerrain() {
 
   const bambooTransforms = useMemo(() => {
     const list: { pos: [number, number, number]; scale: number; rotY: number }[] = [];
-    for (let i = 0; i < 28; i++) {
-      const radius = 1.8 + Math.random() * 3.8;
+    for (let i = 0; i < 34; i++) {
+      const radius = 1.8 + Math.random() * 4.2;
       const angle = Math.random() * Math.PI * 2;
       const x = 7.5 + Math.cos(angle) * radius;
       const z = 12.0 + Math.sin(angle) * radius;
@@ -296,6 +316,8 @@ export default function IslandTerrain() {
       [0, -22, 2.2],
       [-8, -18, 1.6],
       [16, 10, 1.7],
+      [-6, 16, 1.5],
+      [8, 15, 1.6],
     ];
     return candidates
       .filter(([x, z]) => !isInsideCharacterExclusionZone(x, z, 0.6))
@@ -365,6 +387,17 @@ export default function IslandTerrain() {
           <primitive object={rockScene.clone()} />
         </group>
       ))}
+
+      {/* 9. DRIFTING PINK SAKURA BLOSSOM PETALS OVER CHOPPER'S HILL (Image 2) */}
+      <Sparkles
+        position={[-16, 5.2, -6]}
+        count={50}
+        scale={[14, 6, 14]}
+        size={3.2}
+        speed={0.65}
+        color="#f472b6"
+        opacity={0.88}
+      />
     </group>
   );
 }

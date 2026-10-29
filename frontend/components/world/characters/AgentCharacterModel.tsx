@@ -145,76 +145,7 @@ function relaxCharacterLimbs(
   const vLocal = new THREE.Vector3();
   const vCanon = new THREE.Vector3();
 
-  // SPECIAL PROCEDURAL COMBAT STANCE FOR ZORO (HORSE STANCE + TWO-HAND KATANA GRIP)
-  if (appearance === "zoro") {
-    container.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
-      if (!mesh.isMesh || (mesh as THREE.SkinnedMesh).isSkinnedMesh || !mesh.geometry) return;
-      const mName = (mesh.name || "").toLowerCase();
-      if (mName.includes("katana") || mName.includes("sword") || mName.includes("saya") || mName.includes("wave")) return;
-
-      const geo = mesh.geometry.clone();
-      mesh.geometry = geo;
-      const pos = geo.attributes.position;
-      if (!pos || pos.count === 0) return;
-
-      mesh.updateMatrixWorld(true);
-      invMatrix.copy(mesh.matrixWorld).invert();
-
-      let modified = false;
-      for (let i = 0; i < pos.count; i++) {
-        vLocal.set(pos.getX(i), pos.getY(i), pos.getZ(i));
-        vCanon.copy(vLocal).applyMatrix4(mesh.matrixWorld);
-
-        const x = vCanon.x;
-        const y = vCanon.y;
-        const z = vCanon.z;
-        const side = x >= 0 ? 1 : -1;
-        const absX = Math.abs(x);
-
-        // 1. Lower Body: Wide Horse Stance with legs spread outward and knees bent forward
-        if (y < 0.48 * H) {
-          if (absX > 0.03 * H) {
-            // Spread legs wide outward
-            const newX = side * (absX * 1.34);
-            // Knee bend forward along +Z
-            let newZ = z;
-            if (y > 0.12 * H && y < 0.45 * H) {
-              const kneeFactor = Math.sin(((y - 0.12 * H) / (0.33 * H)) * Math.PI);
-              newZ += 0.065 * H * kneeFactor;
-            }
-            vCanon.set(newX, y - 0.04 * H, newZ);
-            vCanon.applyMatrix4(invMatrix);
-            pos.setXYZ(i, vCanon.x, vCanon.y, vCanon.z);
-            modified = true;
-          }
-        }
-        // 2. Upper Body: Arms angled forward & inward to grip sword in front of abdomen
-        else if (y > 0.38 * H && y < 0.82 * H && absX > 0.10 * H) {
-          const armProgress = Math.min(Math.max((absX - 0.10 * H) / (0.28 * H), 0), 1);
-          // Angle hands inward towards belly center
-          const targetX = side * (0.07 * H + (1.0 - armProgress) * 0.12 * H);
-          const targetY = 0.48 * H + (1.0 - armProgress) * 0.22 * H;
-          const targetZ = z + 0.15 * H * armProgress;
-
-          vCanon.set(targetX, targetY, targetZ);
-          vCanon.applyMatrix4(invMatrix);
-          pos.setXYZ(i, vCanon.x, vCanon.y, vCanon.z);
-          modified = true;
-        }
-      }
-
-      if (modified) {
-        pos.needsUpdate = true;
-        geo.computeVertexNormals();
-        geo.computeBoundingBox();
-        geo.computeBoundingSphere();
-      }
-    });
-    return;
-  }
-
-  // 2. Unskinned Static Mesh Procedural Vertex Relaxation for other characters
+  // 2. Unskinned Static Mesh Procedural Vertex Relaxation for Humanoid Characters
   let Xs = 0.165 * H;
   let Ys = 0.72 * H;
   let downAngle = 1.18; // ~68 degrees downward
@@ -231,6 +162,10 @@ function relaxCharacterLimbs(
     Xs = 0.18 * H;
     Ys = 0.62 * H;
     downAngle = 1.10;
+  } else if (appearance === "zoro") {
+    Xs = 0.17 * H;
+    Ys = 0.72 * H;
+    downAngle = 1.05; // natural martial stance with arms angled downwards towards hips/swords
   }
 
   const elbowDist = 0.17 * H;
@@ -523,9 +458,9 @@ export function ZoroDrawnKatana() {
 }
 
 /**
- * Luffy's Remade Authentic Conqueror's Haki Lightning Spear (Haoshoku Haki Infusion)
- * Vertical jagged black-crimson lightning bolt plunging from Luffy's hand straight into rock crater
- * with concentric shockwave rings expanding across the basalt rock.
+ * Luffy's Authentic Anime Conqueror's Haki Lightning (Haoshoku Haki Infusion - Matching Image 2)
+ * Sharp, crackling crimson-red electric lightning streak plunging from Luffy's hand to the basalt rock
+ * with glowing red embers and expanding shockwaves (NO thick black pipe, NO flat white disc!).
  */
 export function ConquerorsHakiSpear() {
   const shockwaveRef = useRef<THREE.Mesh>(null);
@@ -533,72 +468,110 @@ export function ConquerorsHakiSpear() {
   const lightningRef = useRef<THREE.Group>(null);
   const lightRef = useRef<THREE.PointLight>(null);
 
-  const lightningCurve = useMemo(() => {
-    const pts = [
-      new THREE.Vector3(0.2, 1.6, 0.2),
-      new THREE.Vector3(0.42, 1.25, 0.35),
-      new THREE.Vector3(0.18, 0.85, 0.55),
-      new THREE.Vector3(0.52, 0.45, 0.78),
-      new THREE.Vector3(0.32, 0.15, 1.05),
-      new THREE.Vector3(0.45, 0.01, 1.25),
-    ];
-    return new THREE.CatmullRomCurve3(pts);
-  }, []);
+  // Sharp, jagged anime lightning path plunging from hand to ground
+  const { mainBoltGeo, coreBoltGeo, branchGeo } = useMemo(() => {
+    const mainCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0.22, 1.45, 0.18),
+      new THREE.Vector3(0.38, 1.15, 0.32),
+      new THREE.Vector3(0.19, 0.85, 0.48),
+      new THREE.Vector3(0.44, 0.52, 0.68),
+      new THREE.Vector3(0.28, 0.22, 0.88),
+      new THREE.Vector3(0.42, 0.02, 1.05),
+    ]);
 
-  const tubeGeo = useMemo(() => new THREE.TubeGeometry(lightningCurve, 32, 0.08, 8, false), [lightningCurve]);
-  const coreGeo = useMemo(() => new THREE.TubeGeometry(lightningCurve, 32, 0.04, 8, false), [lightningCurve]);
+    const branchCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0.38, 1.15, 0.32),
+      new THREE.Vector3(0.62, 0.95, 0.22),
+      new THREE.Vector3(0.85, 0.82, 0.15),
+    ]);
+
+    const mainGeo = new THREE.TubeGeometry(mainCurve, 28, 0.02, 6, false);
+    const coreGeo = new THREE.TubeGeometry(mainCurve, 28, 0.009, 6, false);
+    const bGeo = new THREE.TubeGeometry(branchCurve, 16, 0.012, 6, false);
+
+    return { mainBoltGeo: mainGeo, coreBoltGeo: coreGeo, branchGeo: bGeo };
+  }, []);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (shockwaveRef.current) {
-      const waveT = (t * 1.5) % 1.0;
-      shockwaveRef.current.scale.setScalar(0.4 + waveT * 2.2);
+      const waveT = (t * 1.6) % 1.0;
+      shockwaveRef.current.scale.setScalar(0.3 + waveT * 2.2);
       (shockwaveRef.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.85 * (1.0 - waveT));
     }
     if (shockwaveRef2.current) {
-      const waveT2 = (t * 1.5 + 0.5) % 1.0;
-      shockwaveRef2.current.scale.setScalar(0.4 + waveT2 * 2.2);
-      (shockwaveRef2.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.7 * (1.0 - waveT2));
+      const waveT2 = (t * 1.6 + 0.5) % 1.0;
+      shockwaveRef2.current.scale.setScalar(0.3 + waveT2 * 2.2);
+      (shockwaveRef2.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.65 * (1.0 - waveT2));
     }
     if (lightningRef.current) {
-      const s = 0.95 + Math.sin(t * 3.0) * 0.05;
-      lightningRef.current.scale.set(s, 1.0, s);
+      // Crackling high-energy jitter
+      const jx = Math.sin(t * 22.0) * 0.02;
+      const jz = Math.cos(t * 24.0) * 0.02;
+      lightningRef.current.position.set(jx, 0, jz);
     }
     if (lightRef.current) {
-      lightRef.current.intensity = 3.0 + Math.sin(t * 2.5) * 0.4;
+      lightRef.current.intensity = 3.2 + Math.sin(t * 8.0) * 0.8;
     }
   });
 
   return (
     <group>
-      {/* Crackling Black/Red Lightning Spear */}
+      {/* Crackling Crimson Anime Conqueror's Haki Lightning (Sharp & Thin) */}
       <group ref={lightningRef}>
-        <mesh geometry={tubeGeo}>
-          <meshBasicMaterial color="#000000" />
+        {/* Outer Crimson Electric Arc */}
+        <mesh geometry={mainBoltGeo}>
+          <meshBasicMaterial color="#ef4444" transparent opacity={0.95} />
         </mesh>
-        <mesh geometry={coreGeo}>
-          <meshBasicMaterial color="#dc2626" />
+        {/* Inner Hot Coral Energy Core */}
+        <mesh geometry={coreBoltGeo}>
+          <meshBasicMaterial color="#fee2e2" />
+        </mesh>
+        {/* Branching Lightning Tendril */}
+        <mesh geometry={branchGeo}>
+          <meshBasicMaterial color="#f87171" transparent opacity={0.85} />
         </mesh>
       </group>
 
-      {/* Dynamic Expanding Shockwave Rings on Basalt Ground (Raised cleanly above terrain) */}
-      <mesh ref={shockwaveRef} position={[0.45, 0.05, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.3, 0.95, 32]} />
-        <meshBasicMaterial color="#dc2626" transparent opacity={0.85} side={THREE.DoubleSide} depthWrite={false} />
+      {/* Expanding Concentric Red Shockwave Rings on Basalt Ground (NO flat white disc) */}
+      <mesh ref={shockwaveRef} position={[0.42, 0.05, 1.05]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.15, 0.65, 28]} />
+        <meshBasicMaterial color="#ef4444" transparent opacity={0.85} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
-      <mesh ref={shockwaveRef2} position={[0.45, 0.07, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.2, 0.7, 32]} />
-        <meshBasicMaterial color="#000000" transparent opacity={0.7} side={THREE.DoubleSide} depthWrite={false} />
-      </mesh>
-
-      {/* Fiery Ground Crater Decal */}
-      <mesh position={[0.45, 0.03, 1.25]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.35, 20]} />
-        <meshBasicMaterial color="#ffeedd" side={THREE.DoubleSide} depthWrite={false} />
+      <mesh ref={shockwaveRef2} position={[0.42, 0.07, 1.05]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.25, 0.85, 28]} />
+        <meshBasicMaterial color="#b91c1c" transparent opacity={0.7} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
 
-      <Sparkles count={25} scale={2.5} size={3.8} speed={1.2} color="#dc2626" opacity={0.8} />
-      <pointLight ref={lightRef} position={[0.45, 0.8, 1.25]} color="#ff1111" intensity={3.0} distance={6} />
+      {/* Scorched Molten Basalt Impact Decal */}
+      <mesh position={[0.42, 0.035, 1.05]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.08, 0.28, 20]} />
+        <meshBasicMaterial color="#7f1d1d" transparent opacity={0.8} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+
+      {/* Glowing Volcanic Embers (Image 2) */}
+      <Sparkles count={24} scale={2.0} size={3.5} speed={1.2} color="#ef4444" opacity={0.85} />
+      <pointLight ref={lightRef} position={[0.42, 0.7, 1.05]} color="#ef4444" intensity={3.5} distance={6} />
+    </group>
+  );
+}
+
+/**
+ * Authentic Zoro Katanas Bundle from Sketchfab (58a5e0f98e0a4b589fd7747027f6a653)
+ * Wado Ichimonji, Sandai Kitetsu, Enma
+ */
+export function ZoroSketchfabKatanas() {
+  const { scene } = useGLTF("/models/weapons/zoro-katanas.glb");
+  const katanasGroup = useMemo(() => {
+    const clone = scene.clone(true);
+    applyAnimeCelShading(clone);
+    clone.scale.setScalar(0.48);
+    return clone;
+  }, [scene]);
+
+  return (
+    <group position={[-0.26, 0.95, -0.05]} rotation={[0.42, -0.32, -0.58]}>
+      <primitive object={katanasGroup} />
     </group>
   );
 }
@@ -1004,8 +977,8 @@ function ZoroAnimatedCharacter({
     <group ref={modelRef}>
       <primitive object={normalizedGroup} />
 
-      {/* Zoro's 3 Scabbards at hip */}
-      <ZoroThreeSwords />
+      {/* Authentic Sketchfab Zoro's 3 Katanas (Wado Ichimonji, Kitetsu, Enma) at hip */}
+      <ZoroSketchfabKatanas />
 
       {/* Routine Specific Props */}
       {activity === "heavy_weights" ? (
@@ -1535,3 +1508,4 @@ useGLTF.preload("/models/characters/robin.glb");
 useGLTF.preload("/models/characters/franky.glb");
 useGLTF.preload("/models/characters/brook.glb");
 useGLTF.preload("/models/characters/jinbe.glb");
+useGLTF.preload("/models/weapons/zoro-katanas.glb");

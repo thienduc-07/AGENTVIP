@@ -231,8 +231,8 @@ export const useWorldStore = create<WorldState>((set, get) => ({
       selectedAreaId: null,
       activeInfoPanel: "agent",
       cameraPreset: "agent",
-      cameraTarget: [agent.position[0], agent.position[1] + 0.8, agent.position[2]],
-      cameraPosition: [agent.position[0] + 3.2, agent.position[1] + 2.5, agent.position[2] + 4.0],
+      cameraTarget: [agent.position[0], agent.position[1] + 1.0, agent.position[2]],
+      cameraPosition: [agent.position[0] + 5.2, agent.position[1] + 3.4, agent.position[2] + 6.2],
     });
   },
 

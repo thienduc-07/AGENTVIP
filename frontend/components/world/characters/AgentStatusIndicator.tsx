@@ -88,7 +88,9 @@ export default function AgentStatusIndicator({
   };
 
   const statusColor = getStatusColor();
-  const firstName = name.split(" ")[0];
+  // Full Display Name for Pill Badge
+  const displayName = name.replace(/^\d+\.\s*/, ""); // remove leading number if any
+  const statusLabel = getStatusLabel();
 
   return (
     <group>
@@ -136,125 +138,114 @@ export default function AgentStatusIndicator({
         </group>
       )}
 
-      {/* --- WAITING APPROVAL: DANGER BEACON & 3D OCTAHEDRON --- */}
+      {/* --- WAITING APPROVAL: DANGER BEACON --- */}
       {status === "waiting_approval" && (
-        <group ref={alertMarkerRef} position={[0, 2.65, 0]}>
+        <group ref={alertMarkerRef} position={[0, targetHeight + 0.35, 0]}>
           <mesh>
-            <octahedronGeometry args={[0.32, 0]} />
+            <octahedronGeometry args={[0.26, 0]} />
             <meshBasicMaterial color="#ef4444" />
           </mesh>
           <pointLight color="#ef4444" intensity={3.5} distance={5} />
         </group>
       )}
 
-      {/* --- 3D BILLBOARD HUD: ZERO DOM UNMOUNT ISSUES & 60FPS SMOOTH --- */}
+      {/* --- DIALOGUE / TASK SPEECH BUBBLE (Above Head only when speaking/active) --- */}
+      {(currentTask || status === "waiting_approval") && (
+        <Billboard
+          position={[0, targetHeight + 0.38, 0]}
+          follow={true}
+          lockX={false}
+          lockY={false}
+          lockZ={false}
+        >
+          <group position={[0, 0, 0]}>
+            <mesh position={[0, 0, -0.015]}>
+              <planeGeometry args={[Math.min(3.2, Math.max(1.8, (currentTask?.length || 20) * 0.09)), 0.34]} />
+              <meshBasicMaterial
+                color={status === "waiting_approval" ? "#7f1d1d" : "#0f172a"}
+                transparent
+                opacity={0.92}
+                depthWrite={false}
+              />
+            </mesh>
+            <mesh position={[0, 0, -0.02]}>
+              <planeGeometry args={[Math.min(3.2, Math.max(1.8, (currentTask?.length || 20) * 0.09)) + 0.05, 0.39]} />
+              <meshBasicMaterial
+                color={status === "waiting_approval" ? "#ef4444" : "#38bdf8"}
+                transparent
+                opacity={0.8}
+                depthWrite={false}
+              />
+            </mesh>
+            <Text
+              position={[0, 0, 0.01]}
+              fontSize={0.13}
+              color="#ffffff"
+              anchorX="center"
+              anchorY="middle"
+              maxWidth={3.0}
+            >
+              {status === "waiting_approval"
+                ? "⚠️ Cần thuyền trưởng phê duyệt!"
+                : currentTask || ""}
+            </Text>
+          </group>
+        </Billboard>
+      )}
+
+      {/* --- SLEEK GROUND-LEVEL CAPSULE PILL BADGE (Matching Image 2) --- */}
+      {/* Placed at waist/ground height [0, 0.36, 0.32] to never block character face/head */}
       <Billboard
-        position={[0, targetHeight + 0.45, 0]}
+        position={[0, 0.36, 0.38]}
         follow={true}
         lockX={false}
         lockY={false}
         lockZ={false}
       >
-        {/* Task / Status Speech Bubble Banner */}
-        {(status !== "idle" || currentTask) && (
-          <group position={[0, 0.65, 0]}>
-            <mesh position={[0, 0, -0.02]}>
-              <planeGeometry args={[2.8, 0.38]} />
-              <meshBasicMaterial
-                color={
-                  status === "waiting_approval"
-                    ? "#450a0a"
-                    : status === "working"
-                    ? "#451a03"
-                    : "#0f172a"
-                }
-                transparent
-                opacity={0.88}
-              />
-            </mesh>
-            <mesh position={[0, 0, -0.025]}>
-              <planeGeometry args={[2.86, 0.44]} />
-              <meshBasicMaterial
-                color={
-                  status === "waiting_approval"
-                    ? "#ef4444"
-                    : status === "working"
-                    ? "#f59e0b"
-                    : "#38bdf8"
-                }
-                transparent
-                opacity={0.7}
-              />
-            </mesh>
-            <Text
-              position={[0, 0, 0.01]}
-              fontSize={0.14}
-              color={status === "waiting_approval" ? "#fca5a5" : "#fef08a"}
-              anchorX="center"
-              anchorY="middle"
-              maxWidth={2.6}
-            >
-              {status === "waiting_approval"
-                ? "⚠️ Captain's Authorization Needed"
-                : currentTask || "Processing mission..."}
-            </Text>
-          </group>
-        )}
-
-        {/* Character Nameplate Pill */}
         <group
           onClick={(e) => {
             e.stopPropagation();
             onSelect();
           }}
         >
-          {/* Background Pill Plate */}
-          <mesh position={[0, 0, -0.015]}>
-            <planeGeometry args={[1.9, 0.48]} />
+          {/* Translucent Dark Pill Plate */}
+          <mesh position={[0, 0, -0.01]}>
+            <planeGeometry args={[2.0, 0.34]} />
             <meshBasicMaterial
               color={isSelected ? "#78350f" : "#090d16"}
               transparent
-              opacity={0.9}
-              depthWrite={false}
-            />
-          </mesh>
-          {/* Border Outline */}
-          <mesh position={[0, 0, -0.025]}>
-            <planeGeometry args={[1.96, 0.54]} />
-            <meshBasicMaterial
-              color={isSelected ? "#fbbf24" : statusColor}
-              transparent
-              opacity={0.85}
+              opacity={0.88}
               depthWrite={false}
             />
           </mesh>
 
-          {/* Status Glow Dot */}
-          <mesh position={[-0.72, 0.04, 0.01]}>
-            <circleGeometry args={[0.08, 16]} />
+          {/* Border Outline colored by character aura */}
+          <mesh position={[0, 0, -0.015]}>
+            <planeGeometry args={[2.05, 0.39]} />
+            <meshBasicMaterial
+              color={isSelected ? "#fbbf24" : color || statusColor}
+              transparent
+              opacity={0.8}
+              depthWrite={false}
+            />
+          </mesh>
+
+          {/* Glowing Status Dot */}
+          <mesh position={[-0.82, 0.0, 0.01]}>
+            <circleGeometry args={[0.065, 16]} />
             <meshBasicMaterial color={statusColor} />
           </mesh>
 
-          {/* Character Name */}
+          {/* Name & Status in Single Line (Image 2 Style: "Monkey D. Luffy | IDLE") */}
           <Text
-            position={[-0.08, 0.07, 0.01]}
-            fontSize={0.21}
-            color="#ffffff"
+            position={[-0.05, 0.0, 0.01]}
+            fontSize={0.125}
+            color="#f8fafc"
             anchorX="center"
             anchorY="middle"
+            maxWidth={1.65}
           >
-            {firstName}
-          </Text>
-
-          {/* Status Subtitle */}
-          <Text
-            position={[0, -0.13, 0.01]}
-            fontSize={0.11}
-            color={statusColor}
-            anchorX="center"
-            anchorY="middle"
-          >
-            {`[${getStatusLabel()}]`}
+            {`${displayName.split("(")[0].trim()}  [${statusLabel}]`}
           </Text>
         </group>
       </Billboard>

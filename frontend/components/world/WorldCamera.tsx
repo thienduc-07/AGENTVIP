@@ -59,7 +59,7 @@ export default function WorldCamera() {
       makeDefault
       enableDamping
       dampingFactor={0.07}
-      minDistance={8}
+      minDistance={3.5}
       maxDistance={90}
       maxPolarAngle={Math.PI / 2 - 0.08}
       minPolarAngle={0.1}
