@@ -33,13 +33,13 @@ export default function CaptainApprovalModal({
           </div>
           <div>
             <h2 className="text-base font-bold text-red-200 flex items-center gap-2">
-              CAPTAIN AUTHORIZATION REQUIRED
+              EXECUTIVE BOARD AUTHORIZATION REQUIRED
               <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/40 uppercase">
                 High Risk Sandbox Action
               </span>
             </h2>
             <p className="text-xs text-red-400/80">
-              Agent paused execution. Action requires Captain sign-off before proceeding.
+              Agent paused execution. Action requires Executive Leadership sign-off before proceeding.
             </p>
           </div>
         </div>

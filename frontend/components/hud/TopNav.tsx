@@ -38,18 +38,18 @@ export default function TopNav({
     <header className="absolute top-0 left-0 right-0 z-30 px-5 py-3 flex items-center justify-between pointer-events-none">
       {/* Brand Title */}
       <div className="flex items-center gap-3 pointer-events-auto">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/30 border border-amber-300/40">
-          <Compass className="w-6 h-6 text-slate-950 animate-spin-slow" />
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-blue-400/40">
+          <Activity className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="text-sm font-bold tracking-wider text-amber-400 flex items-center gap-2">
-            GRAND LINE COMMAND CENTER
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">
-              AI Agent City
+          <h1 className="text-sm font-bold tracking-wider text-blue-400 flex items-center gap-2">
+            AI AGENCY HEADQUARTERS
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase">
+              Autonomous Enterprise
             </span>
           </h1>
           <p className="text-[11px] text-slate-400">
-            Realtime 3D Autonomous Fleet Orchestrator
+            Level 42 Executive Tower • Real AI Runtime & Telemetry
           </p>
         </div>
       </div>

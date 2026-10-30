@@ -16,7 +16,7 @@ from backend.app.routers import system
 from backend.app.agent_runtime import agent_runtime
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-logger = logging.getLogger("grandline.main")
+logger = logging.getLogger("agency.main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_database()
-        logger.info("Seed verified successfully.")
+        logger.info("Corporate seed verified successfully.")
         
         # Initialize runtime and background task dispatcher
         if settings.DISPATCHER_ENABLED:
@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
         db.close()
         
     yield
-    logger.info("AI Agent City API shutting down...")
+    logger.info("AI Agency API shutting down...")
     await agent_runtime.on_shutdown()
     logger.info("Shutdown complete.")
 

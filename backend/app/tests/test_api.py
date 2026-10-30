@@ -17,10 +17,10 @@ def test_get_agents_list():
     agents = response.json()
     assert len(agents) >= 4
     agent_ids = {a["id"] for a in agents}
-    assert "agent-captain-roger" in agent_ids
-    assert "agent-zoro-quartermaster" in agent_ids
-    assert "agent-nami-navigator" in agent_ids
-    assert "agent-franky-shipwright" in agent_ids
+    assert "agent-exec-ceo" in agent_ids
+    assert "agent-eng-lead" in agent_ids
+    assert "agent-research-ai" in agent_ids
+    assert "agent-mkt-growth" in agent_ids
 
 def test_get_tools_catalog():
     response = client.get("/api/system/tools")
@@ -41,14 +41,14 @@ def test_create_and_cancel_task_v1():
     response = client.post("/api/v1/tasks", json={
         "title": "Check system metrics",
         "description": "Inspect CPU, memory and disk free space",
-        "assigned_agent_id": "agent-zoro-quartermaster",
+        "assigned_agent_id": "agent-eng-lead",
         "priority": "normal"
     })
     assert response.status_code == 201
     task_data = response.json()
     assert task_data["id"] is not None
     assert task_data["status"] == "queued"
-    assert task_data["assigned_agent_id"] == "agent-zoro-quartermaster"
+    assert task_data["assigned_agent_id"] == "agent-eng-lead"
 
     # Cancel task
     cancel_res = client.post(f"/api/v1/tasks/{task_data['id']}/cancel")

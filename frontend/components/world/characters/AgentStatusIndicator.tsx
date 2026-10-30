@@ -236,7 +236,7 @@ export default function AgentStatusIndicator({
             <meshBasicMaterial color={statusColor} />
           </mesh>
 
-          {/* Name & Status in Single Line (Image 2 Style: "Monkey D. Luffy | IDLE") */}
+          {/* Name & Status in Single Line (e.g. "Victoria Vance | IDLE") */}
           <Text
             position={[-0.05, 0.0, 0.01]}
             fontSize={0.125}

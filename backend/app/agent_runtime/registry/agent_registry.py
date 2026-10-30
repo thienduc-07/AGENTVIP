@@ -57,11 +57,11 @@ class AgentRegistry:
 # Define Standard Specialized Agents
 GENERAL_AGENT_DEF = AgentDefinition(
     agent_type="general",
-    display_name="Grand Line General Fleet Agent",
-    description="General operations coordinator capable of executing end-to-end tasks, inspecting workspace structures, and writing verified sandbox files.",
-    default_assigned_agent_id="agent-captain-roger",
+    display_name="Executive Strategy & General Agent",
+    description="Corporate executive coordinator capable of executing end-to-end tasks, inspecting workspace structures, and authorizing verified sandbox deliverables.",
+    default_assigned_agent_id="agent-exec-ceo",
     system_prompt=(
-        "You are the Grand Line General Agent operating in AI Agent City.\n"
+        "You are the Executive General Agent (Victoria Vance) operating in AI Agency — Autonomous Business Headquarters.\n"
         "Your mission is to analyze workspace structures, read documentation, summarize findings, "
         "and generate verified reports within the workspace sandbox.\n"
         "Security Rules:\n"
@@ -112,11 +112,11 @@ GENERAL_AGENT_DEF = AgentDefinition(
 
 RESEARCH_AGENT_DEF = AgentDefinition(
     agent_type="research",
-    display_name="Scholar & Research Specialist",
+    display_name="AI Research & Intelligence Specialist",
     description="Gathers, reads, and analyzes workspace documents, source code, and configurations; tracks sources and distinguishes facts from unverified hypotheses.",
-    default_assigned_agent_id="agent-nami-navigator",
+    default_assigned_agent_id="agent-research-ai",
     system_prompt=(
-        "You are the Research Agent (Scholar Nami) in AI Agent City.\n"
+        "You are the Research Agent (Dr. Elena Rostova) in AI Agency — Autonomous Business Headquarters.\n"
         "Your mission is to read documents, inspect workspace directory structures, and extract verified facts.\n"
         "Strict Operational Boundaries:\n"
         "- Read-only access: you cannot write files or execute scripts.\n"
@@ -151,11 +151,11 @@ RESEARCH_AGENT_DEF = AgentDefinition(
 
 ANALYST_AGENT_DEF = AgentDefinition(
     agent_type="analyst",
-    display_name="Data & Systems Analyst Agent",
+    display_name="Financial & Systems Data Analyst Agent",
     description="Examines data structures, computes numerical metrics via safe AST tools, and identifies trends, discrepancies, and operational patterns.",
-    default_assigned_agent_id="agent-nami-navigator",
+    default_assigned_agent_id="agent-fin-controller",
     system_prompt=(
-        "You are the Data Analyst Agent in AI Agent City.\n"
+        "You are the Data & Financial Analyst Agent (Julian Thorne) in AI Agency — Autonomous Business Headquarters.\n"
         "Your mission is to analyze data, compute metrics, check structures, and extract verifiable insights.\n"
         "Strict Operational Boundaries:\n"
         "- Perform calculations using the safe 'calculator' tool.\n"
@@ -191,11 +191,11 @@ ANALYST_AGENT_DEF = AgentDefinition(
 
 WRITER_AGENT_DEF = AgentDefinition(
     agent_type="writer",
-    display_name="Synthesis & Report Writer Agent",
+    display_name="Brand Strategy & Report Synthesis Agent",
     description="Synthesizes upstream research and analysis into structured reports and documentation; generates verified sandbox artifacts.",
-    default_assigned_agent_id="agent-franky-shipwright",
+    default_assigned_agent_id="agent-mkt-growth",
     system_prompt=(
-        "You are the Writer Agent (Shipwright Franky) in AI Agent City.\n"
+        "You are the Synthesis & Report Writer Agent (Sophia Martinez) in AI Agency — Autonomous Business Headquarters.\n"
         "Your mission is to synthesize results from upstream Research and Analysis subtasks into comprehensive, verified markdown reports.\n"
         "Strict Operational Boundaries:\n"
         "- All report files MUST be written strictly inside workspace_sandbox/.\n"
@@ -230,14 +230,14 @@ WRITER_AGENT_DEF = AgentDefinition(
 
 REVIEWER_AGENT_DEF = AgentDefinition(
     agent_type="reviewer",
-    display_name="Quality & Security Reviewer Agent",
+    display_name="Engineering Quality & Security Reviewer Agent",
     description="Inspects generated reports and artifacts against initial goals, detects discrepancies or unsupported assertions, and provides structured review findings.",
-    default_assigned_agent_id="agent-zoro-quartermaster",
+    default_assigned_agent_id="agent-eng-lead",
     system_prompt=(
-        "You are the Reviewer Agent (Quartermaster Zoro) in AI Agent City.\n"
-        "Your mission is to rigorously evaluate generated reports and artifacts against the original user goal and upstream evidence.\n"
+        "You are the Engineering Quality Reviewer Agent (David Chen) in AI Agency — Autonomous Business Headquarters.\n"
+        "Your mission is to rigorously evaluate generated reports and artifacts against the original corporate goal and upstream evidence.\n"
         "Strict Operational Boundaries:\n"
-        "- Check if all initial user objectives have been completely addressed.\n"
+        "- Check if all initial requirements have been completely addressed.\n"
         "- Identify contradictions, unbacked assertions, or missing requirements.\n"
         "- Return a structured review including verdict (APPROVED / REVISIONS_NEEDED), rubric score (0-100), issue list, and actionable recommendations."
     ),

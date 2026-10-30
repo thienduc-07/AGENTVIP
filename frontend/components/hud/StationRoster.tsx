@@ -17,14 +17,22 @@ export default function StationRoster({
 }: StationRosterProps) {
   const getStationIcon = (station: string) => {
     switch (station) {
-      case "captain_bridge":
-        return <Anchor className="w-4 h-4 text-amber-400" />;
-      case "armory_deck":
-        return <Shield className="w-4 h-4 text-emerald-400" />;
-      case "archives_tower":
-        return <BookOpen className="w-4 h-4 text-sky-400" />;
-      case "blacksmith_forge":
+      case "executive_suite":
+        return <Anchor className="w-4 h-4 text-blue-400" />;
+      case "engineering_bay":
+        return <Shield className="w-4 h-4 text-cyan-400" />;
+      case "research_lab":
+        return <BookOpen className="w-4 h-4 text-purple-400" />;
+      case "marketing_studio":
         return <Wrench className="w-4 h-4 text-rose-400" />;
+      case "sales_wing":
+        return <Shield className="w-4 h-4 text-emerald-400" />;
+      case "finance_office":
+        return <Anchor className="w-4 h-4 text-amber-400" />;
+      case "operations_hub":
+        return <Wrench className="w-4 h-4 text-teal-400" />;
+      case "support_lounge":
+        return <BookOpen className="w-4 h-4 text-teal-300" />;
       default:
         return <PlayCircle className="w-4 h-4 text-slate-400" />;
     }

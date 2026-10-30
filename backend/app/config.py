@@ -7,12 +7,12 @@ WORKSPACE_SANDBOX = BASE_DIR / "workspace_sandbox"
 WORKSPACE_SANDBOX.mkdir(exist_ok=True)
 
 class Settings(BaseSettings):
-    APP_NAME: str = "AI Agent City — Grand Line Command Center"
+    APP_NAME: str = "AI Agency — Autonomous Business Headquarters"
     VERSION: str = "1.0.0"
     DEBUG: bool = True
     
     # Database
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'grandline.db'}"
+    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'agency.db'}"
     
     # Sandbox restrictions
     SANDBOX_DIR: Path = WORKSPACE_SANDBOX

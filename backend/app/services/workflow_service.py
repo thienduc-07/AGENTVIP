@@ -23,8 +23,8 @@ class WorkflowService:
         # Verify assigned agent exists
         agent = db.query(AgentModel).filter(AgentModel.id == workflow_in.assigned_agent_id).first()
         if not agent:
-            # Fallback to Roger
-            agent = db.query(AgentModel).filter(AgentModel.id == "agent-captain-roger").first()
+            # Fallback to CEO or first agent
+            agent = db.query(AgentModel).filter(AgentModel.id == "agent-exec-ceo").first() or db.query(AgentModel).first()
             if not agent:
                 raise NotFoundError(message=f"Agent '{workflow_in.assigned_agent_id}' not found", code="AGENT_NOT_FOUND")
 

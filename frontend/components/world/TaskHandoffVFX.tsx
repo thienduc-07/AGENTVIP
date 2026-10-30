@@ -5,8 +5,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useWorldStore } from "@/store/worldStore";
 
-// Predefined Straw Hat Peak Form Skills
-export const CREW_SKILLS: Record<
+export const CORPORATE_SKILLS: Record<
   string,
   {
     name: string;
@@ -16,233 +15,173 @@ export const CREW_SKILLS: Record<
     icon: string;
   }
 > = {
-  "agent-captain-roger": {
-    name: "Gomu Gomu no Bajrang Gun",
-    vietnameseName: "Haki Bá Vương Đỏ Đen & Bajrang Gun",
-    color: "#ef4444",
-    trailColor: "#7f1d1d",
-    icon: "⚡",
+  "agent-exec-ceo": {
+    name: "Executive Strategy & Governance",
+    vietnameseName: "Chỉ Đạo Chiến Lược & Phê Duyệt Cấp Cao",
+    color: "#3b82f6",
+    trailColor: "#1d4ed8",
+    icon: "🏛️",
   },
-  "agent-zoro-quartermaster": {
-    name: "103 Mercies Dragon Damnation",
-    vietnameseName: "Tam Kiếm Phái: Diêm Vương Phi Long Tuyệt Chiêu",
+  "agent-eng-lead": {
+    name: "System Architecture & Sandbox",
+    vietnameseName: "Kiến Trúc Kỹ Thuật & Sandbox Thực Thi",
+    color: "#0ea5e9",
+    trailColor: "#0284c7",
+    icon: "💻",
+  },
+  "agent-research-ai": {
+    name: "Market Intelligence & AI Research",
+    vietnameseName: "Nghiên Cứu AI & Đồ Thị Tri Thức",
+    color: "#8b5cf6",
+    trailColor: "#6d28d9",
+    icon: "🔬",
+  },
+  "agent-mkt-growth": {
+    name: "Brand Strategy & Growth Marketing",
+    vietnameseName: "Định Vị Thương Hiệu & Tăng Trưởng",
+    color: "#f43f5e",
+    trailColor: "#be123c",
+    icon: "📈",
+  },
+  "agent-sales-director": {
+    name: "Enterprise Solutions & Sales",
+    vietnameseName: "Kinh Doanh Doanh Nghiệp & Hợp Đồng",
     color: "#10b981",
-    trailColor: "#065f46",
-    icon: "⚔️",
+    trailColor: "#047857",
+    icon: "🤝",
   },
-  "agent-nami-navigator": {
-    name: "Raitei (Zeus Breeze Tempo)",
-    vietnameseName: "Lôi Đình Zeus Breeze Tempo",
-    color: "#facc15",
-    trailColor: "#854d0e",
-    icon: "🌩️",
+  "agent-fin-controller": {
+    name: "Financial Ledger & Budget Auditing",
+    vietnameseName: "Kiểm Toán Ngân Sách & Sổ Cái",
+    color: "#eab308",
+    trailColor: "#a16207",
+    icon: "⚖️",
   },
-  "agent-usopp-sniper": {
-    name: "Hissatsu: Firebird Star",
-    vietnameseName: "Tất Sát: Hỏa Điểu Tinh",
-    color: "#f97316",
-    trailColor: "#9a3412",
-    icon: "🎯",
+  "agent-ops-recruiter": {
+    name: "Operations & Agent Recruitment",
+    vietnameseName: "Vận Hành & Tuyển Dụng Agent",
+    color: "#06b6d4",
+    trailColor: "#0e7490",
+    icon: "⚙️",
   },
-  "agent-sanji-cook": {
-    name: "Ifrit Jambe: Boeuf Burst",
-    vietnameseName: "Cước Lửa Quỷ Ifrit: Boeuf Burst",
-    color: "#38bdf8",
-    trailColor: "#0369a1",
-    icon: "🔥",
-  },
-  "agent-chopper-doctor": {
-    name: "Kokutei Cross / Sakura Blizzard",
-    vietnameseName: "Cơn Lốc Hoa Anh Đào & Khắc Ấn Móng Guốc",
-    color: "#f472b6",
-    trailColor: "#9d174d",
-    icon: "🌸",
-  },
-  "agent-robin-archaeologist": {
-    name: "Mil Fleur: Gigantesco Mano",
-    vietnameseName: "Nghìn Cánh Hoa: Cánh Tay Khổng Lồ",
-    color: "#a855f7",
-    trailColor: "#581c87",
-    icon: "🪷",
-  },
-  "agent-franky-shipwright": {
-    name: "Franky Radical Beam",
-    vietnameseName: "Chùm Laser Radical Beam BF-38",
-    color: "#fbbf24",
-    trailColor: "#b45309",
-    icon: "💥",
-  },
-  "agent-brook-musician": {
-    name: "Yahazu Giri / Soul Solid",
-    vietnameseName: "Băng Kiếm Soul Solid & Khúc Nhạc Linh Hồn",
-    color: "#67e8f9",
-    trailColor: "#155e75",
-    icon: "🎵",
-  },
-  "agent-jinbe-helmsman": {
-    name: "Kairyu Ipponzeoi",
-    vietnameseName: "Ngũ Thiên Ngói Chưởng & Thủy Lưu Quật Nhất",
-    color: "#0284c7",
-    trailColor: "#075985",
-    icon: "🌊",
+  "agent-support-lead": {
+    name: "Customer Success & SLA Monitoring",
+    vietnameseName: "Thành Công Khách Hàng & SLA",
+    color: "#14b8a6",
+    trailColor: "#0f766e",
+    icon: "🎧",
   },
 };
 
 export default function TaskHandoffVFX() {
   const activeHandoff = useWorldStore((s) => s.activeHandoff);
-  const clearTaskHandoff = useWorldStore((s) => s.clearTaskHandoff);
   const agents = useWorldStore((s) => s.agents);
 
-  const projectileRef = useRef<THREE.Group>(null);
-  const trailPointsRef = useRef<THREE.Points>(null);
-  const shockwaveRef = useRef<THREE.Mesh>(null);
+  const pointsRef = useRef<THREE.Points>(null);
+  const coreRef = useRef<THREE.Mesh>(null);
 
-  // Source & Target 3D coordinates
-  const { startPos, endPos, skillInfo } = useMemo(() => {
-    if (!activeHandoff) {
-      return {
-        startPos: new THREE.Vector3(0, 8, 0),
-        endPos: new THREE.Vector3(0, 8, 0),
-        skillInfo: CREW_SKILLS["agent-captain-roger"],
-      };
-    }
+  const particleCount = 48;
+  const { positions, colors } = useMemo(() => {
+    const pos = new Float32Array(particleCount * 3);
+    const col = new Float32Array(particleCount * 3);
+    return { positions: pos, colors: col };
+  }, []);
+
+  useFrame(() => {
+    if (!activeHandoff) return;
 
     const fromAgent = agents[activeHandoff.fromAgentId];
     const toAgent = agents[activeHandoff.toAgentId];
+    if (!fromAgent || !toAgent) return;
 
-    const sPos = fromAgent
-      ? new THREE.Vector3(fromAgent.position[0], fromAgent.position[1] + 1.2, fromAgent.position[2])
-      : new THREE.Vector3(0, 8, 0);
+    const start = new THREE.Vector3(fromAgent.position[0], 1.4, fromAgent.position[2]);
+    const end = new THREE.Vector3(toAgent.position[0], 1.4, toAgent.position[2]);
 
-    const ePos = toAgent
-      ? new THREE.Vector3(toAgent.position[0], toAgent.position[1] + 1.2, toAgent.position[2])
-      : new THREE.Vector3(0, 8, 0);
+    const elapsed = Date.now() - activeHandoff.startTime;
+    const progress = Math.min(1.0, elapsed / activeHandoff.duration);
 
-    const info = CREW_SKILLS[activeHandoff.fromAgentId] || CREW_SKILLS["agent-captain-roger"];
+    // Quadratic Bezier arc
+    const mid = start.clone().lerp(end, 0.5);
+    mid.y += 2.4; // Elegant arc height across office
 
-    return { startPos: sPos, endPos: ePos, skillInfo: info };
-  }, [activeHandoff, agents]);
+    const p0 = start.clone().lerp(mid, progress);
+    const p1 = mid.clone().lerp(end, progress);
+    const currentPoint = p0.lerp(p1, progress);
 
-  // Cubic Bézier Curve with high parabolic arch over the island
-  const curve = useMemo(() => {
-    const midX = (startPos.x + endPos.x) / 2;
-    const midZ = (startPos.z + endPos.z) / 2;
-    // Arch apex proportional to distance
-    const dist = startPos.distanceTo(endPos);
-    const archHeight = Math.max(startPos.y, endPos.y) + Math.min(18, Math.max(7, dist * 0.35));
-
-    const ctrl1 = new THREE.Vector3(
-      startPos.x * 0.6 + midX * 0.4,
-      archHeight,
-      startPos.z * 0.6 + midZ * 0.4
-    );
-    const ctrl2 = new THREE.Vector3(
-      endPos.x * 0.6 + midX * 0.4,
-      archHeight,
-      endPos.z * 0.6 + midZ * 0.4
-    );
-
-    return new THREE.CubicBezierCurve3(startPos, ctrl1, ctrl2, endPos);
-  }, [startPos, endPos]);
-
-  // Trail particle positions buffer
-  const trailCount = 40;
-  const trailPositions = useMemo(() => new Float32Array(trailCount * 3), [trailCount]);
-
-  useFrame((state) => {
-    if (!activeHandoff) return;
-
-    const currentTime = state.clock.getElapsedTime();
-    const elapsed = currentTime - activeHandoff.startTime;
-    const progress = Math.min(1.0, elapsed / (activeHandoff.duration || 2.2));
-
-    // Get current position on Bézier curve
-    const currentPoint = curve.getPoint(progress);
-
-    if (projectileRef.current) {
-      projectileRef.current.position.copy(currentPoint);
-      // Spinning dynamic rotation
-      projectileRef.current.rotation.y = currentTime * 8.0;
-      projectileRef.current.rotation.z = currentTime * 6.0;
+    if (coreRef.current) {
+      coreRef.current.position.copy(currentPoint);
     }
 
-    if (shockwaveRef.current) {
-      // Pulsing energy shockwave
-      const scale = 1.0 + Math.sin(currentTime * 12.0) * 0.3;
-      shockwaveRef.current.scale.set(scale, scale, scale);
-    }
+    if (pointsRef.current) {
+      const skill = CORPORATE_SKILLS[activeHandoff.fromAgentId] || {
+        color: "#3b82f6",
+        trailColor: "#1d4ed8",
+      };
+      const mainCol = new THREE.Color(skill.color);
 
-    // Update trailing particles along curve behind the projectile
-    if (trailPointsRef.current) {
-      for (let i = 0; i < trailCount; i++) {
-        const trailProgress = Math.max(0, progress - (i / trailCount) * 0.35);
-        const trailPt = curve.getPoint(trailProgress);
-        trailPositions[i * 3] = trailPt.x + (Math.sin(currentTime * 10 + i) * 0.2);
-        trailPositions[i * 3 + 1] = trailPt.y + (Math.cos(currentTime * 10 + i) * 0.2);
-        trailPositions[i * 3 + 2] = trailPt.z;
+      const posAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+      const colAttr = pointsRef.current.geometry.attributes.color as THREE.BufferAttribute;
+
+      for (let i = 0; i < particleCount; i++) {
+        const offset = (i / particleCount) * 0.4;
+        const trailProgress = Math.max(0, progress - offset * 0.15);
+        const t0 = start.clone().lerp(mid, trailProgress);
+        const t1 = mid.clone().lerp(end, trailProgress);
+        const pt = t0.lerp(t1, trailProgress);
+
+        posAttr.setXYZ(
+          i,
+          pt.x + (Math.random() - 0.5) * 0.15,
+          pt.y + (Math.random() - 0.5) * 0.15,
+          pt.z + (Math.random() - 0.5) * 0.15
+        );
+
+        colAttr.setXYZ(i, mainCol.r, mainCol.g, mainCol.b);
       }
-      trailPointsRef.current.geometry.attributes.position.needsUpdate = true;
-    }
 
-    // Finished transition: clear handoff
-    if (progress >= 1.0) {
-      clearTaskHandoff();
+      posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
     }
   });
 
   if (!activeHandoff) return null;
 
+  const skill = CORPORATE_SKILLS[activeHandoff.fromAgentId] || {
+    color: "#3b82f6",
+  };
+
   return (
     <group>
-      {/* Trailing Particle System */}
-      <points ref={trailPointsRef}>
+      {/* Leading Glowing Digital Packet Sphere */}
+      <mesh ref={coreRef}>
+        <sphereGeometry args={[0.2, 16, 16]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          emissive={skill.color}
+          emissiveIntensity={2.5}
+        />
+      </mesh>
+
+      {/* Trailing Particle Telemetry Stream */}
+      <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            args={[trailPositions, 3]}
+            args={[positions, 3]}
+          />
+          <bufferAttribute
+            attach="attributes-color"
+            args={[colors, 3]}
           />
         </bufferGeometry>
         <pointsMaterial
-          color={skillInfo.color}
-          size={0.65}
+          size={0.14}
+          vertexColors
           transparent
-          opacity={0.8}
+          opacity={0.85}
           blending={THREE.AdditiveBlending}
         />
       </points>
-
-      {/* Main Projectile Head with Anime VFX */}
-      <group ref={projectileRef} position={[startPos.x, startPos.y, startPos.z]}>
-        {/* Core Glowing Energy Sphere */}
-        <mesh>
-          <sphereGeometry args={[0.55, 16, 16]} />
-          <meshBasicMaterial color={skillInfo.color} />
-        </mesh>
-
-        {/* Outer Aura Shell */}
-        <mesh>
-          <sphereGeometry args={[0.85, 12, 12]} />
-          <meshBasicMaterial
-            color={skillInfo.trailColor}
-            transparent
-            opacity={0.5}
-            blending={THREE.AdditiveBlending}
-          />
-        </mesh>
-
-        {/* Orbiting Shockwave Energy Rings */}
-        <mesh ref={shockwaveRef} rotation={[Math.PI / 4, 0, 0]}>
-          <torusGeometry args={[1.1, 0.08, 8, 24]} />
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.85} />
-        </mesh>
-        <mesh rotation={[-Math.PI / 4, Math.PI / 3, 0]}>
-          <torusGeometry args={[0.95, 0.06, 8, 24]} />
-          <meshBasicMaterial color={skillInfo.color} transparent opacity={0.8} />
-        </mesh>
-
-        {/* Dynamic Point Light illuminating the terrain below */}
-        <pointLight color={skillInfo.color} intensity={5.0} distance={20} />
-      </group>
     </group>
   );
 }

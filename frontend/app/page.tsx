@@ -14,7 +14,7 @@ import TaskCreateModal from "@/components/interface/TaskCreateModal";
 import { MemoryCenterModal } from "@/components/hud/MemoryCenterModal";
 import { ToolCenterModal } from "@/components/hud/ToolCenterModal";
 import InteractiveMissionTerminal from "@/components/hud/InteractiveMissionTerminal";
-import StrawHatCrewDock from "@/components/interface/StrawHatCrewDock";
+import CorporateAgentDock from "@/components/interface/CorporateAgentDock";
 import { useWorldStore } from "@/store/worldStore";
 import { Agent, EventLog, PendingAction, Task } from "@/types";
 import { getAgents } from "@/lib/api/agents";
@@ -22,7 +22,7 @@ import { getAgents } from "@/lib/api/agents";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || (API_BASE.replace(/^http/, "ws") + "/api/v1/events/ws");
 
-export default function GrandLine3DWorldPage() {
+export default function CorporateHQ3DWorldPage() {
   const syncAgentsFromBackend = useWorldStore((s) => s.syncAgentsFromBackend);
   const setBackendStatus = useWorldStore((s) => s.setBackendStatus);
   const backendConnection = useWorldStore((s) => s.backendConnection);
@@ -315,13 +315,13 @@ export default function GrandLine3DWorldPage() {
         const created: any = await res.json();
         useWorldStore.getState().setActiveWorkflow(created);
         setIsMissionDrawerOpen(true);
-        // Luffy Gear 5 initiates workflow orchestrator strike to Zoro
+        // Victoria Vance (CEO) initiates workflow orchestrator dispatch to David Chen (Engineering)
         useWorldStore
           .getState()
           .triggerTaskHandoff(
-            "agent-captain-roger",
-            "agent-zoro-quartermaster",
-            "Gomu Gomu no Bajrang Gun",
+            "agent-exec-ceo",
+            "agent-eng-lead",
+            "Executive Governance & Strategy",
             title.slice(0, 45)
           );
       } else {
@@ -449,10 +449,10 @@ export default function GrandLine3DWorldPage() {
       {/* Minimalist 3D Controls Help at Bottom Left */}
       <WorldControlsHelp />
 
-      {/* Straw Hat Crew Quick Switcher Dock (Multi-character switcher & routines) */}
-      <StrawHatCrewDock />
+      {/* Corporate Leadership Quick Switcher Dock */}
+      <CorporateAgentDock />
 
-      {/* Captain Authorization Modal (High Risk Sandbox Action) */}
+      {/* Executive Board Authorization Modal (High Risk Sandbox Action) */}
       <CaptainApprovalModal
         pendingAction={pendingAction}
         onDecide={handleApprovalDecision}

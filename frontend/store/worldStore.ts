@@ -41,7 +41,7 @@ export interface DeliverableArtifact {
 
 export interface ChatMessage {
   id: string;
-  sender: "user" | "luffy" | "agent" | "system";
+  sender: "user" | "ceo" | "agent" | "system";
   agentId?: string;
   agentName?: string;
   text: string;
@@ -165,9 +165,9 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   chatMessages: [
     {
       id: "msg_welcome",
-      sender: "luffy",
-      agentName: "Monkey D. Luffy (Gear 5)",
-      text: "Chào mừng hoa tiêu đã đặt chân tới hòn đảo AI Agent City! Ta là Monkey D. Luffy, Thần Mặt Trời Nika. Toàn bộ 10 thuyền viên Mũ Rơm đã được trang bị đầy đủ 19 Kỹ năng Anthropic chuẩn (docx, xlsx, pptx, pdf, frontend-design, webapp-testing, mcp-builder...). Hãy ra lệnh bất cứ nhiệm vụ nào vào Mission Terminal để ta phân công tác chiến!",
+      sender: "ceo",
+      agentName: "Victoria Vance (CEO)",
+      text: "Chào mừng quý khách đến với AI Agency — Autonomous Business Headquarters! Tôi là Victoria Vance, Giám đốc điều hành. Toàn bộ 8 phòng ban tự trị (Điều hành, Kỹ thuật, Nghiên cứu AI, Marketing, Kinh doanh B2B, Tài chính, Vận hành & Tuyển dụng, Chăm sóc khách hàng) đã sẵn sàng kết nối runtime thực thi nhiệm vụ doanh nghiệp thực tế. Vui lòng giao nhiệm vụ để bắt đầu!",
       timestamp: Date.now(),
     },
   ],
@@ -176,16 +176,14 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   movingAgent: null,
 
   agentActivities: {
-    "agent-captain-roger": "haki",
-    "agent-zoro-quartermaster": "sword_kata",
-    "agent-sanji-cook": "cooking",
-    "agent-franky-shipwright": "ship_repair",
-    "agent-chopper-doctor": "apothecary",
-    "agent-nami-navigator": "cartography",
-    "agent-usopp-sniper": "sniper_scout",
-    "agent-robin-scholar": "cien_fleurs",
-    "agent-brook-musician": "violin_concert",
-    "agent-jinbe-helmsman": "karate_kata",
+    "agent-exec-ceo": "strategy_review",
+    "agent-eng-lead": "code_architecture",
+    "agent-research-ai": "neural_indexing",
+    "agent-mkt-growth": "campaign_optimization",
+    "agent-sales-director": "pipeline_review",
+    "agent-fin-controller": "ledger_audit",
+    "agent-ops-recruiter": "talent_onboarding",
+    "agent-support-lead": "sla_monitoring",
   },
   setAgentActivity: (agentId: string, activity: string) =>
     set((state) => ({
@@ -474,10 +472,10 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   },
 
   // =========================================================================
-  // MASTER PIPELINE: SEQUENTIAL PHYSICAL + ANIME SKILL VFX HANDOFF ACROSS ISLAND
+  // MASTER PIPELINE: SEQUENTIAL CORPORATE WORKFLOW & TELEMETRY HANDOFF
   // =========================================================================
   executeMissionPipeline: async (userPrompt: string) => {
-    const luffyId = "agent-captain-roger";
+    const ceoId = "agent-exec-ceo";
     const agents = get().agents;
 
     // 1. Open Terminal & Add user message
@@ -491,18 +489,18 @@ export const useWorldStore = create<WorldState>((set, get) => ({
     };
     set((s) => ({ chatMessages: [...s.chatMessages, userMsg] }));
 
-    // 2. Camera flies directly to Luffy at Sun God Plaza in the center
+    // 2. Camera navigates to Executive Suite
     set({
       cameraPreset: "agent",
-      cameraTarget: [0, 5.8, 0],
-      cameraPosition: [0, 10.5, 12],
+      cameraTarget: [0, 1.2, -10],
+      cameraPosition: [0, 6.5, -4],
     });
 
-    get().updateAgentStatus(luffyId, "working", "⚡ Phân tích Prompt & Lập Hàng Đợi Tác Chiến");
+    get().updateAgentStatus(ceoId, "working", "⚡ Phân rã mục tiêu chiến lược & Điều phối phòng ban");
 
     await new Promise((r) => setTimeout(r, 900));
 
-    // 3. Determine custom Execution Queue based on user prompt keywords
+    // 3. Determine custom Execution Queue based on enterprise query
     const lower = userPrompt.toLowerCase();
     let queue: QueueStep[] = [];
     let deliverable: DeliverableArtifact;
@@ -511,206 +509,196 @@ export const useWorldStore = create<WorldState>((set, get) => ({
       queue = [
         {
           id: "step_1",
-          agentId: "agent-captain-roger",
-          agentName: "Monkey D. Luffy",
-          stepTitle: "Phân tích yêu cầu PRD & Chia nhỏ tài liệu kỹ thuật",
-          skillName: "Gomu Gomu no Bajrang Gun",
-          vietnameseSkill: "Haki Bá Vương Đỏ Đen & Bajrang Gun",
+          agentId: "agent-exec-ceo",
+          agentName: "Victoria Vance",
+          stepTitle: "Phê duyệt định hướng đặc tả PRD và phân bổ tài nguyên",
+          skillName: "Executive Governance & Strategy",
+          vietnameseSkill: "Hoạch định Chiến Lược Doanh Nghiệp Cấp Cao",
           status: "pending",
         },
         {
           id: "step_2",
-          agentId: "agent-robin-archaeologist",
-          agentName: "Nico Robin",
-          stepTitle: "Soạn thảo văn bản chuẩn .docx & .pdf (Anthropic docx skill)",
-          skillName: "Mil Fleur: Gigantesco Mano",
-          vietnameseSkill: "Nghìn Cánh Hoa: Cánh Tay Khổng Lồ",
+          agentId: "agent-research-ai",
+          agentName: "Dr. Elena Rostova",
+          stepTitle: "Nghiên cứu thị trường và tổng hợp tài liệu chuyên sâu",
+          skillName: "Market Intelligence & Deep Research",
+          vietnameseSkill: "Phân Tích Tri Thức Thị Trường & Dữ Liệu Chuyên Sâu",
           status: "pending",
         },
         {
           id: "step_3",
-          agentId: "agent-chopper-doctor",
-          agentName: "Tony Tony Chopper",
-          stepTitle: "Khám nghiệm chính tả, định dạng và tính toàn vẹn tài liệu",
-          skillName: "Kokutei Cross / Sakura Blizzard",
-          vietnameseSkill: "Cơn Lốc Hoa Anh Đào & Khắc Ấn Móng Guốc",
+          agentId: "agent-eng-lead",
+          agentName: "David Chen",
+          stepTitle: "Thẩm định kiến trúc hệ thống và đặc tả kỹ thuật API",
+          skillName: "System Architecture & Security Verification",
+          vietnameseSkill: "Thẩm Định Kiến Trúc Kỹ Thuật & Bảo Mật Sandbox",
           status: "pending",
         },
         {
           id: "step_4",
-          agentId: "agent-zoro-quartermaster",
-          agentName: "Roronoa Zoro",
-          stepTitle: "Thẩm định kiến trúc kỹ thuật hệ thống backend",
-          skillName: "103 Mercies Dragon Damnation",
-          vietnameseSkill: "Tam Kiếm Phái: Diêm Vương Phi Long Tuyệt Chiêu",
+          agentId: "agent-support-lead",
+          agentName: "Liam O'Connor",
+          stepTitle: "Đánh giá tác động dịch vụ khách hàng và cam kết SLA",
+          skillName: "Client Success SLA & Operations Assessment",
+          vietnameseSkill: "Đánh Giá Tiêu Chuẩn SLA & Tác Động Vận Hành",
           status: "pending",
         },
       ];
       deliverable = {
         id: `art_${Date.now()}`,
         type: "docx",
-        title: "Tài Liệu Đặc Tả Kỹ Thuật PRD — Hệ Thống Multi-Agent Grand Line",
-        filename: "GrandLine_System_PRD.docx",
-        description: "Tài liệu kỹ thuật định dạng Microsoft Word (.docx) được tạo tự động bởi Nico Robin bằng kỹ năng Anthropic docx skill.",
-        size: "148 KB",
-        content: `# GRAND LINE MULTI-AGENT SPECIFICATION\n\n## 1. System Overview\nAutonomous 10-Agent Straw Hat World integrated with Anthropic Skills.\n\n## 2. Architecture\n- Realtime WebSocket Events\n- GLSL Particle Handoff Shaders\n- Automated Sandboxed File Generation\n\nGenerated with Straw Hat Fleet.`,
+        title: "Tài Liệu Kỹ Thuật PRD — Autonomous Business Platform",
+        filename: "Enterprise_Autonomous_Platform_PRD.docx",
+        description: "Tài liệu đặc tả kiến trúc doanh nghiệp (.docx) chuẩn hóa với quy trình kiểm soát rủi ro và các chỉ số SLA vận hành.",
+        size: "182 KB",
+        content: `# AUTONOMOUS BUSINESS HEADQUARTERS PRD\n\n## 1. Executive Summary\nEnterprise Autonomous Business Platform operating across 8 dedicated corporate departments.\n\n## 2. Departmental Execution Model\n- Executive Suite: Policy governance and authorization\n- Engineering Bay: Sandboxed runtime and verified code execution\n- Research Lab: Vector knowledge graph distillation\n- Finance Office: Ledger auditing and burn rate compliance\n\nApproved by Executive Board.`,
       };
     } else if (lower.includes("xlsx") || lower.includes("excel") || lower.includes("tài chính") || lower.includes("doanh thu")) {
       queue = [
         {
           id: "step_1",
-          agentId: "agent-captain-roger",
-          agentName: "Monkey D. Luffy",
-          stepTitle: "Hoạch định mục tiêu kinh doanh & Ngân sách hải tặc",
-          skillName: "Gomu Gomu no Bajrang Gun",
-          vietnameseSkill: "Haki Bá Vương Đỏ Đen & Bajrang Gun",
+          agentId: "agent-exec-ceo",
+          agentName: "Victoria Vance",
+          stepTitle: "Xác lập chỉ tiêu tài chính và hạn mức ngân sách quý",
+          skillName: "Executive Governance & Strategy",
+          vietnameseSkill: "Xác Lập Chỉ Tiêu Tài Chính Cấp Hội Đồng",
           status: "pending",
         },
         {
           id: "step_2",
-          agentId: "agent-nami-navigator",
-          agentName: "Nami",
-          stepTitle: "Lập bảng tính tài chính Excel với công thức động (Anthropic xlsx skill)",
-          skillName: "Raitei (Zeus Breeze Tempo)",
-          vietnameseSkill: "Lôi Đình Zeus Breeze Tempo",
+          agentId: "agent-fin-controller",
+          agentName: "Julian Thorne",
+          stepTitle: "Thiết lập mô hình tài chính động Excel và kiểm toán sổ cái",
+          skillName: "Financial Ledger Auditing & Modeling",
+          vietnameseSkill: "Kiểm Toán Sổ Cái & Mô Hình Dự Báo Doanh Thu (.xlsx)",
           status: "pending",
         },
         {
           id: "step_3",
-          agentId: "agent-robin-archaeologist",
-          agentName: "Nico Robin",
-          stepTitle: "Tổng hợp báo cáo thuyết trình PowerPoint (Anthropic pptx skill)",
-          skillName: "Mil Fleur: Gigantesco Mano",
-          vietnameseSkill: "Nghìn Cánh Hoa: Cánh Tay Khổng Lồ",
+          agentId: "agent-sales-director",
+          agentName: "Marcus Reynolds",
+          stepTitle: "Đối chiếu đường ống bán hàng và dự báo tăng trưởng B2B",
+          skillName: "Pipeline Forecasting & Deal Analytics",
+          vietnameseSkill: "Dự Báo Doanh Thu Khách Hàng Doanh Nghiệp",
           status: "pending",
         },
       ];
       deliverable = {
         id: `art_${Date.now()}`,
         type: "xlsx",
-        title: "Bảng Tính Mô Hình Tài Chính & Dự Báo Hải Trình",
-        filename: "StrawHat_Financial_Model.xlsx",
-        description: "Bảng tính Microsoft Excel (.xlsx) với công thức tự động tính ROI, chi phí vận hành tàu Thousand Sunny và doanh thu kho báu.",
-        size: "92 KB",
-        content: `Q1,Q2,Q3,Q4\nBeli Revenue: 15000000, 28000000, 45000000, 95000000\nNet Profit: 12000000, 24000000, 39000000, 82000000`,
+        title: "Mô Hình Tài Chính & Kế Hoạch Ngân Sách Quý",
+        filename: "Corporate_Financial_Forecast.xlsx",
+        description: "Bảng tính tài chính tự động tính doanh thu, biên lợi nhuận hoạt động, chi phí hạ tầng và tỷ lệ burn rate an toàn.",
+        size: "116 KB",
+        content: `Quarter,ARR,Operating Expenses,Net Margin,Runway Months\nQ1,$1,250,000,$420,000,66.4%,36\nQ2,$2,480,000,$680,000,72.5%,38\nQ3,$4,100,000,$990,000,75.8%,42\nQ4,$7,350,000,$1,450,000,80.2%,48`,
       };
     } else if (lower.includes("web") || lower.includes("landing") || lower.includes("frontend") || lower.includes("giao diện")) {
       queue = [
         {
           id: "step_1",
-          agentId: "agent-captain-roger",
-          agentName: "Monkey D. Luffy",
-          stepTitle: "Duyệt định hướng trải nghiệm người dùng & Wireframe",
-          skillName: "Gomu Gomu no Bajrang Gun",
-          vietnameseSkill: "Haki Bá Vương Đỏ Đen & Bajrang Gun",
+          agentId: "agent-mkt-growth",
+          agentName: "Sophia Martinez",
+          stepTitle: "Xây dựng định vị thương hiệu và cấu trúc trải nghiệm",
+          skillName: "Brand Positioning & UX Narrative",
+          vietnameseSkill: "Định Vị Nhận Diện Thương Hiệu & Nội Dung Tiếp Thị",
           status: "pending",
         },
         {
           id: "step_2",
-          agentId: "agent-sanji-cook",
-          agentName: "Vinsmoke Sanji",
-          stepTitle: "Thiết kế WebGL Glassmorphism & UI Component (Anthropic frontend-design)",
-          skillName: "Ifrit Jambe: Boeuf Burst",
-          vietnameseSkill: "Cước Lửa Quỷ Ifrit: Boeuf Burst",
+          agentId: "agent-eng-lead",
+          agentName: "David Chen",
+          stepTitle: "Phát triển giao diện Web tương tác cao và tối ưu Three.js",
+          skillName: "Frontend Engineering & High-Performance WebGL",
+          vietnameseSkill: "Kỹ Thuật Giao Diện Hiện Đại & WebGL Canvas",
           status: "pending",
         },
         {
           id: "step_3",
-          agentId: "agent-usopp-sniper",
-          agentName: "God Usopp",
-          stepTitle: "Kiểm thử tự động End-to-End với Playwright (Anthropic webapp-testing)",
-          skillName: "Hissatsu: Firebird Star",
-          vietnameseSkill: "Tất Sát: Hỏa Điểu Tinh",
-          status: "pending",
-        },
-        {
-          id: "step_4",
-          agentId: "agent-franky-shipwright",
-          agentName: "Franky",
-          stepTitle: "Đóng gói Docker Container & Deploy Production Bundle",
-          skillName: "Franky Radical Beam",
-          vietnameseSkill: "Chùm Laser Radical Beam BF-38",
+          agentId: "agent-ops-recruiter",
+          agentName: "Amara Okafor",
+          stepTitle: "Kiểm thử vận hành, kiểm tra khả năng chịu tải và bảo mật",
+          skillName: "Operations Quality Assurance & Deployment",
+          vietnameseSkill: "Kiểm Thử Tích Hợp & Đảm Bảo Vận Hành Trơn Tru",
           status: "pending",
         },
       ];
       deliverable = {
         id: `art_${Date.now()}`,
         type: "web",
-        title: "Ứng Dụng WebGL Landing Page — Straw Hat Metaverse",
-        filename: "StrawHat_LandingPage.html",
-        description: "Giao diện Web tương tác cao cấp với Glassmorphism, Three.js 3D Canvas và hiệu ứng micro-animation mượt mà.",
-        size: "312 KB",
-        previewHtml: `<div style="padding: 24px; background: linear-gradient(135deg, #090d16, #0f172a); color: white; font-family: sans-serif; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.4); text-align: center;">
-          <h1 style="color: #f59e0b; margin-bottom: 8px;">👑 STRAW HAT FLEET COMMAND</h1>
-          <p style="color: #94a3b8; margin-bottom: 16px;">Next-Gen WebGL AI Agent System Powered by Anthropic Skills</p>
-          <div style="display: flex; gap: 12px; justify-content: center;">
-            <div style="background: rgba(30, 41, 59, 0.8); padding: 12px; border-radius: 8px; border: 1px solid #38bdf8;">⚡ 10 Awakened Agents</div>
-            <div style="background: rgba(30, 41, 59, 0.8); padding: 12px; border-radius: 8px; border: 1px solid #10b981;">🛡️ 19 Anthropic Skills</div>
-            <div style="background: rgba(30, 41, 59, 0.8); padding: 12px; border-radius: 8px; border: 1px solid #ec4899;">🌸 Realtime 3D Island</div>
+        title: "Cổng Thông Tin Doanh Nghiệp — AI Agency Headquarters Portal",
+        filename: "Corporate_HQ_Portal.html",
+        description: "Giao diện Web tương tác doanh nghiệp chuẩn quốc tế với thẩm mỹ Glassmorphism cao cấp, bảng điều khiển thời gian thực và hoạt họa tinh tế.",
+        size: "264 KB",
+        previewHtml: `<div style="padding: 28px; background: linear-gradient(135deg, #0f172a, #1e293b); color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; border-radius: 14px; border: 1px solid rgba(59, 130, 246, 0.4); text-align: center;">
+          <h1 style="color: #60a5fa; margin-bottom: 8px; letter-spacing: -0.5px;">🏢 AI AGENCY — AUTONOMOUS BUSINESS HEADQUARTERS</h1>
+          <p style="color: #cbd5e1; margin-bottom: 18px; font-size: 14px;">Next-Generation Autonomous Corporate Organization Connected to Real AI Runtime</p>
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <div style="background: rgba(30, 41, 59, 0.8); padding: 10px 16px; border-radius: 8px; border: 1px solid #3b82f6; font-size: 13px;">💎 8 Corporate Departments</div>
+            <div style="background: rgba(30, 41, 59, 0.8); padding: 10px 16px; border-radius: 8px; border: 1px solid #10b981; font-size: 13px;">🔒 Executive Board Governance</div>
+            <div style="background: rgba(30, 41, 59, 0.8); padding: 10px 16px; border-radius: 8px; border: 1px solid #0ea5e9; font-size: 13px;">⚡ Real Subprocess Sandbox</div>
           </div>
         </div>`,
       };
     } else {
-      // Default Multi-Agent Full Fleet Chain
+      // Default Multi-Department Cross-Functional Pipeline
       queue = [
         {
           id: "step_1",
-          agentId: "agent-captain-roger",
-          agentName: "Monkey D. Luffy",
-          stepTitle: "Phân bổ chiến lược liên minh đa agent",
-          skillName: "Gomu Gomu no Bajrang Gun",
-          vietnameseSkill: "Haki Bá Vương Đỏ Đen & Bajrang Gun",
+          agentId: "agent-exec-ceo",
+          agentName: "Victoria Vance",
+          stepTitle: "Phê duyệt kế hoạch tổng thể và điều phối các bộ phận",
+          skillName: "Executive Governance & Strategy",
+          vietnameseSkill: "Hoạch Định Chiến Lược Tổng Thể & Điều Phối Phòng Ban",
           status: "pending",
         },
         {
           id: "step_2",
-          agentId: "agent-zoro-quartermaster",
-          agentName: "Roronoa Zoro",
-          stepTitle: "Xây dựng MCP Server & Core Algorithms (Anthropic mcp-builder)",
-          skillName: "103 Mercies Dragon Damnation",
-          vietnameseSkill: "Tam Kiếm Phái: Diêm Vương Phi Long Tuyệt Chiêu",
+          agentId: "agent-eng-lead",
+          agentName: "David Chen",
+          stepTitle: "Triển khai mã nguồn lõi trong môi trường sandbox cô lập",
+          skillName: "Core Engineering & Subprocess Sandbox Execution",
+          vietnameseSkill: "Thực Thi Mã Nguồn Trong Sandbox Cô Lập",
           status: "pending",
         },
         {
           id: "step_3",
-          agentId: "agent-sanji-cook",
-          agentName: "Vinsmoke Sanji",
-          stepTitle: "Kiến trúc Frontend & Tối ưu hiệu ứng UI (Anthropic theme-factory)",
-          skillName: "Ifrit Jambe: Boeuf Burst",
-          vietnameseSkill: "Cước Lửa Quỷ Ifrit: Boeuf Burst",
+          agentId: "agent-fin-controller",
+          agentName: "Julian Thorne",
+          stepTitle: "Kiểm toán ngân sách và đối soát dữ liệu tài chính",
+          skillName: "Financial Ledger Auditing & Budget Control",
+          vietnameseSkill: "Kiểm Toán Ngân Sách & Ghi Nhận Sổ Cái Doanh Nghiệp",
           status: "pending",
         },
         {
           id: "step_4",
-          agentId: "agent-franky-shipwright",
-          agentName: "Franky",
-          stepTitle: "Đóng gói sản phẩm hoàn chỉnh & Triển khai thực tế",
-          skillName: "Franky Radical Beam",
-          vietnameseSkill: "Chùm Laser Radical Beam BF-38",
+          agentId: "agent-ops-recruiter",
+          agentName: "Amara Okafor",
+          stepTitle: "Tổng kết quy trình bàn giao và kích hoạt dịch vụ vận hành",
+          skillName: "Operations Orchestration & Compliance Verification",
+          vietnameseSkill: "Nghiệm Thu Bàn Giao & Bảo Đảm Vận Hành",
           status: "pending",
         },
       ];
       deliverable = {
         id: `art_${Date.now()}`,
         type: "code",
-        title: "Gói Mã Nguồn MCP Server & Fullstack Agent Pipeline",
-        filename: "strawhat_mcp_server.py",
-        description: "Bộ mã nguồn hoàn chỉnh tích hợp MCP Server chuẩn Anthropic với khả năng kết nối cơ sở dữ liệu và gọi công cụ đa năng.",
-        size: "76 KB",
-        content: `from mcp.server.fastmcp import FastMCP\n\nmcp = FastMCP("StrawHatServer")\n\n@mcp.tool()\ndef execute_grand_line_mission(prompt: str) -> str:\n    return f"Mission '{prompt}' executed successfully across all 10 Straw Hat Agents!"\n\nif __name__ == "__main__":\n    mcp.run()`,
+        title: "Báo Cáo Thực Thi Đa Phòng Ban — Enterprise Autonomous Pipeline",
+        filename: "Autonomous_Enterprise_Execution.json",
+        description: "Bản ghi kiểm toán thực thi hoàn chỉnh với chữ ký số, dữ liệu đối soát tài chính và trạng thái xác nhận từ các phòng ban liên quan.",
+        size: "94 KB",
+        content: `{\n  "organization": "AI Agency — Autonomous Business Headquarters",\n  "status": "COMPLETED",\n  "executive_signoff": "Victoria Vance (CEO)",\n  "engineering_verification": "Passed sandbox integrity checks",\n  "financial_audit": "Within quarterly budget limits",\n  "operations_compliance": "Verified"\n}`,
       };
     }
 
     set({ executionQueue: queue });
 
-    // 4. Sequential Step Execution with Physical Movement & Anime Skill VFX Handoff (Visual only on 3D island)
+    // 4. Sequential Step Execution with Corporate Telemetry Handoff
     for (let i = 0; i < queue.length; i++) {
       const currentStep = queue[i];
       const fromAgent = agents[currentStep.agentId];
       const nextStep = queue[i + 1];
-      const toAgent = nextStep ? agents[nextStep.agentId] : agents[luffyId];
+      const toAgent = nextStep ? agents[nextStep.agentId] : agents[ceoId];
 
-      // Mark current step as active/moving
       set((s) => ({
         executionQueue: s.executionQueue.map((st, idx) =>
           idx === i ? { ...st, status: "moving" } : st
@@ -719,9 +707,8 @@ export const useWorldStore = create<WorldState>((set, get) => ({
 
       get().updateAgentStatus(currentStep.agentId, "working", currentStep.stepTitle);
 
-      // A. Physical Movement: character runs across island towards next target
+      // A. Physical Movement / Focus
       if (fromAgent && toAgent) {
-        // Set moving agent state for 3D lerping (Camera stays 100% under user control)
         set({
           movingAgent: {
             agentId: currentStep.agentId,
@@ -731,8 +718,7 @@ export const useWorldStore = create<WorldState>((set, get) => ({
           },
         });
 
-        // Animate running progress over 1.4 seconds
-        const runDuration = 1400;
+        const runDuration = 1200;
         const startRun = Date.now();
         while (Date.now() - startRun < runDuration) {
           const p = Math.min(1.0, (Date.now() - startRun) / runDuration);
@@ -743,7 +729,7 @@ export const useWorldStore = create<WorldState>((set, get) => ({
         set({ movingAgent: null });
       }
 
-      // B. Unleash Ultimate Anime Skill VFX Projectile (GLSL custom shaders + THREE.Points)
+      // B. Data Handoff Stream
       set((s) => ({
         executionQueue: s.executionQueue.map((st, idx) =>
           idx === i ? { ...st, status: "firing" } : st
@@ -757,15 +743,11 @@ export const useWorldStore = create<WorldState>((set, get) => ({
         currentStep.stepTitle
       );
 
-      // Wait 1.8s for projectile arc to reach recipient
-      await new Promise((r) => setTimeout(r, 1800));
-
+      await new Promise((r) => setTimeout(r, 1500));
       get().clearTaskHandoff();
 
-      // Recipient receives payload and plays execution
-      get().updateAgentStatus(toAgent.id, "working", `Tiếp nhận gói công việc từ ${currentStep.agentName}`);
+      get().updateAgentStatus(toAgent.id, "working", `Tiếp nhận dữ liệu từ ${currentStep.agentName}`);
 
-      // Complete this step
       set((s) => ({
         executionQueue: s.executionQueue.map((st, idx) =>
           idx === i ? { ...st, status: "completed" } : st
@@ -773,21 +755,21 @@ export const useWorldStore = create<WorldState>((set, get) => ({
       }));
 
       get().updateAgentStatus(currentStep.agentId, "idle", null);
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 350));
     }
 
-    // 5. Final Step: Return to Luffy at Sun God Plaza & Synthesize Products
+    // 5. Final Step: Return to CEO in Executive Suite
     get().triggerTaskHandoff(
       queue[queue.length - 1].agentId,
-      luffyId,
-      "Gomu Gomu no Bajrang Gun",
-      "Tổng Hợp Sản Phẩm Cuối Cùng"
+      ceoId,
+      "Executive Sign-off & Delivery",
+      "Tổng Hợp Báo Cáo Cấp Hội Đồng"
     );
 
-    await new Promise((r) => setTimeout(r, 1600));
+    await new Promise((r) => setTimeout(r, 1400));
     get().clearTaskHandoff();
 
-    get().updateAgentStatus(luffyId, "idle", null);
+    get().updateAgentStatus(ceoId, "idle", null);
 
     // Add Deliverable to Store
     set((s) => ({
@@ -795,12 +777,12 @@ export const useWorldStore = create<WorldState>((set, get) => ({
       isExecutingMission: false,
     }));
 
-    // Post Final Deliverable in Chat (Only user query and final deliverable product displayed in chat)
+    // Post Final Deliverable in Chat
     const finalMsg: ChatMessage = {
       id: `final_${Date.now()}`,
-      sender: "luffy",
-      agentName: "Monkey D. Luffy (Gear 5)",
-      text: `🎉 **NHIỆM VỤ HOÀN TẤT XUẤT SẮC!** Toàn bộ 10 thành viên băng Mũ Rơm đã phối hợp đồng bộ. Sản phẩm **${deliverable.title}** (${deliverable.filename}) đã sẵn sàng để xem trực tiếp và tải về ngay bên dưới!`,
+      sender: "ceo",
+      agentName: "Victoria Vance (CEO)",
+      text: `💼 **NHIỆM VỤ ĐÃ HOÀN TẤT THÀNH CÔNG!** Toàn bộ các phòng ban đã phối hợp nhịp nhàng và hoàn thành đúng tiến độ. Sản phẩm bàn giao **${deliverable.title}** (${deliverable.filename}) đã sẵn sàng để kiểm tra và tải về ngay bên dưới.`,
       timestamp: Date.now(),
       artifact: deliverable,
     };

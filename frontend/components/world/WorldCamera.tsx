@@ -17,7 +17,7 @@ export default function WorldCamera() {
   const desiredCamTarget = useRef(new THREE.Vector3(...cameraTarget));
   const isTransitioning = useRef(false);
 
-  // When store target changes (e.g. user clicked bookmark or area)
+  // When store target changes (e.g. user clicked bookmark or department)
   useEffect(() => {
     desiredCamPos.current.set(...cameraPosition);
     desiredCamTarget.current.set(...cameraTarget);
@@ -27,7 +27,7 @@ export default function WorldCamera() {
   useFrame((_, delta) => {
     if (controlsRef.current) {
       if (isTransitioning.current) {
-        // Smooth lerp glide toward destination bookmark
+        // Smooth lerp glide toward destination department
         const t = Math.min(1.0, delta * 3.8);
         camera.position.lerp(desiredCamPos.current, t);
         controlsRef.current.target.lerp(desiredCamTarget.current, t);
@@ -41,14 +41,12 @@ export default function WorldCamera() {
         }
       }
 
-      // Non-negotiable safety locks:
-      // 1. Never let camera dip below ocean surface (y >= 2.5)
-      if (camera.position.y < 2.5) {
-        camera.position.y = 2.5;
+      // Keep camera above office floor level
+      if (camera.position.y < 0.8) {
+        camera.position.y = 0.8;
       }
-      // 2. Keep target above ground level
-      if (controlsRef.current.target.y < 0.5) {
-        controlsRef.current.target.y = 0.5;
+      if (controlsRef.current.target.y < 0.2) {
+        controlsRef.current.target.y = 0.2;
       }
     }
   });
@@ -58,15 +56,13 @@ export default function WorldCamera() {
       ref={controlsRef}
       makeDefault
       enableDamping
-      dampingFactor={0.07}
-      minDistance={3.5}
-      maxDistance={90}
-      maxPolarAngle={Math.PI / 2 - 0.08}
-      minPolarAngle={0.1}
-      onStart={() => {
-        // When user manually drags/rotates with mouse, immediately yield OrbitControls
-        isTransitioning.current = false;
-      }}
+      dampingFactor={0.06}
+      rotateSpeed={0.8}
+      zoomSpeed={1.0}
+      panSpeed={0.8}
+      minDistance={4}
+      maxDistance={50}
+      maxPolarAngle={Math.PI / 2 - 0.05}
     />
   );
 }

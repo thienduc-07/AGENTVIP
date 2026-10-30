@@ -6,14 +6,14 @@ from pydantic_settings import BaseSettings
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 class Settings(BaseSettings):
-    APP_NAME: str = "AI Agent City API"
+    APP_NAME: str = "AI Agency — Autonomous Business Headquarters"
     VERSION: str = "1.0.0"
     APP_ENV: str = "development"
     DEBUG: bool = True
     API_V1_STR: str = "/api/v1"
 
     # Database
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'grandline.db'}"
+    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'agency.db'}"
 
     # Validation Limits
     MAX_TASK_TITLE_LENGTH: int = 120

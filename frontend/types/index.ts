@@ -21,7 +21,7 @@ export interface AgentCharacterData {
   position: [number, number, number];
   status: WorldAgentStatus;
   currentTask?: string | null;
-  appearance: "captain" | "swordsman" | "scholar" | "engineer" | string;
+  appearance: "executive-ceo" | "engineer-lead" | "researcher-lead" | "marketing-lead" | "sales-lead" | "finance-lead" | "operations-lead" | "support-lead" | string;
   color: string;
   description?: string;
   capabilities?: string[];
@@ -43,7 +43,7 @@ export interface Agent {
   description?: string;
 }
 
-export interface IslandArea {
+export interface DepartmentArea {
   id: string;
   name: string;
   title: string;
@@ -56,6 +56,8 @@ export interface IslandArea {
   accentColor: string;
   features: string[];
 }
+
+export type IslandArea = DepartmentArea;
 
 export type TaskStatus = 
   | "PENDING" 

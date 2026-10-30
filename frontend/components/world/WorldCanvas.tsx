@@ -8,16 +8,9 @@ import { WORLD_CONFIG } from "@/data/worldConfig";
 import { EffectComposer, Bloom, ToneMapping } from "@react-three/postprocessing";
 import WorldLighting from "./WorldLighting";
 import WorldCamera from "./WorldCamera";
-import Ocean from "./Ocean";
-import IslandTerrain from "./IslandTerrain";
+import OfficeArchitecture from "./OfficeArchitecture";
+import OfficeFurniture from "./OfficeFurniture";
 import Pathways from "./Pathways";
-import HarborArea from "./areas/HarborArea";
-import SunnyShipyardArea from "./areas/SunnyShipyardArea";
-import StrawHatVillageArea from "./areas/StrawHatVillageArea";
-import WorkshopArea from "./areas/WorkshopArea";
-import LibraryArea from "./areas/LibraryArea";
-import CaptainHQArea from "./areas/CaptainHQArea";
-import LookoutCliffsArea from "./areas/LookoutCliffsArea";
 import AgentCharacter from "./characters/AgentCharacter";
 import TaskHandoffVFX from "./TaskHandoffVFX";
 
@@ -26,9 +19,9 @@ export default function WorldCanvas() {
   const resetToTacticalOverview = useWorldStore((s) => s.resetToTacticalOverview);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-slate-900">
       <Canvas
-        shadows={{ type: THREE.PCFShadowMap }}
+        shadows={{ type: THREE.PCFSoftShadowMap }}
         camera={{
           position: WORLD_CONFIG.tacticalCamera.position,
           fov: WORLD_CONFIG.tacticalCamera.fov,
@@ -40,10 +33,9 @@ export default function WorldCanvas() {
           alpha: false,
           logarithmicDepthBuffer: true,
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.15,
+          toneMappingExposure: 1.1,
         }}
         onPointerMissed={() => {
-          // Deselect when clicking on ocean or empty space
           resetToTacticalOverview();
         }}
         className="w-full h-full"
@@ -59,44 +51,35 @@ export default function WorldCanvas() {
         />
 
         <Suspense fallback={null}>
-          {/* Stylized Lighting & Sky Dome */}
+          {/* Architectural Daylight & Sky Lighting */}
           <WorldLighting />
 
-          {/* Ocean Waves */}
-          <Ocean />
+          {/* Luxury Open-Plan Corporate Office Structure */}
+          <OfficeArchitecture />
 
-          {/* 3D Multi-tiered Island Landmass */}
-          <IslandTerrain />
-
-          {/* Interconnecting Roads and Stone Stairs */}
+          {/* Circulation Corridors & Hallways */}
           <Pathways />
 
-          {/* 7 Distinct Multi-Level Island Tiers */}
-          <HarborArea />
-          <SunnyShipyardArea />
-          <StrawHatVillageArea />
-          <WorkshopArea />
-          <LibraryArea />
-          <CaptainHQArea />
-          <LookoutCliffsArea />
+          {/* Department Workstations, Desks, Boardroom & Lounge Furniture */}
+          <OfficeFurniture />
 
-          {/* 10 Stateful Straw Hat Agent Characters */}
+          {/* 8 Stateful Autonomous Corporate Agents */}
           {Object.values(agents).map((agent) => (
             <AgentCharacter key={agent.id} agent={agent} />
           ))}
 
-          {/* Anime Task Handoff & Skill Projectile Particle System */}
+          {/* Corporate Telemetry & Data Stream VFX Handoff */}
           <TaskHandoffVFX />
 
-          {/* Smooth Free Orbit Camera Controller */}
+          {/* Smooth Department & Desk Camera Controller */}
           <WorldCamera />
 
-          {/* Anime Post-Processing Pipeline (Zero-flicker Bloom & ToneMapping) */}
+          {/* Architectural Post-Processing Pipeline (Bloom & ToneMapping) */}
           <EffectComposer multisampling={0} autoClear={false}>
             <Bloom
-              luminanceThreshold={0.92}
-              luminanceSmoothing={0.3}
-              intensity={0.28}
+              luminanceThreshold={0.94}
+              luminanceSmoothing={0.25}
+              intensity={0.22}
               mipmapBlur
             />
             <ToneMapping />

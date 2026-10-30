@@ -126,28 +126,28 @@ export default function InteractiveMissionTerminal() {
   if (!isMissionTerminalOpen) return null;
 
   return (
-    <aside className="fixed top-16 right-4 bottom-4 w-[480px] max-w-[94vw] z-40 flex flex-col rounded-3xl bg-slate-950/85 backdrop-blur-2xl border border-amber-500/30 shadow-2xl shadow-black/80 overflow-hidden pointer-events-auto transition-all animate-in slide-in-from-right duration-300">
+    <aside className="fixed top-16 right-4 bottom-4 w-[480px] max-w-[94vw] z-40 flex flex-col rounded-3xl bg-slate-950/85 backdrop-blur-2xl border border-blue-500/30 shadow-2xl shadow-black/80 overflow-hidden pointer-events-auto transition-all animate-in slide-in-from-right duration-300">
       {/* --- TERMINAL HEADER --- */}
-      <div className="px-5 py-3.5 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-950/90 border-b border-amber-500/20 flex items-center justify-between">
+      <div className="px-5 py-3.5 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-950/90 border-b border-blue-500/20 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/30 text-slate-950 font-black text-sm">
-            ☠️
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center shadow-md shadow-blue-500/30 text-white font-black text-sm">
+            🏢
           </div>
           <div>
-            <h2 className="text-xs font-black tracking-widest text-amber-300 uppercase flex items-center gap-2">
-              <span>MISSION TERMINAL</span>
+            <h2 className="text-xs font-black tracking-widest text-blue-300 uppercase flex items-center gap-2">
+              <span>EXECUTIVE MISSION TERMINAL</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             </h2>
             <p className="text-[10px] text-slate-400 font-mono">
-              Straw Hat Multi-Agent Dispatcher
+              Autonomous Corporate Multi-Department Dispatcher
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {isExecutingMission && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold animate-pulse">
-              ⚡ ĐANG TÁC CHIẾN
+            <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-bold animate-pulse">
+              ⚡ ĐANG THỰC THI
             </span>
           )}
           <button
@@ -257,12 +257,12 @@ export default function InteractiveMissionTerminal() {
                     msg.artifact !== undefined ||
                     msg.id.startsWith("final_") ||
                     msg.id.startsWith("init_") ||
-                    msg.text.includes("NHIỆM VỤ HOÀN TẤT") ||
-                    msg.text.includes("Chào thuyền trưởng")
+                    msg.text.includes("NHIỆM VỤ ĐÃ HOÀN TẤT") ||
+                    msg.text.includes("Chào mừng")
                 )
                 .map((msg) => {
                 const isUser = msg.sender === "user";
-                const isLuffy = msg.sender === "luffy";
+                const isCEO = msg.sender === "ceo";
 
                 return (
                   <div
@@ -272,17 +272,17 @@ export default function InteractiveMissionTerminal() {
                     }`}
                   >
                     {!isUser && (
-                      <span className="text-[10px] font-bold text-amber-400 mb-0.5 flex items-center gap-1">
-                        {isLuffy ? "👑 Monkey D. Luffy (Gear 5)" : msg.agentName || "Thuyền Viên"}
+                      <span className="text-[10px] font-bold text-blue-400 mb-0.5 flex items-center gap-1">
+                        {isCEO ? "👑 Victoria Vance (CEO)" : msg.agentName || "Chuyên Viên Phòng Ban"}
                       </span>
                     )}
 
                     <div
                       className={`px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-lg ${
                         isUser
-                          ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-medium rounded-tr-none"
-                          : isLuffy
-                          ? "bg-slate-900/90 text-slate-100 border border-amber-500/40 rounded-tl-none"
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-tr-none"
+                          : isCEO
+                          ? "bg-slate-900/90 text-slate-100 border border-blue-500/40 rounded-tl-none"
                           : "bg-slate-900/80 text-slate-200 border border-slate-700/60 rounded-tl-none"
                       }`}
                     >

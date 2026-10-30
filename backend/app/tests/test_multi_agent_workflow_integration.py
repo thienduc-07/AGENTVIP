@@ -61,7 +61,7 @@ def test_api_workflow_lifecycle_endpoints(test_client):
         json={
             "title": "API Multi-Agent Telemetry Workflow",
             "description": "Analyze workspace telemetry and generate verified audit report",
-            "assigned_agent_id": "agent-captain-roger",
+            "assigned_agent_id": "agent-exec-ceo",
             "priority": "high",
         }
     )
@@ -102,7 +102,7 @@ async def test_multi_agent_orchestrator_end_to_end_execution(db_session: Session
         workflow_in=WorkflowCreate(
             title="Full Workspace Architecture & Security Audit",
             description="Inspect repository structure, synthesize findings into a markdown report, and verify compliance.",
-            assigned_agent_id="agent-captain-roger",
+            assigned_agent_id="agent-exec-ceo",
             priority="high",
         )
     )
@@ -135,8 +135,8 @@ async def test_multi_agent_orchestrator_end_to_end_execution(db_session: Session
         assert st.completed_at is not None
 
     # Verify primary agent is restored to idle
-    roger = db_session.query(AgentModel).filter(AgentModel.id == "agent-captain-roger").first()
-    assert roger.status == "idle"
+    ceo = db_session.query(AgentModel).filter(AgentModel.id == "agent-exec-ceo").first()
+    assert ceo.status == "idle"
 
 @pytest.mark.asyncio
 async def test_workflow_cancellation_propagation(db_session: Session):
@@ -146,7 +146,7 @@ async def test_workflow_cancellation_propagation(db_session: Session):
         workflow_in=WorkflowCreate(
             title="Cancelled Mission",
             description="This workflow should be cancelled immediately.",
-            assigned_agent_id="agent-captain-roger"
+            assigned_agent_id="agent-exec-ceo"
         )
     )
     wf_id = wf_dict["id"]

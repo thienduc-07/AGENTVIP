@@ -65,14 +65,14 @@ export default function TaskCreateModal({
         onTaskCreated(created);
       }
 
-      // Trigger Anime Task Handoff VFX from Luffy to assigned agent
-      if (created.assigned_agent_id && created.assigned_agent_id !== "agent-captain-roger") {
+      // Trigger Corporate Task Handoff VFX from CEO to assigned agent
+      if (created.assigned_agent_id && created.assigned_agent_id !== "agent-exec-ceo") {
         useWorldStore
           .getState()
           .triggerTaskHandoff(
-            "agent-captain-roger",
+            "agent-exec-ceo",
             created.assigned_agent_id,
-            "Gomu Gomu no Bajrang Gun",
+            "Executive Governance & Strategy",
             created.title
           );
       }

@@ -3,137 +3,177 @@ from datetime import datetime
 from backend.app.core.database import SessionLocal, engine, Base
 from backend.app.models.agent import AgentModel
 from backend.app.models import TaskModel, TaskStepModel, AgentEventModel, ApprovalModel, ArtifactModel
+from backend.app.models.memory import MemoryModel
 
-INITIAL_AGENTS = [
+CORPORATE_AGENTS = [
     {
-        "id": "agent-captain-roger",
-        "name": "Monkey D. Luffy — Gear 5",
-        "role": "Grand Fleet Captain & Sun God Nika",
-        "station": "captain_hq",
+        "id": "agent-exec-ceo",
+        "name": "Victoria Vance",
+        "role": "Chief Executive Officer & Autonomous Strategy Lead",
+        "station": "executive_suite",
         "status": "idle",
-        "color": "#f59e0b",
-        "avatar": "luffy-gear5",
+        "color": "#3b82f6",
+        "avatar": "executive-ceo",
         "pos_x": 0.0,
-        "pos_y": 7.8,
+        "pos_y": 0.0,
         "pos_z": 0.0,
-        "description": "Thuyền trưởng tối cao băng Mũ Rơm trong trạng thái Gear 5 Thần Mặt Trời Nika, chỉ huy toàn đảo và hoạch định chiến dịch lớn."
+        "description": "Chief Executive Officer directing corporate strategy, task decomposition across departments, board governance, and high-risk operational authorizations."
     },
     {
-        "id": "agent-zoro-quartermaster",
-        "name": "Roronoa Zoro",
-        "role": "Combat Chief & Master Swordsman",
-        "station": "lookout_cliffs",
+        "id": "agent-eng-lead",
+        "name": "David Chen",
+        "role": "Principal Systems Architect & Engineering Lead",
+        "station": "engineering_bay",
         "status": "idle",
-        "color": "#10b981",
-        "avatar": "zoro",
-        "pos_x": 22.0,
-        "pos_y": 6.2,
-        "pos_z": 18.0,
-        "description": "Kiếm sĩ tam kiếm phái trấn thủ vách đá quan sát, rèn luyện kiếm đạo, giám sát an ninh và đánh giá chất lượng nhiệm vụ."
-    },
-    {
-        "id": "agent-nami-navigator",
-        "name": "Nami",
-        "role": "Chief Cartographer & Weather Navigator",
-        "station": "captain_hq",
-        "status": "idle",
-        "color": "#f97316",
-        "avatar": "nami",
-        "pos_x": 2.2,
-        "pos_y": 7.5,
-        "pos_z": 1.8,
-        "description": "Hoa tiêu thiên tài với Clima-Tact, phụ trách vẽ hải đồ chiến lược, tính toán lộ trình, theo dõi tài nguyên và điều phối hòn đảo."
-    },
-    {
-        "id": "agent-usopp-sniper",
-        "name": "Usopp",
-        "role": "Sniper & Gadget Inventor",
-        "station": "workshop",
-        "status": "idle",
-        "color": "#eab308",
-        "avatar": "usopp",
-        "pos_x": -14.0,
-        "pos_y": 4.4,
-        "pos_z": -18.0,
-        "description": "Xạ thủ kiêm nhà phát minh dụng cụ tại xưởng cơ khí, thử nghiệm thiết bị và hỗ trợ tinh chỉnh công cụ."
-    },
-    {
-        "id": "agent-sanji-cook",
-        "name": "Sanji",
-        "role": "Head Chef & Tactical Strategist",
-        "station": "strawhat_village",
-        "status": "idle",
-        "color": "#38bdf8",
-        "avatar": "sanji",
-        "pos_x": -6.0,
-        "pos_y": 2.5,
-        "pos_z": 16.0,
-        "description": "Đầu bếp thượng hạng phụ trách căn bếp hải tặc tại làng trung tâm, phân tích nguyên liệu và chuẩn bị năng lượng cho hòn đảo."
-    },
-    {
-        "id": "agent-chopper-doctor",
-        "name": "Tony Tony Chopper",
-        "role": "Chief Medical Doctor & Diagnostic Specialist",
-        "station": "library",
-        "status": "idle",
-        "color": "#ec4899",
-        "avatar": "chopper",
-        "pos_x": 22.0,
-        "pos_y": 5.5,
+        "color": "#0ea5e9",
+        "avatar": "engineer-lead",
+        "pos_x": -12.0,
+        "pos_y": 0.0,
         "pos_z": -8.0,
-        "description": "Bác sĩ tuần lộc đáng yêu phụ trách phòng y tế tại tầng thư viện, chẩn đoán sức khỏe hệ thống và kiểm kê vật tư cứu thương."
+        "description": "Lead Software Architect overseeing technical implementation, sandbox subprocess execution, microservices design, and automated testing."
     },
     {
-        "id": "agent-robin-archaeologist",
-        "name": "Nico Robin",
-        "role": "Lead Archaeologist & Historical Scholar",
-        "station": "library",
+        "id": "agent-research-ai",
+        "name": "Dr. Elena Rostova",
+        "role": "Chief AI Scientist & Intelligence Director",
+        "station": "research_lab",
         "status": "idle",
         "color": "#8b5cf6",
-        "avatar": "robin",
-        "pos_x": 24.0,
-        "pos_y": 5.5,
-        "pos_z": -12.0,
-        "description": "Nhà khảo cổ học tại tháp thư viện tri thức, tra cứu Poneglyph, giải mã cổ thư, trích xuất dữ liệu và nghiên cứu chuyên sâu."
+        "avatar": "researcher-lead",
+        "pos_x": -12.0,
+        "pos_y": 0.0,
+        "pos_z": 8.0,
+        "description": "Chief AI Scientist conducting deep market intelligence, algorithmic research, semantic memory extraction, and predictive modeling."
     },
     {
-        "id": "agent-franky-shipwright",
-        "name": "Franky",
-        "role": "Master Cyborg Shipwright & Engineer",
-        "station": "sunny_shipyard",
+        "id": "agent-mkt-growth",
+        "name": "Sophia Martinez",
+        "role": "VP of Brand Strategy & Growth Marketing",
+        "station": "marketing_studio",
+        "status": "idle",
+        "color": "#f43f5e",
+        "avatar": "marketing-lead",
+        "pos_x": 12.0,
+        "pos_y": 0.0,
+        "pos_z": -8.0,
+        "description": "VP of Marketing directing global campaign positioning, competitive intelligence, audience analytics, and multi-channel brand deliverables."
+    },
+    {
+        "id": "agent-sales-director",
+        "name": "Marcus Reynolds",
+        "role": "Director of Enterprise Solutions & Sales",
+        "station": "sales_wing",
+        "status": "idle",
+        "color": "#10b981",
+        "avatar": "sales-lead",
+        "pos_x": 12.0,
+        "pos_y": 0.0,
+        "pos_z": 8.0,
+        "description": "Director of Enterprise Sales managing high-value client acquisitions, qualification pipelines, proposal generation, and enterprise contracts."
+    },
+    {
+        "id": "agent-fin-controller",
+        "name": "Julian Thorne",
+        "role": "Chief Financial Officer & Treasury Controller",
+        "station": "finance_office",
+        "status": "idle",
+        "color": "#eab308",
+        "avatar": "finance-lead",
+        "pos_x": 6.0,
+        "pos_y": 0.0,
+        "pos_z": 0.0,
+        "description": "Chief Financial Officer managing departmental budgets, P&L reporting, unit economics, treasury reserves, and financial compliance auditing."
+    },
+    {
+        "id": "agent-ops-recruiter",
+        "name": "Amara Okafor",
+        "role": "Head of Operations & AI Agent Recruitment",
+        "station": "operations_hub",
         "status": "idle",
         "color": "#06b6d4",
-        "avatar": "franky",
-        "pos_x": -23.0,
-        "pos_y": 1.5,
-        "pos_z": -12.0,
-        "description": "Thợ đóng tàu cyborg siêu cấp phụ trách bảo trì tàu Thousand Sunny tại xưởng cạn và thực thi mã lệnh kỹ thuật trong sandbox."
+        "avatar": "operations-lead",
+        "pos_x": -6.0,
+        "pos_y": 0.0,
+        "pos_z": 0.0,
+        "description": "Head of People and Autonomous Operations managing agent onboarding, role recruitment, load balancing, and cross-department resource allocation."
     },
     {
-        "id": "agent-brook-musician",
-        "name": "Brook",
-        "role": "Soul King Musician & Morale Officer",
-        "station": "strawhat_village",
+        "id": "agent-support-lead",
+        "name": "Liam O'Connor",
+        "role": "Head of Customer Success & Support Operations",
+        "station": "support_lounge",
         "status": "idle",
-        "color": "#a855f7",
-        "avatar": "brook",
-        "pos_x": -4.5,
-        "pos_y": 2.5,
-        "pos_z": 18.0,
-        "description": "Nhạc công Soul King bộ xương lịch lãm biểu diễn violin tại quảng trường làng, nâng cao nhuệ khí và tuần tra bờ cõi."
+        "color": "#14b8a6",
+        "avatar": "support-lead",
+        "pos_x": 0.0,
+        "pos_y": 0.0,
+        "pos_z": 10.0,
+        "description": "Head of Client Success managing enterprise SLAs, automated ticket triage, client health scores, and customer retention workflows."
+    }
+]
+
+INITIAL_AGENTS = CORPORATE_AGENTS
+
+CORPORATE_MEMORIES = [
+    {
+        "id": "mem-seed-corp-gov-001",
+        "title": "Corporate Governance & Executive Sign-off Protocols",
+        "content": "All high-risk autonomous operations, including production file writes, shell execution, and financial disbursements over $10,000, require explicit executive authorization from Victoria Vance (CEO) or board delegate. Safe read-only telemetry and data lookups execute automatically.",
+        "summary": "Mandatory executive sign-off for high-risk actions and financial workflows.",
+        "memory_type": "shared",
+        "scope_type": "shared",
+        "owner_agent_id": "agent-exec-ceo",
+        "confidence": 1.0,
+        "verification_status": "verified",
+        "status": "active",
     },
     {
-        "id": "agent-jinbe-helmsman",
-        "name": "Jinbe",
-        "role": "Master Helmsman & Ocean Guardian",
-        "station": "harbor",
-        "status": "idle",
-        "color": "#2563eb",
-        "avatar": "jinbe",
-        "pos_x": -26.0,
-        "pos_y": 1.2,
-        "pos_z": 18.0,
-        "description": "Hiệp sĩ biển cả kiêm lái tàu đại tài trấn giữ bến cảng ven biển, điều phối tàu thuyền, quan sát đại dương và hải lưu Grand Line."
+        "id": "mem-seed-eng-sandbox-002",
+        "title": "Engineering Standards & Subprocess Sandbox Confinement",
+        "content": "Engineering tasks must execute strictly inside the isolated workspace_sandbox directory. Subprocesses are constrained with memory and timeout limits. Code deliverables must include automated verification tests before handoff to deployment.",
+        "summary": "Engineering subprocess sandbox isolation and automated testing requirements.",
+        "memory_type": "shared",
+        "scope_type": "shared",
+        "owner_agent_id": "agent-eng-lead",
+        "confidence": 1.0,
+        "verification_status": "verified",
+        "status": "active",
+    },
+    {
+        "id": "mem-seed-finance-003",
+        "title": "Financial Ledger Auditing & Budget Tracking Standards",
+        "content": "Departmental operational budgets are reconciled daily. Burn rate telemetry and invoice generations are archived in the financial ledger. Any budget variance above 5% automatically triggers an alert to Julian Thorne (CFO).",
+        "summary": "Daily financial ledger reconciliation and variance alerting protocols.",
+        "memory_type": "shared",
+        "scope_type": "shared",
+        "owner_agent_id": "agent-fin-controller",
+        "confidence": 1.0,
+        "verification_status": "verified",
+        "status": "active",
+    },
+    {
+        "id": "mem-seed-recruitment-004",
+        "title": "Autonomous Agent Recruitment & Capability Matrix",
+        "content": "When workload metrics exceed 85% capacity in any department, Amara Okafor (Head of Operations) evaluates candidate agent profiles, verifies runtime skill bindings, and initiates agent onboarding into the active headquarters hierarchy.",
+        "summary": "Automated agent recruitment pipeline based on departmental workload telemetry.",
+        "memory_type": "shared",
+        "scope_type": "shared",
+        "owner_agent_id": "agent-ops-recruiter",
+        "confidence": 1.0,
+        "verification_status": "verified",
+        "status": "active",
+    },
+    {
+        "id": "mem-seed-support-sla-005",
+        "title": "Customer Success SLA & Incident Escalation Policy",
+        "content": "Tier-1 client inquiries must receive first-response within 5 minutes. Severity-1 technical incidents are automatically escalated to David Chen (Engineering) with parallel notification to Liam O'Connor (Support).",
+        "summary": "Tier-1 response SLA and cross-departmental incident escalation protocol.",
+        "memory_type": "shared",
+        "scope_type": "shared",
+        "owner_agent_id": "agent-support-lead",
+        "confidence": 1.0,
+        "verification_status": "verified",
+        "status": "active",
     }
 ]
 
@@ -146,7 +186,11 @@ def seed_database():
         created_count = 0
         updated_count = 0
 
-        for agent_data in INITIAL_AGENTS:
+        # Clean out any old/orphan agents not in corporate roster
+        valid_ids = [a["id"] for a in CORPORATE_AGENTS]
+        db.query(AgentModel).filter(~AgentModel.id.in_(valid_ids)).delete(synchronize_session=False)
+
+        for agent_data in CORPORATE_AGENTS:
             agent = db.query(AgentModel).filter(AgentModel.id == agent_data["id"]).first()
             if not agent:
                 new_agent = AgentModel(
@@ -180,95 +224,46 @@ def seed_database():
                 updated_count += 1
 
         db.commit()
-        print(f"Seed completed: {created_count} agents created, {updated_count} existing agents updated to Straw Hat Crew.")
+        print(f"Seed completed: {created_count} corporate agents created, {updated_count} updated.")
 
-        # Seed initial Grand Line fleet memories
-        from backend.app.models.memory import MemoryModel
-        initial_memories = [
-            {
-                "id": "mem-seed-cartography-001",
-                "title": "Grand Line Archipelago Maritime Chart & Guidelines",
-                "content": "Official maritime cartography protocol: Navigation coordinates across Grand Line islands require astronomical alignment and telemetry verification from the Observatory Archives. Standard workspace structure contains workspace_sandbox/ for safe generated reports.",
-                "summary": "Maritime navigation coordinates and observatory archive verification guidelines.",
-                "memory_type": "shared",
-                "scope_type": "shared",
-                "owner_agent_id": "agent-nami-navigator",
-                "confidence": 1.0,
-                "verification_status": "verified",
-                "status": "active",
-            },
-            {
-                "id": "mem-seed-sandbox-002",
-                "title": "Safe Workspace Sandbox Execution Protocol",
-                "content": "All agents writing code or reports must target workspace_sandbox/ strictly. Path traversals, absolute escapes, and reading credentials (.env or private keys) are strictly blocked by PolicyEngine.",
-                "summary": "Mandatory sandbox directory constraints and path traversal defenses.",
-                "memory_type": "shared",
-                "scope_type": "shared",
-                "owner_agent_id": "agent-captain-roger",
-                "confidence": 1.0,
-                "verification_status": "verified",
-                "status": "active",
-            },
-            {
-                "id": "mem-seed-zoro-hardware-003",
-                "title": "Quartermaster Zoro's Hardware Telemetry Baseline",
-                "content": "Baseline system diagnostics: Host platform CPU, RAM, and disk storage must be verified before executing heavy analytical pipelines. Zoro maintains armory diagnostics.",
-                "summary": "Hardware telemetry baselines and resource monitoring standards.",
-                "memory_type": "agent",
-                "scope_type": "agent",
-                "owner_agent_id": "agent-zoro-quartermaster",
-                "confidence": 0.95,
-                "verification_status": "verified",
-                "status": "active",
-            },
-            {
-                "id": "mem-seed-proposal-004",
-                "title": "Proposed Fleet Tactical Reorganization Plan",
-                "content": "Candidate operational proposal for coordinating 4 specialized stations during multi-agent expeditions. Pending Captain's review and approval.",
-                "summary": "Candidate reorganization plan awaiting verification.",
-                "memory_type": "task",
-                "scope_type": "shared",
-                "owner_agent_id": "agent-captain-roger",
-                "confidence": 0.85,
-                "verification_status": "unverified",
-                "status": "candidate",
-            }
-        ]
-
+        # Seed initial corporate memories
         mem_created = 0
-        for m_data in initial_memories:
-            existing_m = db.query(MemoryModel).filter(MemoryModel.id == m_data["id"]).first()
-            if not existing_m:
-                mem_record = MemoryModel(
-                    id=m_data["id"],
-                    title=m_data["title"],
-                    content=m_data["content"],
-                    summary=m_data["summary"],
-                    memory_type=m_data["memory_type"],
-                    scope_type=m_data["scope_type"],
-                    owner_agent_id=m_data["owner_agent_id"],
-                    source_type="seed_knowledge",
-                    confidence=m_data["confidence"],
-                    verification_status=m_data["verification_status"],
-                    status=m_data["status"],
+        valid_mem_ids = [m["id"] for m in CORPORATE_MEMORIES]
+        db.query(MemoryModel).filter(~MemoryModel.id.in_(valid_mem_ids)).delete(synchronize_session=False)
+
+        for mem_data in CORPORATE_MEMORIES:
+            existing_mem = db.query(MemoryModel).filter(MemoryModel.id == mem_data["id"]).first()
+            if not existing_mem:
+                new_mem = MemoryModel(
+                    id=mem_data["id"],
+                    title=mem_data["title"],
+                    content=mem_data["content"],
+                    summary=mem_data["summary"],
+                    memory_type=mem_data["memory_type"],
+                    scope_type=mem_data["scope_type"],
+                    owner_agent_id=mem_data["owner_agent_id"],
+                    confidence=mem_data["confidence"],
+                    verification_status=mem_data["verification_status"],
+                    status=mem_data["status"],
                     created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow()
                 )
-                db.add(mem_record)
+                db.add(new_mem)
                 mem_created += 1
+            else:
+                existing_mem.title = mem_data["title"]
+                existing_mem.content = mem_data["content"]
+                existing_mem.summary = mem_data["summary"]
+                existing_mem.owner_agent_id = mem_data["owner_agent_id"]
+                existing_mem.updated_at = datetime.utcnow()
 
         db.commit()
-        if mem_created > 0:
-            print(f"Seeded {mem_created} initial persistent memories.")
+        print(f"Corporate memory seed verified: {mem_created} memories added.")
 
-        # Milestone 8: Synchronize Tool Definitions
-        from backend.app.services.tool_service import tool_service
-        tool_service.sync_tool_definitions(db)
-        print("Synchronized all Tool Registry definitions to SQLite database.")
     except Exception as e:
         db.rollback()
-        print(f"Seed failed: {e}", file=sys.stderr)
-        raise
+        print(f"Error seeding database: {e}")
+        raise e
     finally:
         db.close()
 
