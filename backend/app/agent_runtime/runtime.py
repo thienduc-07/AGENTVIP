@@ -26,7 +26,14 @@ class AgentRuntime:
         if recovered > 0:
             logger.info(f"Agent Runtime startup: safely resolved {recovered} abandoned tasks.")
 
-        # 2. Start background task dispatcher
+        # 2. Restore active recruited specialist workforce with pinned versions
+        try:
+            from backend.app.services.recruitment_service import recruitment_service
+            recruitment_service.restore_active_workforce(db)
+        except Exception as e:
+            logger.warning(f"Could not restore active workforce on startup: {e}")
+
+        # 3. Start background task dispatcher
         self.dispatcher.start()
         logger.info("Agent Runtime initialized and ready for execution.")
 

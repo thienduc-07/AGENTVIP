@@ -169,6 +169,16 @@ export default function WorldHUD({
           <HelpCircle className="w-4 h-4" />
         </button>
 
+        {/* Talent & Specialist Recruitment Button */}
+        <button
+          onClick={() => useWorldStore.getState().setIsSpecialistRecruitmentOpen(true)}
+          className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-lg border bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-600/60 hover:to-indigo-600/60 text-blue-300 border-blue-500/50 hover:border-blue-400"
+          title="Open Specialist Recruitment & Talent Library Hub"
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span>RECRUIT SPECIALISTS</span>
+        </button>
+
         {/* Mission Dispatcher Drawer Toggle Button */}
         {onToggleMissionDrawer && (
           <button

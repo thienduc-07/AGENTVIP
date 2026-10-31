@@ -94,6 +94,9 @@ interface WorldState {
   isToolCenterOpen: boolean;
   toolRefreshTrigger: number;
 
+  // Specialist Recruitment Hub (Module 2)
+  isSpecialistRecruitmentOpen: boolean;
+
   // Camera Control
   cameraPreset: "tactical" | "agent" | "area";
   cameraTarget: [number, number, number];
@@ -122,6 +125,7 @@ interface WorldState {
   triggerMemoryRefresh: () => void;
   setIsToolCenterOpen: (open: boolean) => void;
   triggerToolRefresh: () => void;
+  setIsSpecialistRecruitmentOpen: (open: boolean) => void;
   setLiveConnected: (connected: boolean) => void;
   setBackendStatus: (
     status: "connected" | "connecting" | "reconnecting" | "error" | "demo_fallback",
@@ -198,6 +202,8 @@ export const useWorldStore = create<WorldState>((set, get) => ({
 
   isToolCenterOpen: false,
   toolRefreshTrigger: 0,
+
+  isSpecialistRecruitmentOpen: false,
 
   cameraPreset: "tactical",
   cameraTarget: WORLD_CONFIG.tacticalCamera.target,
@@ -380,6 +386,7 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   triggerMemoryRefresh: () => set({ memoryRefreshTrigger: get().memoryRefreshTrigger + 1 }),
   setIsToolCenterOpen: (open: boolean) => set({ isToolCenterOpen: open }),
   triggerToolRefresh: () => set({ toolRefreshTrigger: get().toolRefreshTrigger + 1 }),
+  setIsSpecialistRecruitmentOpen: (open: boolean) => set({ isSpecialistRecruitmentOpen: open }),
 
   triggerTaskHandoff: (fromAgentId: string, toAgentId: string, skillName?: string, taskTitle?: string) => {
     set({

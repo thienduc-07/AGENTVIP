@@ -3,7 +3,7 @@ from datetime import datetime
 from backend.app.models.approval import ApprovalModel
 from backend.app.models.task import TaskModel
 
-def test_approval_flow_and_duplicate_decision_conflict(client, db_session, seed_test_agent):
+def test_approval_flow_and_duplicate_decision_conflict(auth_client, db_session, seed_test_agent):
     # Setup task and approval in test db
     task = TaskModel(
         id="task-approval-test",
@@ -26,7 +26,7 @@ def test_approval_flow_and_duplicate_decision_conflict(client, db_session, seed_
     db_session.commit()
 
     # 1. Fetch approvals list
-    list_res = client.get("/api/v1/approvals?status=pending")
+    list_res = auth_client.get("/api/v1/approvals?status=pending")
     assert list_res.status_code == 200
     approvals = list_res.json()
     assert any(a["id"] == "appr-101" for a in approvals)
@@ -36,7 +36,7 @@ def test_approval_flow_and_duplicate_decision_conflict(client, db_session, seed_
         "decision": "approved",
         "reason": "Captain verified firewall script safety"
     }
-    decide_res = client.post("/api/v1/approvals/appr-101/decision", json=decision_payload)
+    decide_res = auth_client.post("/api/v1/approvals/appr-101/decision", json=decision_payload)
     assert decide_res.status_code == 200
     data = decide_res.json()
     assert data["status"] == "approved"
@@ -44,7 +44,7 @@ def test_approval_flow_and_duplicate_decision_conflict(client, db_session, seed_
     assert data["resolved_at"] is not None
 
     # 3. Second decision on same approval must be rejected with 409 Conflict
-    duplicate_res = client.post("/api/v1/approvals/appr-101/decision", json=decision_payload)
+    duplicate_res = auth_client.post("/api/v1/approvals/appr-101/decision", json=decision_payload)
     assert duplicate_res.status_code == 409
     error = duplicate_res.json()["error"]
     assert error["code"] == "APPROVAL_ALREADY_RESOLVED"

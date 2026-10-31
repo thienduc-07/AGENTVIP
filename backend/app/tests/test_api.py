@@ -11,8 +11,8 @@ def test_health_endpoint():
     assert data["status"] == "ok"
     assert data["database"] == "connected"
 
-def test_get_agents_list():
-    response = client.get("/api/v1/agents")
+def test_get_agents_list(auth_client):
+    response = auth_client.get("/api/v1/agents")
     assert response.status_code == 200
     agents = response.json()
     assert len(agents) >= 4
@@ -36,9 +36,9 @@ def test_get_tools_catalog():
     assert python_tool["risk_level"] == "HIGH"
     assert python_tool["risk_reason"] is not None
 
-def test_create_and_cancel_task_v1():
+def test_create_and_cancel_task_v1(auth_client):
     # Dispatch a safe task
-    response = client.post("/api/v1/tasks", json={
+    response = auth_client.post("/api/v1/tasks", json={
         "title": "Check system metrics",
         "description": "Inspect CPU, memory and disk free space",
         "assigned_agent_id": "agent-eng-lead",
@@ -51,6 +51,6 @@ def test_create_and_cancel_task_v1():
     assert task_data["assigned_agent_id"] == "agent-eng-lead"
 
     # Cancel task
-    cancel_res = client.post(f"/api/v1/tasks/{task_data['id']}/cancel")
+    cancel_res = auth_client.post(f"/api/v1/tasks/{task_data['id']}/cancel")
     assert cancel_res.status_code == 200
     assert cancel_res.json()["status"] == "cancelled"

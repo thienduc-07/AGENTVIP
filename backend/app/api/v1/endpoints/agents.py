@@ -9,6 +9,12 @@ from backend.app.services.agent_service import agent_service
 from backend.app.agent_runtime.registry.agent_registry import default_agent_registry
 from backend.app.core.errors import NotFoundError
 
+from backend.app.core.auth import (
+    get_current_user,
+    get_current_tenant_org,
+    UserContext,
+)
+
 router = APIRouter(prefix="/agents", tags=["Agents"])
 
 @router.get("/registry")
@@ -28,27 +34,51 @@ def get_agent_registry_definition(agent_type: str):
 def list_agents(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return agent_service.list_agents(db=db, limit=limit, offset=offset)
+    """Lists agents accessible to the caller's organization."""
+    return agent_service.list_agents(db=db, organization_id=tenant_org, limit=limit, offset=offset)
 
 @router.get("/{agent_id}", response_model=AgentResponse)
-def get_agent(agent_id: str, db: Session = Depends(get_db)):
-    return agent_service.get_agent_by_id(db=db, agent_id=agent_id)
+def get_agent(
+    agent_id: str,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retrieves agent details with tenant isolation enforcement."""
+    return agent_service.get_agent_by_id(db=db, agent_id=agent_id, organization_id=tenant_org)
 
 @router.post("", response_model=AgentResponse, status_code=status.HTTP_201_CREATED)
-def create_agent(agent_in: AgentCreate, db: Session = Depends(get_db)):
+def create_agent(
+    agent_in: AgentCreate,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     return agent_service.create_agent(db=db, agent_in=agent_in)
 
 @router.patch("/{agent_id}", response_model=AgentResponse)
-def update_agent(agent_id: str, agent_in: AgentUpdate, db: Session = Depends(get_db)):
-    return agent_service.update_agent(db=db, agent_id=agent_id, agent_in=agent_in)
+def update_agent(
+    agent_id: str,
+    agent_in: AgentUpdate,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Updates agent attributes with tenant ownership validation."""
+    return agent_service.update_agent(db=db, agent_id=agent_id, agent_in=agent_in, organization_id=tenant_org)
 
 @router.get("/{agent_id}/tasks", response_model=List[TaskResponse])
 def get_agent_tasks(
     agent_id: str,
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return agent_service.get_agent_tasks(db=db, agent_id=agent_id, limit=limit, offset=offset)
+    """Retrieves tasks for an agent with tenant isolation."""
+    return agent_service.get_agent_tasks(db=db, agent_id=agent_id, organization_id=tenant_org, limit=limit, offset=offset)

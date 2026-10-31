@@ -28,10 +28,15 @@ class AgentModel(Base):
     color = Column(String(32), default="#f59e0b")
     avatar = Column(String(32), default="captain")
 
+    # Multi-Tenant Organization Scope
+    organization_id = Column(String(64), nullable=False, default="org_default_company", index=True)
+
     # Relationships
     tasks = relationship("TaskModel", back_populates="agent", cascade="all, delete-orphan")
     events = relationship("AgentEventModel", back_populates="agent")
+    workstation_allocation = relationship("WorkstationAllocationModel", uselist=False, back_populates="agent", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index("ix_agents_status_created", "status", "created_at"),
+        Index("ix_agents_org_status", "organization_id", "status"),
     )

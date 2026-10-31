@@ -14,7 +14,7 @@ logger = logging.getLogger("grandline.services.workflow")
 
 class WorkflowService:
     @staticmethod
-    def create_workflow(db: Session, workflow_in: WorkflowCreate) -> Dict[str, Any]:
+    def create_workflow(db: Session, workflow_in: WorkflowCreate, organization_id: str = "org_default_company") -> Dict[str, Any]:
         if not workflow_in.title.strip():
             raise ValidationError(message="Workflow title cannot be blank", code="EMPTY_TITLE")
         if len(workflow_in.title) > 120:
@@ -28,7 +28,16 @@ class WorkflowService:
             if not agent:
                 raise NotFoundError(message=f"Agent '{workflow_in.assigned_agent_id}' not found", code="AGENT_NOT_FOUND")
 
+        from backend.app.models.recruitment import RecruitmentRecordModel
+        rec = db.query(RecruitmentRecordModel).filter(RecruitmentRecordModel.agent_id == agent.id).first()
+        if rec and rec.organization_id != organization_id:
+            raise ValidationError(
+                message=f"Cross-tenant assignment denied: Agent '{agent.id}' belongs to organization '{rec.organization_id}', not '{organization_id}'",
+                code="CROSS_TENANT_AGENT_ASSIGNMENT"
+            )
+
         workflow_task = TaskModel(
+            organization_id=organization_id,
             title=workflow_in.title.strip(),
             description=workflow_in.description.strip(),
             task_type="workflow",
@@ -51,6 +60,7 @@ class WorkflowService:
                 "title": workflow_task.title,
                 "status": "queued",
                 "priority": workflow_task.priority,
+                "organization_id": workflow_task.organization_id,
             },
             commit=False
         )
@@ -63,12 +73,11 @@ class WorkflowService:
         return workflow_task.to_workflow_dict()
 
     @staticmethod
-    def get_workflow(db: Session, workflow_id: str) -> Dict[str, Any]:
-        wf = (
-            db.query(TaskModel)
-            .filter(TaskModel.id == workflow_id, TaskModel.task_type == "workflow")
-            .first()
-        )
+    def get_workflow(db: Session, workflow_id: str, organization_id: Optional[str] = None) -> Dict[str, Any]:
+        query = db.query(TaskModel).filter(TaskModel.id == workflow_id, TaskModel.task_type == "workflow")
+        if organization_id:
+            query = query.filter(TaskModel.organization_id == organization_id)
+        wf = query.first()
         if not wf:
             raise NotFoundError(message=f"Workflow '{workflow_id}' not found", code="WORKFLOW_NOT_FOUND")
         return wf.to_workflow_dict()
@@ -76,23 +85,25 @@ class WorkflowService:
     @staticmethod
     def list_workflows(
         db: Session,
+        organization_id: Optional[str] = None,
         status: Optional[str] = None,
         limit: int = 50,
         offset: int = 0
     ) -> List[Dict[str, Any]]:
         query = db.query(TaskModel).filter(TaskModel.task_type == "workflow")
+        if organization_id:
+            query = query.filter(TaskModel.organization_id == organization_id)
         if status:
             query = query.filter(TaskModel.status == status)
         records = query.order_by(TaskModel.created_at.desc()).offset(offset).limit(limit).all()
         return [r.to_workflow_dict() for r in records]
 
     @staticmethod
-    def cancel_workflow(db: Session, workflow_id: str) -> Dict[str, Any]:
-        wf = (
-            db.query(TaskModel)
-            .filter(TaskModel.id == workflow_id, TaskModel.task_type == "workflow")
-            .first()
-        )
+    def cancel_workflow(db: Session, workflow_id: str, organization_id: Optional[str] = None) -> Dict[str, Any]:
+        query = db.query(TaskModel).filter(TaskModel.id == workflow_id, TaskModel.task_type == "workflow")
+        if organization_id:
+            query = query.filter(TaskModel.organization_id == organization_id)
+        wf = query.first()
         if not wf:
             raise NotFoundError(message=f"Workflow '{workflow_id}' not found", code="WORKFLOW_NOT_FOUND")
 

@@ -65,7 +65,7 @@ export async function testExecuteTool(
   const res = await fetch(`${API_BASE}/api/v1/tools/${encodeURIComponent(name)}/test`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ arguments: args, agent_id: agentId || 'agent-captain-roger' }),
+    body: JSON.stringify({ arguments: args, agent_id: agentId || 'agent-exec-ceo' }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

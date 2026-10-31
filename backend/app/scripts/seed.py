@@ -186,9 +186,70 @@ def seed_database():
         created_count = 0
         updated_count = 0
 
-        # Clean out any old/orphan agents not in corporate roster
+        # 1. Seed Default Organization and Users
+        from backend.app.models.auth import OrganizationModel, UserModel, OrganizationMemberModel
+        from backend.app.core.auth import hash_password, ROLE_PLATFORM_SUPERADMIN, ROLE_ORGANIZATION_OWNER
+
+        default_org = db.query(OrganizationModel).filter(OrganizationModel.id == "org_default_company").first()
+        if not default_org:
+            default_org = OrganizationModel(
+                id="org_default_company",
+                name="Default Corporate Headquarters",
+                slug="default-corp",
+                tier="ENTERPRISE",
+            )
+            db.add(default_org)
+
+        superadmin = db.query(UserModel).filter(UserModel.email == "admin@agency.ai").first()
+        if not superadmin:
+            superadmin = UserModel(
+                id="usr-platform-superadmin",
+                email="admin@agency.ai",
+                hashed_password=hash_password("SuperAdminSecurePassword2026!"),
+                full_name="Platform Superadmin",
+                is_active=True,
+                is_superadmin=True,
+            )
+            db.add(superadmin)
+
+        owner_user = db.query(UserModel).filter(UserModel.email == "owner@default.corp").first()
+        if not owner_user:
+            owner_user = UserModel(
+                id="usr-org-owner-victoria",
+                email="owner@default.corp",
+                hashed_password=hash_password("OwnerSecurePassword2026!"),
+                full_name="Victoria Vance",
+                is_active=True,
+                is_superadmin=False,
+            )
+            db.add(owner_user)
+
+        db.flush()
+
+        if not db.query(OrganizationMemberModel).filter_by(organization_id="org_default_company", user_id=superadmin.id).first():
+            db.add(OrganizationMemberModel(
+                organization_id="org_default_company",
+                user_id=superadmin.id,
+                role=ROLE_PLATFORM_SUPERADMIN,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            ))
+
+        if not db.query(OrganizationMemberModel).filter_by(organization_id="org_default_company", user_id=owner_user.id).first():
+            db.add(OrganizationMemberModel(
+                organization_id="org_default_company",
+                user_id=owner_user.id,
+                role=ROLE_ORGANIZATION_OWNER,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            ))
+
+        # Preserve recruited specialists: only delete orphan non-corporate, non-recruited agents
+        from backend.app.models.recruitment import RecruitmentRecordModel
         valid_ids = [a["id"] for a in CORPORATE_AGENTS]
-        db.query(AgentModel).filter(~AgentModel.id.in_(valid_ids)).delete(synchronize_session=False)
+        recruited_agent_ids = [r[0] for r in db.query(RecruitmentRecordModel.agent_id).all()]
+        protected_ids = set(valid_ids) | set(recruited_agent_ids)
+        db.query(AgentModel).filter(~AgentModel.id.in_(protected_ids)).delete(synchronize_session=False)
 
         for agent_data in CORPORATE_AGENTS:
             agent = db.query(AgentModel).filter(AgentModel.id == agent_data["id"]).first()

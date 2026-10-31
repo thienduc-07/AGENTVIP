@@ -21,7 +21,7 @@ export default function TaskCreateModal({
   const agents = useWorldStore((s) => s.agents);
 
   const [agentId, setAgentId] = useState<string>(
-    defaultAgentId || Object.keys(agents)[0] || "agent-captain-roger"
+    defaultAgentId || Object.keys(agents)[0] || "agent-exec-ceo"
   );
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

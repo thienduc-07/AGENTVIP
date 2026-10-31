@@ -26,6 +26,43 @@ def integration_db():
     Base.metadata.create_all(bind=engine)
     TestingSession = sessionmaker(bind=engine)
     db = TestingSession()
+
+    from backend.app.models.auth import OrganizationModel, UserModel, OrganizationMemberModel
+    from backend.app.core.auth import hash_password, create_jwt_token
+
+    org = OrganizationModel(
+        id="org_default_company",
+        name="Default Organization",
+        slug="default-org",
+        is_active=True
+    )
+    db.add(org)
+
+    user = UserModel(
+        id="usr_mem_test",
+        email="mem_test@example.com",
+        full_name="Memory Tester",
+        hashed_password=hash_password("Password123!"),
+        is_active=True,
+        token_version=1
+    )
+    db.add(user)
+    db.flush()
+
+    member = OrganizationMemberModel(
+        user_id=user.id,
+        organization_id=org.id,
+        role="ADMIN"
+    )
+    db.add(member)
+    db.commit()
+
+    db.token = create_jwt_token({
+        "sub": user.id,
+        "email": user.email,
+        "org_id": org.id,
+        "ver": 1
+    })
     
     def override_get_db():
         try:
@@ -42,7 +79,8 @@ def integration_db():
 async def test_api_memory_lifecycle_endpoints(integration_db):
     """Test full REST API memory flow: propose -> search -> approve -> archive -> stats."""
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    headers = {"Authorization": f"Bearer {integration_db.token}"}
+    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as client:
         # 1. Propose candidate memory
         payload = {
             "title": "API Telemetry Guidelines",

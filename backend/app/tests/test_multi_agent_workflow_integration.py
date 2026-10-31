@@ -22,8 +22,51 @@ def db_session():
         session.close()
 
 @pytest.fixture
-def test_client():
-    return TestClient(app)
+def test_client(db_session):
+    client = TestClient(app)
+    from backend.app.models.auth import OrganizationModel, UserModel, OrganizationMemberModel
+    from backend.app.core.auth import hash_password, create_jwt_token
+
+    org = db_session.query(OrganizationModel).filter(OrganizationModel.id == "org_default_company").first()
+    if not org:
+        org = OrganizationModel(
+            id="org_default_company",
+            name="Default Organization",
+            slug="default-org",
+            is_active=True
+        )
+        db_session.add(org)
+        db_session.commit()
+
+    user = db_session.query(UserModel).filter(UserModel.id == "usr_wf_test").first()
+    if not user:
+        user = UserModel(
+            id="usr_wf_test",
+            email="wf_test@example.com",
+            full_name="Workflow Tester",
+            hashed_password=hash_password("Password123!"),
+            is_active=True,
+            token_version=1
+        )
+        db_session.add(user)
+        db_session.commit()
+
+        member = OrganizationMemberModel(
+            user_id=user.id,
+            organization_id=org.id,
+            role="ADMIN"
+        )
+        db_session.add(member)
+        db_session.commit()
+
+    token = create_jwt_token({
+        "sub": user.id,
+        "email": user.email,
+        "org_id": org.id,
+        "ver": 1
+    })
+    client.headers["Authorization"] = f"Bearer {token}"
+    return client
 
 def test_api_list_agent_registry(test_client):
     """Verifies GET /api/v1/agents/registry returns all active specialized agent definitions."""

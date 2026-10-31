@@ -14,13 +14,52 @@ from backend.app.websocket_manager import ws_manager
 
 class TaskService:
     @staticmethod
-    def create_task(db: Session, task_in: TaskCreate) -> TaskModel:
-        # 1. Verify assigned agent exists
+    def create_task(db: Session, task_in: TaskCreate, organization_id: Optional[str] = None) -> TaskModel:
+        # 1. Verify assigned agent exists and is active
         agent = db.query(AgentModel).filter(AgentModel.id == task_in.assigned_agent_id).first()
         if not agent:
             raise NotFoundError(
                 message=f"Agent '{task_in.assigned_agent_id}' does not exist",
                 code="AGENT_NOT_FOUND"
+            )
+
+        from backend.app.models.recruitment import RecruitmentRecordModel
+        rec = db.query(RecruitmentRecordModel).filter(RecruitmentRecordModel.agent_id == agent.id).first()
+        agent_org = rec.organization_id if rec else getattr(agent, "organization_id", None)
+        if organization_id and agent_org and agent_org != organization_id:
+            raise ValidationError(
+                message=f"Cross-tenant assignment denied: Agent '{agent.id}' does not belong to tenant '{organization_id}' (belongs to '{agent_org}')",
+                code="CROSS_TENANT_AGENT_ASSIGNMENT"
+            )
+        effective_org = organization_id or agent_org or "org_default_company"
+        # Ensure organization record exists to satisfy foreign key integrity
+        from backend.app.models.auth import OrganizationModel
+        org_rec = db.query(OrganizationModel).filter(OrganizationModel.id == effective_org).first()
+        if not org_rec:
+            org_rec = OrganizationModel(
+                id=effective_org,
+                name=effective_org,
+                slug=effective_org.lower().replace("_", "-"),
+                is_active=True
+            )
+            db.add(org_rec)
+            db.flush()
+
+        if rec:
+            if getattr(rec, "is_legacy_unpinned", False):
+                raise ValidationError(
+                    message=f"Agent '{agent.id}' has an unpinned legacy version. Task assignment is blocked pending administrative review.",
+                    code="LEGACY_VERSION_UNPINNED"
+                )
+            if rec.lifecycle_state in ["SUSPENDED", "RETIRED", "CONFIGURED"]:
+                raise ValidationError(
+                    message=f"Agent '{agent.id}' is in lifecycle state '{rec.lifecycle_state}' and cannot accept tasks.",
+                    code="AGENT_LIFECYCLE_INACTIVE"
+                )
+        elif agent.status == "offline":
+            raise ValidationError(
+                message=f"Agent '{agent.id}' is offline and cannot accept tasks.",
+                code="AGENT_OFFLINE"
             )
 
         if not task_in.title.strip():
@@ -29,8 +68,9 @@ class TaskService:
         if not task_in.description.strip():
             raise ValidationError(message="Task description cannot be blank", code="EMPTY_TASK_DESC")
 
-        # 2. Create task record with queued status
+        # 2. Create task record with tenant-scoped organization_id
         task = TaskModel(
+            organization_id=effective_org,
             title=task_in.title.strip(),
             description=task_in.description.strip(),
             assigned_agent_id=task_in.assigned_agent_id,
@@ -59,7 +99,8 @@ class TaskService:
             payload={
                 "title": task.title,
                 "priority": task.priority,
-                "assigned_agent_id": task.assigned_agent_id
+                "assigned_agent_id": task.assigned_agent_id,
+                "organization_id": task.organization_id,
             },
             commit=False
         )
@@ -75,6 +116,7 @@ class TaskService:
     @staticmethod
     def list_tasks(
         db: Session,
+        organization_id: Optional[str] = None,
         status: Optional[str] = None,
         agent_id: Optional[str] = None,
         limit: int = 50,
@@ -84,6 +126,8 @@ class TaskService:
         offset = max(0, offset)
 
         query = db.query(TaskModel)
+        if organization_id:
+            query = query.filter(TaskModel.organization_id == organization_id)
         if status:
             query = query.filter(TaskModel.status == status)
         if agent_id:
@@ -92,16 +136,19 @@ class TaskService:
         return query.order_by(desc(TaskModel.created_at)).offset(offset).limit(limit).all()
 
     @staticmethod
-    def get_task_by_id(db: Session, task_id: str) -> TaskModel:
-        task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
+    def get_task_by_id(db: Session, task_id: str, organization_id: Optional[str] = None) -> TaskModel:
+        query = db.query(TaskModel).filter(TaskModel.id == task_id)
+        if organization_id:
+            query = query.filter(TaskModel.organization_id == organization_id)
+        task = query.first()
         if not task:
             raise NotFoundError(message=f"Task '{task_id}' not found", code="TASK_NOT_FOUND")
         return task
 
     @staticmethod
-    def get_task_steps(db: Session, task_id: str) -> List[TaskStepModel]:
-        # Validate task exists first
-        TaskService.get_task_by_id(db, task_id)
+    def get_task_steps(db: Session, task_id: str, organization_id: Optional[str] = None) -> List[TaskStepModel]:
+        # Validate task exists and belongs to tenant
+        TaskService.get_task_by_id(db, task_id, organization_id=organization_id)
         return (
             db.query(TaskStepModel)
             .filter(TaskStepModel.task_id == task_id)
@@ -110,8 +157,8 @@ class TaskService:
         )
 
     @staticmethod
-    def cancel_task(db: Session, task_id: str) -> TaskCancelResponse:
-        task = TaskService.get_task_by_id(db, task_id)
+    def cancel_task(db: Session, task_id: str, organization_id: Optional[str] = None) -> TaskCancelResponse:
+        task = TaskService.get_task_by_id(db, task_id, organization_id=organization_id)
 
         if task.status == "completed":
             raise ConflictError(
@@ -147,7 +194,7 @@ class TaskService:
             event_type="task.cancelled",
             agent_id=task.assigned_agent_id,
             task_id=task.id,
-            payload={"reason": "User requested task cancellation"},
+            payload={"reason": "User requested task cancellation", "organization_id": task.organization_id},
             commit=False
         )
 
@@ -163,8 +210,8 @@ class TaskService:
         )
 
     @staticmethod
-    def get_task_events(db: Session, task_id: str) -> List[AgentEventModel]:
-        TaskService.get_task_by_id(db, task_id)
+    def get_task_events(db: Session, task_id: str, organization_id: Optional[str] = None) -> List[AgentEventModel]:
+        TaskService.get_task_by_id(db, task_id, organization_id=organization_id)
         return (
             db.query(AgentEventModel)
             .filter(AgentEventModel.task_id == task_id)

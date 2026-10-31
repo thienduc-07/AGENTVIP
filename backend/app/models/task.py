@@ -20,6 +20,13 @@ class TaskModel(Base):
     status = Column(String(32), nullable=False, default="queued", index=True) # queued, planning, running, waiting_approval, completed, failed, cancelled
     priority = Column(String(20), nullable=False, default="normal", index=True) # low, normal, high, urgent
     assigned_agent_id = Column(String(64), ForeignKey("agents.id", ondelete="RESTRICT"), nullable=False, index=True)
+    organization_id = Column(
+        String(64),
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+        default="org_default_company",
+        index=True
+    )
     
     dependencies_json = Column(JSON, nullable=True) # list of subtask IDs
     input_data_json = Column(JSON, nullable=True)
@@ -36,6 +43,7 @@ class TaskModel(Base):
 
     # Relationships
     agent = relationship("AgentModel", back_populates="tasks")
+    organization = relationship("backend.app.models.auth.OrganizationModel")
     steps = relationship("TaskStepModel", back_populates="task", cascade="all, delete-orphan", order_by="TaskStepModel.step_index")
     events = relationship("AgentEventModel", back_populates="task", cascade="all, delete-orphan")
     approvals = relationship("ApprovalModel", back_populates="task", cascade="all, delete-orphan")
@@ -49,6 +57,7 @@ class TaskModel(Base):
         Index("ix_tasks_agent_status", "assigned_agent_id", "status"),
         Index("ix_tasks_status_created", "status", "created_at"),
         Index("ix_tasks_parent_status", "parent_task_id", "status"),
+        Index("ix_tasks_org_status", "organization_id", "status"),
     )
 
     def to_subtask_dict(self):

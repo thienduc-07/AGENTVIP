@@ -43,19 +43,41 @@ class MemoryService:
                     code="SENSITIVE_DATA_PROHIBITED",
                 )
 
-    def can_access_memory(self, caller_agent_id: Optional[str], memory: MemoryModel) -> bool:
+    def can_access_memory(
+        self,
+        caller_agent_id: Optional[str],
+        memory: MemoryModel,
+        organization_id: Optional[str] = None,
+    ) -> bool:
         """
-        Enforces memory read access control:
-        - Shared scope: accessible by all authorized agents.
-        - Agent scope: accessible only by the owner agent, or supervisor 'agent-captain-roger'.
+        Enforces tenant isolation and memory read access control:
+        - If organization_id is specified, memory must belong to that organization or be tenant-neutral.
+        - Shared scope: accessible by all authorized agents in the organization.
+        - Agent scope: accessible only by the owner agent, or supervisor.
         - Task scope: accessible if caller matches owner or supervisor.
         """
+        if organization_id:
+            meta = memory.metadata_json or {}
+            mem_org = meta.get("organization_id")
+            if mem_org and mem_org != organization_id:
+                return False
+            if memory.scope_id:
+                if memory.scope_id.startswith("org_") and memory.scope_id != organization_id:
+                    return False
+                if memory.scope_type in ["shared", "workspace"] and memory.scope_id != organization_id:
+                    return False
+            if memory.source_task and getattr(memory.source_task, "organization_id", None):
+                if memory.source_task.organization_id != organization_id:
+                    return False
+            owner_ag = getattr(memory, "owner_agent", None)
+            if owner_ag and getattr(owner_ag, "organization_id", None):
+                if owner_ag.organization_id != organization_id:
+                    return False
+
         if not caller_agent_id:
-            # Public/unauthenticated access can only read shared scope
             return memory.scope_type in ["shared", "workspace"]
 
         if caller_agent_id == "agent-captain-roger":
-            # Grand Fleet Commander has supervisory read access
             return True
 
         if memory.scope_type in ["shared", "workspace"]:
@@ -67,7 +89,6 @@ class MemoryService:
         if memory.scope_type in ["task", "working"]:
             if memory.owner_agent_id == caller_agent_id:
                 return True
-            # Allow read if explicitly shared
             return False
 
         return False
@@ -108,6 +129,7 @@ class MemoryService:
         db: Session,
         data: MemoryCreate,
         auto_activate: bool = False,
+        organization_id: Optional[str] = None,
     ) -> MemoryModel:
         """Creates or proposes a new memory record with validation and secret checks."""
         # Validate and sanitize
@@ -129,6 +151,8 @@ class MemoryService:
 
         initial_status = "active" if auto_activate else data.status
         metadata = data.metadata or {}
+        if organization_id:
+            metadata["organization_id"] = organization_id
         if is_conflict and existing:
             metadata["supersedes_memory_id"] = existing.id
             metadata["conflict_detected"] = True
@@ -172,16 +196,17 @@ class MemoryService:
         memory_id: str,
         caller_agent_id: Optional[str] = None,
         record_access: bool = True,
+        organization_id: Optional[str] = None,
     ) -> MemoryModel:
-        """Retrieves a memory by ID after enforcing access permissions."""
+        """Retrieves a memory by ID after enforcing access permissions and tenant isolation."""
         memory = db.query(MemoryModel).filter(MemoryModel.id == memory_id).first()
         if not memory or memory.status == "deleted":
             raise NotFoundError(message=f"Memory '{memory_id}' not found.", code="MEMORY_NOT_FOUND")
 
-        if not self.can_access_memory(caller_agent_id, memory):
-            raise PermissionDeniedError(
-                message=f"Agent '{caller_agent_id}' does not have permission to access memory '{memory_id}'.",
-                code="MEMORY_ACCESS_DENIED",
+        if not self.can_access_memory(caller_agent_id, memory, organization_id=organization_id):
+            raise NotFoundError(
+                message=f"Memory '{memory_id}' not found.",
+                code="MEMORY_NOT_FOUND",
             )
 
         # Check expiration
@@ -287,9 +312,10 @@ class MemoryService:
         limit: int = 20,
         offset: int = 0,
         task_id_for_citation: Optional[str] = None,
+        organization_id: Optional[str] = None,
     ) -> MemorySearchResponse:
         """
-        Retrieves, ranks, and filters memories based on permissions, status, and query keywords.
+        Retrieves, ranks, and filters memories based on permissions, status, query keywords, and tenant scope.
         """
         q = db.query(MemoryModel).filter(MemoryModel.status != "deleted")
 
@@ -319,7 +345,7 @@ class MemoryService:
                     mem.status = "expired"
                     db.commit()
                 continue
-            if not self.can_access_memory(caller_agent_id, mem):
+            if not self.can_access_memory(caller_agent_id, mem, organization_id=organization_id):
                 continue
             valid_memories.append(mem)
 

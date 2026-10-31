@@ -106,12 +106,67 @@ class TaskDispatcher:
             if not task:
                 return None
 
+            # Lifecycle guard before dispatch: check if assigned employee is ACTIVE
+            from backend.app.models.recruitment import RecruitmentRecordModel
+            rec = db.query(RecruitmentRecordModel).filter(RecruitmentRecordModel.agent_id == task.assigned_agent_id).first()
+            agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
+
+            # 1. Lifecycle and Active guard
+            if (rec and rec.lifecycle_state != "ACTIVE") or (agent and agent.status == "offline"):
+                task_id = task.id
+                task.status = "cancelled"
+                state_desc = rec.lifecycle_state if rec else "offline"
+                task.error_message = f"Task cancelled: assigned employee '{task.assigned_agent_id}' is in lifecycle state '{state_desc}'."
+                task.completed_at = datetime.utcnow()
+                task.updated_at = datetime.utcnow()
+                db.commit()
+                logger.warning(f"Task '{task_id}' auto-cancelled at dispatch: agent '{task.assigned_agent_id}' is {state_desc}.")
+                return None
+
+            # 2. Cross-tenant assignment integrity guard
+            agent_org = rec.organization_id if rec else (agent.organization_id if agent else None)
+            if agent_org and task.organization_id and agent_org != task.organization_id:
+                task_id = task.id
+                task.status = "cancelled"
+                task.error_message = f"Task cancelled: cross-tenant assignment rejected. Agent '{agent.id if agent else task.assigned_agent_id}' belongs to organization '{agent_org}', not '{task.organization_id}'."
+                task.completed_at = datetime.utcnow()
+                task.updated_at = datetime.utcnow()
+                db.commit()
+                logger.error(f"Task '{task_id}' rejected at dispatch: cross-tenant assignment.")
+                return None
+
+            # 3. Missing or unpinned specialist version guard (VER-01 / VER-02)
+            if rec and (getattr(rec, "is_legacy_unpinned", False) or not rec.specialist_version_id):
+                task_id = task.id
+                task.status = "cancelled"
+                task.error_message = f"Execution blocked: Employee '{task.assigned_agent_id}' has an unpinned legacy version and requires administrative review."
+                task.completed_at = datetime.utcnow()
+                task.updated_at = datetime.utcnow()
+
+                ev_diag = event_service.create_event(
+                    db=db,
+                    event_type="agent.version_integrity_blocked",
+                    agent_id=task.assigned_agent_id,
+                    task_id=task.id,
+                    payload={
+                        "task_id": task.id,
+                        "agent_id": task.assigned_agent_id,
+                        "organization_id": task.organization_id,
+                        "reason": "Missing or unpinned specialist version",
+                        "status": "REQUIRES_ADMINISTRATIVE_REVIEW",
+                    },
+                    commit=False
+                )
+                db.commit()
+                ws_manager.broadcast_sync(ev_diag.to_envelope())
+                logger.error(f"Task '{task_id}' blocked: agent '{task.assigned_agent_id}' has unpinned legacy version.")
+                return None
+
             task_id = task.id
             task.status = "planning"
             task.started_at = datetime.utcnow()
             task.updated_at = datetime.utcnow()
 
-            agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
             if agent:
                 agent.status = "working"
                 agent.current_task_id = task.id
@@ -123,7 +178,7 @@ class TaskDispatcher:
                 event_type=TASK_STARTED,
                 agent_id=task.assigned_agent_id,
                 task_id=task.id,
-                payload={"status": "planning", "previous_status": "queued"},
+                payload={"status": "planning", "previous_status": "queued", "organization_id": task.organization_id},
                 commit=False
             )
             ev_agent = event_service.create_event(
@@ -131,7 +186,7 @@ class TaskDispatcher:
                 event_type=AGENT_WORKING,
                 agent_id=task.assigned_agent_id,
                 task_id=task.id,
-                payload={"status": "working", "task_id": task.id},
+                payload={"status": "working", "task_id": task.id, "organization_id": task.organization_id},
                 commit=False
             )
             db.commit()
@@ -163,15 +218,74 @@ class TaskDispatcher:
             if not task:
                 return
 
+            # Lifecycle guard immediately before execution
+            from backend.app.models.recruitment import RecruitmentRecordModel
+            rec = db.query(RecruitmentRecordModel).filter(RecruitmentRecordModel.agent_id == task.assigned_agent_id).first()
+            agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
+            if (rec and rec.lifecycle_state != "ACTIVE") or (agent and agent.status == "offline"):
+                task.status = "cancelled"
+                state_desc = rec.lifecycle_state if rec else "offline"
+                task.error_message = f"Task execution rejected: employee '{task.assigned_agent_id}' is in lifecycle state '{state_desc}'."
+                task.completed_at = datetime.utcnow()
+                task.updated_at = datetime.utcnow()
+                db.commit()
+                logger.warning(f"Task '{task_id}' rejected immediately before execution: agent is {state_desc}.")
+                return
+
+            # Cross-tenant integrity guard immediately before execution
+            agent_org = rec.organization_id if rec else (agent.organization_id if agent else None)
+            if agent_org and task.organization_id and agent_org != task.organization_id:
+                task.status = "cancelled"
+                task.error_message = f"Task execution rejected: cross-tenant violation. Employee '{task.assigned_agent_id}' belongs to organization '{agent_org}', not '{task.organization_id}'."
+                task.completed_at = datetime.utcnow()
+                task.updated_at = datetime.utcnow()
+                db.commit()
+                logger.error(f"Task '{task_id}' rejected immediately before execution: cross-tenant violation.")
+                return
+
+            # Unpinned legacy version guard
+            if rec and (getattr(rec, "is_legacy_unpinned", False) or not rec.specialist_version_id):
+                task.status = "cancelled"
+                task.error_message = f"Task execution rejected: employee '{task.assigned_agent_id}' has an unpinned legacy version."
+                task.completed_at = datetime.utcnow()
+                task.updated_at = datetime.utcnow()
+                db.commit()
+                logger.error(f"Task '{task_id}' rejected immediately before execution: unpinned version.")
+                return
+
             if getattr(task, "task_type", "single") == "workflow":
                 from backend.app.agent_runtime.orchestrator.multi_agent_orchestrator import multi_agent_orchestrator
                 await multi_agent_orchestrator.execute_workflow(task_id=task.id, token=token, db=db)
                 return
 
-            agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
-            agent_role = agent.role if agent else "General Fleet Agent"
-            agent_policy = GENERAL_AGENT.to_policy()
-            agent_policy.agent_id = task.assigned_agent_id
+            # Resolve authoritative agent definition and pinned specialist prompt
+            from backend.app.agent_runtime.registry.agent_registry import default_agent_registry
+            agent_def = default_agent_registry.get(task.assigned_agent_id)
+
+            if not agent_def and rec:
+                from backend.app.models.specialist import SpecialistDefinitionModel, SpecialistVersionModel
+                spec = db.query(SpecialistDefinitionModel).filter(SpecialistDefinitionModel.id == rec.specialist_definition_id).first()
+                ver = db.query(SpecialistVersionModel).filter(SpecialistVersionModel.id == rec.specialist_version_id).first() if rec.specialist_version_id else None
+                if spec and agent and ver:
+                    from backend.app.services.recruitment_service import recruitment_service
+                    recruitment_service._register_in_runtime(agent, spec, rec.department, ver)
+                    agent_def = default_agent_registry.get(task.assigned_agent_id)
+
+            if agent_def:
+                agent_policy = agent_def.to_policy()
+                agent_policy.agent_id = task.assigned_agent_id
+                agent_role = agent_def.description
+                effective_system_instruction = agent_def.system_prompt
+                logger.info(
+                    f"Resolved authoritative pinned instruction for task '{task.id}': "
+                    f"agent='{task.assigned_agent_id}', version_id='{getattr(rec, 'specialist_version_id', 'n/a')}', "
+                    f"version_num='{getattr(rec, 'specialist_version_num', 1)}'"
+                )
+            else:
+                agent_role = agent.role if agent else "General Fleet Agent"
+                agent_policy = GENERAL_AGENT.to_policy()
+                agent_policy.agent_id = task.assigned_agent_id
+                effective_system_instruction = None
 
             # Broadcast initial WebSocket update with event envelope
             ev_thinking = event_service.create_event(
@@ -259,6 +373,7 @@ class TaskDispatcher:
                 cancellation_token=token,
                 plan_steps=plan_step_dicts,
                 db=db,
+                system_instruction=effective_system_instruction,
                 memory_context=memory_context,
             )
 

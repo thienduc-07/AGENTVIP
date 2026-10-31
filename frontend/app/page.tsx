@@ -13,6 +13,7 @@ import TaskHistoryModal from "@/components/hud/TaskHistoryModal";
 import TaskCreateModal from "@/components/interface/TaskCreateModal";
 import { MemoryCenterModal } from "@/components/hud/MemoryCenterModal";
 import { ToolCenterModal } from "@/components/hud/ToolCenterModal";
+import SpecialistRecruitmentModal from "@/components/hud/SpecialistRecruitmentModal";
 import InteractiveMissionTerminal from "@/components/hud/InteractiveMissionTerminal";
 import CorporateAgentDock from "@/components/interface/CorporateAgentDock";
 import { useWorldStore } from "@/store/worldStore";
@@ -276,13 +277,13 @@ export default function CorporateHQ3DWorldPage() {
         const created: any = await res.json();
         setActiveTask(created);
         setIsMissionDrawerOpen(true);
-        if (agentId !== "agent-captain-roger") {
+        if (agentId !== "agent-exec-ceo") {
           useWorldStore
             .getState()
             .triggerTaskHandoff(
-              "agent-captain-roger",
+              "agent-exec-ceo",
               agentId,
-              "Gomu Gomu no Bajrang Gun",
+              "Executive Strategic Directive",
               promptText.slice(0, 45)
             );
         }
@@ -306,7 +307,7 @@ export default function CorporateHQ3DWorldPage() {
         body: JSON.stringify({
           title: title.slice(0, 120),
           description: description,
-          assigned_agent_id: "agent-captain-roger",
+          assigned_agent_id: "agent-exec-ceo",
           priority: "high",
         }),
       });
@@ -478,6 +479,9 @@ export default function CorporateHQ3DWorldPage() {
 
       {/* Grand Line Tool Ecosystem & Skills Foundry (Milestone 8) */}
       <ToolCenterModal />
+
+      {/* Specialist Recruitment & Talent Hub (Module 2) */}
+      <SpecialistRecruitmentModal />
     </main>
   );
 }

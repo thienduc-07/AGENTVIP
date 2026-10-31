@@ -1,4 +1,5 @@
 import os
+os.environ.setdefault("SECRET_KEY", "test-suite-secure-signing-secret-at-least-32-bytes-long")
 import pytest
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
@@ -32,9 +33,43 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
+import backend.app.websocket_manager as ws_mod
+ws_mod.SessionLocal = TestingSessionLocal
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
     Base.metadata.create_all(bind=test_engine)
+    from backend.app.models.auth import OrganizationModel
+    from backend.app.models.agent import AgentModel
+    from backend.app.scripts.seed import CORPORATE_AGENTS
+    with TestingSessionLocal() as session:
+        if not session.query(OrganizationModel).filter(OrganizationModel.id == "org_default_company").first():
+            default_org = OrganizationModel(
+                id="org_default_company",
+                name="Default Organization",
+                slug="default-org",
+                is_active=True
+            )
+            session.add(default_org)
+            session.commit()
+        for agent_data in CORPORATE_AGENTS:
+            if not session.query(AgentModel).filter(AgentModel.id == agent_data["id"]).first():
+                new_a = AgentModel(
+                    id=agent_data["id"],
+                    name=agent_data["name"],
+                    role=agent_data["role"],
+                    station=agent_data["station"],
+                    status=agent_data["status"],
+                    color=agent_data["color"],
+                    avatar=agent_data["avatar"],
+                    pos_x=agent_data["pos_x"],
+                    pos_y=agent_data["pos_y"],
+                    pos_z=agent_data["pos_z"],
+                    description=agent_data["description"],
+                    organization_id="org_default_company"
+                )
+                session.add(new_a)
+        session.commit()
     yield
     Base.metadata.drop_all(bind=test_engine)
 
@@ -82,3 +117,51 @@ def seed_test_agent(db_session):
     db_session.commit()
     db_session.refresh(agent)
     return agent
+
+@pytest.fixture
+def auth_client(client, db_session):
+    from backend.app.models.auth import OrganizationModel, UserModel, OrganizationMemberModel
+    from backend.app.core.auth import create_jwt_token, hash_password
+
+    org = db_session.query(OrganizationModel).filter(OrganizationModel.id == "org_default_company").first()
+    if not org:
+        org = OrganizationModel(
+            id="org_default_company",
+            name="Default Organization",
+            slug="default-org",
+            is_active=True
+        )
+        db_session.add(org)
+        db_session.flush()
+
+    user = db_session.query(UserModel).filter(UserModel.id == "user_test_default").first()
+    if not user:
+        user = UserModel(
+            id="user_test_default",
+            email="test_default@example.com",
+            full_name="Default Tester",
+            hashed_password=hash_password("Password123!"),
+            is_active=True,
+            token_version=1
+        )
+        db_session.add(user)
+        db_session.flush()
+
+        member = OrganizationMemberModel(
+            user_id=user.id,
+            organization_id=org.id,
+            role="ADMIN"
+        )
+        db_session.add(member)
+        db_session.flush()
+    db_session.commit()
+
+    token = create_jwt_token({
+        "sub": user.id,
+        "email": user.email,
+        "org_id": org.id,
+        "ver": 1
+    })
+    client.headers["Authorization"] = f"Bearer {token}"
+    client.auth_token = token
+    return client

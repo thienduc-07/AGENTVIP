@@ -4,7 +4,7 @@ from backend.app.models.task import TaskModel
 from backend.app.agent_runtime.dispatcher.dispatcher import task_dispatcher
 
 @pytest.mark.asyncio
-async def test_end_to_end_runtime_flow(client, db_session, seed_test_agent):
+async def test_end_to_end_runtime_flow(auth_client, db_session, seed_test_agent):
     # 1. Create a task via API
     payload = {
         "title": "Analyze Project Structure and Write Report",
@@ -12,7 +12,7 @@ async def test_end_to_end_runtime_flow(client, db_session, seed_test_agent):
         "assigned_agent_id": seed_test_agent.id,
         "priority": "high"
     }
-    create_response = client.post("/api/v1/tasks", json=payload)
+    create_response = auth_client.post("/api/v1/tasks", json=payload)
     assert create_response.status_code == 201
     task_id = create_response.json()["id"]
     assert create_response.json()["status"] == "queued"
@@ -22,7 +22,7 @@ async def test_end_to_end_runtime_flow(client, db_session, seed_test_agent):
     await task_dispatcher._process_task(task_id, db=db_session)
 
     # 3. Verify task outcome via API GET /api/v1/tasks/{id}
-    get_res = client.get(f"/api/v1/tasks/{task_id}")
+    get_res = auth_client.get(f"/api/v1/tasks/{task_id}")
     assert get_res.status_code == 200
     task_data = get_res.json()
 
@@ -32,14 +32,14 @@ async def test_end_to_end_runtime_flow(client, db_session, seed_test_agent):
     assert task_data["completed_at"] is not None
 
     # 4. Verify Task Steps via API GET /api/v1/tasks/{id}/steps
-    steps_res = client.get(f"/api/v1/tasks/{task_id}/steps")
+    steps_res = auth_client.get(f"/api/v1/tasks/{task_id}/steps")
     assert steps_res.status_code == 200
     steps = steps_res.json()
     assert len(steps) >= 2
     assert all(s["status"] == "completed" for s in steps)
 
     # 5. Verify Audit Events via API GET /api/v1/tasks/{id}/events
-    events_res = client.get(f"/api/v1/tasks/{task_id}/events")
+    events_res = auth_client.get(f"/api/v1/tasks/{task_id}/events")
     assert events_res.status_code == 200
     events = events_res.json()
     event_types = [e["event_type"] for e in events]

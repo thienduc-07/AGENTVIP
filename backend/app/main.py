@@ -21,6 +21,10 @@ logger = logging.getLogger("agency.main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import asyncio
+    # Fail-secure startup check: Validate cryptographic signing secret immediately
+    from backend.app.core.config import validate_signing_secret
+    validate_signing_secret()
+
     ws_manager.main_loop = asyncio.get_running_loop()
     logger.info("Initializing database schema...")
     Base.metadata.create_all(bind=engine)
@@ -108,3 +112,14 @@ async def websocket_legacy_endpoint(websocket: WebSocket):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.app.main:app", host="0.0.0.0", port=8000, reload=True)
+
+# --- AUTO-MOUNTED PROVIPAGENT AUTONOMOUS COMPANY (MODULES 1-7) ---
+try:
+    from app.autonomous_company.router import router as autonomous_company_router
+    app.include_router(autonomous_company_router)
+except Exception as _e:
+    try:
+        from backend.app.autonomous_company.router import router as autonomous_company_router
+        app.include_router(autonomous_company_router)
+    except Exception:
+        pass

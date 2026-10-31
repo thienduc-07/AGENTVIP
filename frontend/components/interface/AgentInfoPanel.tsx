@@ -130,55 +130,45 @@ export default function AgentInfoPanel({
       {/* Interactive Daily Activities & Routines (Hành Động Thường Nhật) */}
       {(() => {
         const AGENT_ROUTINES: Record<string, Array<{ id: string; label: string; icon: string }>> = {
-          "agent-captain-roger": [
-            { id: "haki", label: "⚡ Haki Bá Vương (Sấm Đỏ)", icon: "⚡" },
-            { id: "eating", label: "🍖 Ăn Thịt Nướng Khổng Lồ", icon: "🍖" },
-            { id: "strolling", label: "🏃 Đi Dạo Quanh Núi Lửa", icon: "🏃" },
+          "agent-exec-ceo": [
+            { id: "strategic_brief", label: "📊 Strategic Board Briefing", icon: "📊" },
+            { id: "goal_orchestration", label: "🎯 Multi-Agent Goal Alignment", icon: "🎯" },
+            { id: "stakeholder_review", label: "🏛️ Executive Governance Review", icon: "🏛️" },
           ],
-          "agent-zoro-quartermaster": [
-            { id: "sword_kata", label: "⚔️ Song Long Diễm Kiếm", icon: "⚔️" },
-            { id: "heavy_weights", label: "🏋️ Cử Tạ Sắt Khổng Lồ", icon: "🏋️" },
-            { id: "meditation", label: "🧘 Thiền Định Kiếm Đạo", icon: "🧘" },
+          "agent-eng-lead": [
+            { id: "arch_review", label: "🏗️ System Architecture Audit", icon: "🏗️" },
+            { id: "code_inspection", label: "🔍 Code Quality & Security Gate", icon: "🔍" },
+            { id: "benchmark", label: "⚡ Micro-benchmarking & Telemetry", icon: "⚡" },
           ],
-          "agent-sanji-cook": [
-            { id: "cooking", label: "🍳 Nấu Ăn Baratie", icon: "🍳" },
-            { id: "diable_jambe", label: "🔥 Diable Jambe", icon: "🔥" },
-            { id: "smoking_stroll", label: "🚬 Dạo Quanh Hồ", icon: "🚬" },
+          "agent-research-ai": [
+            { id: "model_eval", label: "🧠 Model Benchmark & Evaluation", icon: "🧠" },
+            { id: "literature_synthesis", label: "📚 Frontier AI Literature Synthesis", icon: "📚" },
+            { id: "knowledge_verification", label: "🔬 Semantic Knowledge Verification", icon: "🔬" },
           ],
-          "agent-franky-shipwright": [
-            { id: "ship_repair", label: "🔨 Sửa Tàu Thousand Sunny", icon: "🔨" },
-            { id: "super_pose", label: "⭐ SUUUUPER!!", icon: "⭐" },
-            { id: "cola_toast", label: "🥤 Uống Pirate Cola", icon: "🥤" },
+          "agent-mkt-growth": [
+            { id: "campaign_analytics", label: "📈 Growth Analytics & Attribution", icon: "📈" },
+            { id: "brand_strategy", label: "✨ Corporate Narrative & Messaging", icon: "✨" },
+            { id: "market_intel", label: "🌐 Competitive Market Intelligence", icon: "🌐" },
           ],
-          "agent-chopper-doctor": [
-            { id: "apothecary", label: "🌿 Bào Chế Thuốc Sakura", icon: "🌿" },
-            { id: "cotton_candy", label: "🍭 Kẹo Bông Gòn Hồng", icon: "🍭" },
-            { id: "dancing", label: "🌸 Điệu Nhảy Rừng Hoa", icon: "🌸" },
+          "agent-sales-director": [
+            { id: "enterprise_pipeline", label: "💼 Enterprise Pipeline Forecast", icon: "💼" },
+            { id: "client_negotiations", label: "🤝 Contract Structuring & Value Pitch", icon: "🤝" },
+            { id: "revenue_ops", label: "💵 Revenue Acceleration Strategy", icon: "💵" },
           ],
-          "agent-nami-navigator": [
-            { id: "cartography", label: "🗺️ Nghiên Cứu Hải Đồ", icon: "🗺️" },
-            { id: "zeus_weather", label: "⚡ Mây Sấm Zeus", icon: "⚡" },
-            { id: "mikan_harvest", label: "🍊 Hái Cam Vườn Mikan", icon: "🍊" },
+          "agent-fin-controller": [
+            { id: "financial_audit", label: "📑 Treasury Audit & Runway Analysis", icon: "📑" },
+            { id: "budget_optimization", label: "⚖️ Token Budget Allocation & Unit ROI", icon: "⚖️" },
+            { id: "financial_forecast", label: "📈 Quarterly Operational Model", icon: "📈" },
           ],
-          "agent-usopp-sniper": [
-            { id: "sniper_scout", label: "🎯 Ngắm Bắn Kuro Kabuto", icon: "🎯" },
-            { id: "gadget_crafting", label: "🔧 Sáng Chế Vũ Khí", icon: "🔧" },
-            { id: "tall_tales", label: "👑 Kể Chuyện Thuyền Trưởng", icon: "👑" },
+          "agent-ops-recruiter": [
+            { id: "specialist_recruitment", label: "👥 Specialist Talent Sourcing", icon: "👥" },
+            { id: "org_calibration", label: "⚙️ Department Workflow Calibration", icon: "⚙️" },
+            { id: "capacity_planning", label: "📋 Resource Capacity & Load Balancing", icon: "📋" },
           ],
-          "agent-robin-scholar": [
-            { id: "cien_fleurs", label: "🪷 Nở Ngàn Cánh Hoa", icon: "🪷" },
-            { id: "poneglyph_study", label: "📖 Đọc Cổ Thư Poneglyph", icon: "📖" },
-            { id: "afternoon_tea", label: "☕ Trà Chiều Thư Giãn", icon: "☕" },
-          ],
-          "agent-brook-musician": [
-            { id: "violin_concert", label: "🎻 Hòa Nhạc Binks", icon: "🎻" },
-            { id: "ice_slash", label: "❄️ Kiếm Băng Soul Solid", icon: "❄️" },
-            { id: "tea_joke", label: "🎩 Yo-ho-ho-ho!", icon: "🎩" },
-          ],
-          "agent-jinbe-helmsman": [
-            { id: "karate_kata", label: "🌊 Karate Người Cá", icon: "🌊" },
-            { id: "helm_steer", label: "⚓ Cầm Lái Bánh Lái Tàu", icon: "⚓" },
-            { id: "zen_meditation", label: "🧘 Khí Công Đại Dương", icon: "🧘" },
+          "agent-support-lead": [
+            { id: "customer_health", label: "🌟 Enterprise Account Health Check", icon: "🌟" },
+            { id: "sla_monitoring", label: "⏱️ Incident SLA & Queue Resolution", icon: "⏱️" },
+            { id: "feedback_loop", label: "🔄 Client Voice & Product Feedback Loop", icon: "🔄" },
           ],
         };
 

@@ -68,9 +68,9 @@ def test_event_sequence_id_monotonicity(db_session, seed_test_agent):
     assert ev2.sequence_id == ev1.sequence_id + 1
     assert ev3.sequence_id == ev2.sequence_id + 1
 
-def test_websocket_initial_snapshot(client):
+def test_websocket_initial_snapshot(auth_client):
     """Test that client connecting to /api/v1/events/ws receives initial snapshot."""
-    with client.websocket_connect("/api/v1/events/ws") as websocket:
+    with auth_client.websocket_connect(f"/api/v1/events/ws?token={auth_client.auth_token}") as websocket:
         initial_frame = websocket.receive_json()
         assert initial_frame["message_type"] == "snapshot"
         assert "snapshot_id" in initial_frame
@@ -81,9 +81,9 @@ def test_websocket_initial_snapshot(client):
         assert len(initial_frame["data"]["agents"]) > 0
         assert "active_tasks" in initial_frame["data"]
 
-def test_websocket_ping_pong_heartbeat(client):
+def test_websocket_ping_pong_heartbeat(auth_client):
     """Test ping message responds with pong."""
-    with client.websocket_connect("/api/v1/events/ws") as websocket:
+    with auth_client.websocket_connect(f"/api/v1/events/ws?token={auth_client.auth_token}") as websocket:
         _ = websocket.receive_json()  # Read initial snapshot
 
         websocket.send_json({"action": "ping", "timestamp": 123456789})
@@ -91,9 +91,9 @@ def test_websocket_ping_pong_heartbeat(client):
         assert response["message_type"] == "pong"
         assert response["timestamp"] == 123456789
 
-def test_websocket_resync_command(client):
+def test_websocket_resync_command(auth_client):
     """Test client can request a fresh snapshot via resync action."""
-    with client.websocket_connect("/api/v1/events/ws") as websocket:
+    with auth_client.websocket_connect(f"/api/v1/events/ws?token={auth_client.auth_token}") as websocket:
         _ = websocket.receive_json()  # Read initial snapshot
 
         websocket.send_json({"action": "resync"})
@@ -102,7 +102,7 @@ def test_websocket_resync_command(client):
         assert "snapshot_id" in resync_snapshot
         assert "data" in resync_snapshot
 
-def test_websocket_replay_command(client, db_session, seed_test_agent, monkeypatch):
+def test_websocket_replay_command(auth_client, db_session, seed_test_agent, monkeypatch):
     """Test that client can request missed events after last_sequence_id."""
     monkeypatch.setattr("backend.app.websocket_manager.SessionLocal", lambda: db_session)
     monkeypatch.setattr(db_session, "close", lambda: None)
@@ -121,7 +121,7 @@ def test_websocket_replay_command(client, db_session, seed_test_agent, monkeypat
     ev1 = event_service.create_event(db_session, TASK_CREATED, seed_test_agent.id, task.id, commit=True)
     ev2 = event_service.create_event(db_session, TASK_STARTED, seed_test_agent.id, task.id, commit=True)
 
-    with client.websocket_connect("/api/v1/events/ws") as websocket:
+    with auth_client.websocket_connect(f"/api/v1/events/ws?token={auth_client.auth_token}") as websocket:
         _ = websocket.receive_json()  # Snapshot
 
         # Request replay after sequence of ev1
@@ -139,9 +139,9 @@ def test_websocket_origin_check_allowed_and_rejected():
     assert ws_manager.is_origin_allowed(None) is True  # Allow non-browser CLI clients
     assert ws_manager.is_origin_allowed("http://malicious-unauthorized-site.com") is False
 
-def test_websocket_oversized_payload_rejection(client):
+def test_websocket_oversized_payload_rejection(auth_client):
     """Test that incoming frames > 64KB are rejected."""
-    with client.websocket_connect("/api/v1/events/ws") as websocket:
+    with auth_client.websocket_connect(f"/api/v1/events/ws?token={auth_client.auth_token}") as websocket:
         _ = websocket.receive_json()  # Snapshot
 
         huge_payload = "a" * (70 * 1024)  # 70 KB

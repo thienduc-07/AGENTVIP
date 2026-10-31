@@ -1,5 +1,7 @@
 import json
+import uuid
 import logging
+from datetime import datetime, timezone
 from typing import Set, Optional, Dict, Any
 from fastapi import WebSocket, status
 from sqlalchemy.orm import Session
@@ -18,12 +20,12 @@ MAX_FRAME_SIZE_BYTES = 64 * 1024  # 64 KB maximum incoming frame
 class WebSocketManager:
     def __init__(self):
         self.active_connections: Set[WebSocket] = set()
+        self.connection_metadata: Dict[WebSocket, Dict[str, Any]] = {}
         self.main_loop = None
 
     def is_origin_allowed(self, origin: Optional[str]) -> bool:
         """Validates incoming client Origin header against configured CORS origins."""
         if not origin:
-            # Allow origin-less connections in local development/testing (e.g. CLI or test clients)
             return True
         allowed_origins = [o.rstrip("/") for o in settings.CORS_ORIGINS]
         normalized_origin = origin.rstrip("/")
@@ -33,8 +35,8 @@ class WebSocketManager:
 
     async def connect(self, websocket: WebSocket) -> bool:
         """
-        Accepts incoming WebSocket connection, checks origin, sends initial authoritative snapshot.
-        Returns True if successfully connected, False if rejected.
+        Accepts incoming WebSocket connection after origin verification and token authentication.
+        Enforces tenant isolation by recording authoritative tenant scope for the connection.
         """
         origin = websocket.headers.get("origin")
         if not self.is_origin_allowed(origin):
@@ -42,15 +44,79 @@ class WebSocketManager:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return False
 
-        await websocket.accept()
-        self.active_connections.add(websocket)
+        # Authenticate token from query parameter or Authorization header
+        token = websocket.query_params.get("token")
+        if not token:
+            auth_header = websocket.headers.get("authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header.split(" ", 1)[1]
+
+        if not token:
+            logger.warning("Rejected WebSocket connection: Missing authentication token")
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return False
+
+        from backend.app.core.auth import decode_jwt_token
+        from backend.app.models.auth import UserModel, OrganizationModel, OrganizationMemberModel
+        db = SessionLocal()
+        try:
+            payload = decode_jwt_token(token)
+            user_id = payload.get("sub")
+            if not user_id:
+                raise ValueError("Missing sub identity claim")
+
+            user = db.query(UserModel).filter(UserModel.id == user_id).first()
+            if not user or not user.is_active:
+                raise ValueError("Inactive or deleted user")
+
+            current_ver = getattr(user, "token_version", 1)
+            token_ver = payload.get("ver")
+            if token_ver is None or token_ver < current_ver:
+                raise ValueError("Revoked session")
+
+            # Resolve tenant organization server-side
+            req_org = websocket.query_params.get("organization_id")
+            memberships = (
+                db.query(OrganizationMemberModel)
+                .join(OrganizationModel, OrganizationMemberModel.organization_id == OrganizationModel.id)
+                .filter(OrganizationMemberModel.user_id == user.id, OrganizationModel.is_active == True)
+                .all()
+            )
+            user_orgs = {m.organization_id: m.role for m in memberships}
+
+            if user.is_superadmin:
+                tenant_org = req_org or "org_default_company"
+            else:
+                if req_org:
+                    if req_org not in user_orgs:
+                        raise ValueError(f"Forbidden: Access denied to organization '{req_org}'")
+                    tenant_org = req_org
+                elif user_orgs:
+                    tenant_org = next(iter(user_orgs.keys()))
+                else:
+                    raise ValueError("User has no active organization memberships")
+
+            await websocket.accept()
+            self.active_connections.add(websocket)
+            self.connection_metadata[websocket] = {
+                "user_id": user.id,
+                "organization_id": tenant_org,
+                "is_superadmin": bool(user.is_superadmin),
+            }
+        except Exception as e:
+            logger.warning(f"Rejected WebSocket connection: Authentication failed ({e})")
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return False
+        finally:
+            db.close()
+
         if not self.main_loop:
             try:
                 import asyncio
                 self.main_loop = asyncio.get_running_loop()
             except RuntimeError:
                 pass
-        logger.info(f"WebSocket client connected. Active connections: {len(self.active_connections)}")
+        logger.info(f"WebSocket client connected [org={tenant_org}]. Active connections: {len(self.active_connections)}")
 
         # Send authoritative initial snapshot
         db = SessionLocal()
@@ -68,15 +134,18 @@ class WebSocketManager:
         """Removes a client connection cleanly from active tracking."""
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
+            self.connection_metadata.pop(websocket, None)
             logger.info(f"WebSocket client disconnected. Remaining connections: {len(self.active_connections)}")
 
-    async def broadcast_envelope(self, envelope: Dict[str, Any]) -> None:
+    async def broadcast_envelope(self, envelope: Dict[str, Any], target_org: Optional[str] = None) -> None:
         """
-        Broadcasts a standardized Event Envelope to all connected clients.
-        Ensures dead or failing clients are pruned without blocking active clients.
+        Broadcasts a standardized Event Envelope to authorized connected clients.
+        Strictly prevents cross-tenant event leaks.
         """
         if not self.active_connections:
             return
+
+        effective_org = target_org or envelope.get("payload", {}).get("organization_id")
 
         message_data = {
             "message_type": "event",
@@ -89,6 +158,11 @@ class WebSocketManager:
 
         dead_connections = []
         for connection in list(self.active_connections):
+            meta = self.connection_metadata.get(connection, {})
+            conn_org = meta.get("organization_id", "org_default_company")
+            if effective_org and not meta.get("is_superadmin") and conn_org != effective_org:
+                continue
+
             try:
                 await connection.send_text(text_message)
             except Exception as e:
@@ -97,6 +171,26 @@ class WebSocketManager:
 
         for dead in dead_connections:
             self.disconnect(dead)
+
+    async def broadcast_event(
+        self,
+        event_type: str,
+        agent_id: Optional[str] = None,
+        payload: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """
+        Broadcasts an event with automatically generated ID and UTC timestamp.
+        """
+        envelope = {
+            "schema_version": 1,
+            "event_id": str(uuid.uuid4()),
+            "event_type": event_type,
+            "agent_id": agent_id,
+            "payload": payload or {},
+            "occurred_at": datetime.now(timezone.utc).isoformat(),
+            "sequence_id": None,
+        }
+        await self.broadcast_envelope(envelope)
 
     async def broadcast(self, event_type: str, data: dict) -> None:
         """
