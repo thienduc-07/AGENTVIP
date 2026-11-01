@@ -1,9 +1,21 @@
 import { create } from "zustand";
-import { AgentCharacterData, IslandArea, WorldAgentStatus, Agent } from "@/types";
+import { AgentCharacterData, IslandArea, WorldAgentStatus, Agent, AgentBehavioralState } from "@/types";
 import { DEMO_AGENTS } from "@/data/demoAgents";
 import { ISLAND_AREAS } from "@/data/areaConfig";
 import { WORLD_CONFIG } from "@/data/worldConfig";
 import { EventEnvelope, WsSnapshotData, ApiTask, Workflow, Subtask } from "@/types/api";
+import { WorldSnapshotResponse } from "@/types/world";
+import { getWorldSnapshot } from "@/lib/api/world";
+import {
+  normalizeBehavioralState,
+  behavioralToOperationalStatus,
+  applyMovementStarted,
+  applyMovementProgress,
+  applyMovementCompleted,
+  applyMovementInterrupted,
+  stepAgentMovement,
+  reconcileAgentPositionOnSnapshot,
+} from "@/lib/spatialMovement";
 
 export interface TaskHandoffAnimation {
   id: string;
@@ -139,6 +151,7 @@ interface WorldState {
     error?: string | null
   ) => void;
   updateAgentStatus: (agentId: string, status: WorldAgentStatus, currentTask?: string | null) => void;
+  stepAgentSpatialMovement: (agentId: string, deltaSeconds: number) => void;
   syncAgentsFromBackend: (backendAgents: (Agent | any)[]) => void;
   applySnapshot: (snapshotData: WsSnapshotData, lastSeq: number) => void;
   applyEvent: (envelope: EventEnvelope) => void;
@@ -148,6 +161,10 @@ interface WorldState {
   executeMissionPipeline: (userPrompt: string) => Promise<void>;
   agentActivities: Record<string, string>;
   setAgentActivity: (agentId: string, activity: string) => void;
+  worldSnapshot: WorldSnapshotResponse | null;
+  isLoadingSnapshot: boolean;
+  snapshotError: string | null;
+  fetchWorldSnapshot: (options?: { token?: string | null; organizationId?: string | null }) => Promise<WorldSnapshotResponse | null>;
 }
 
 const initialAgentsMap = DEMO_AGENTS.reduce<Record<string, AgentCharacterData>>((acc, agent) => {
@@ -236,6 +253,34 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   isLiveConnected: false,
   backendConnection: "connecting",
   backendError: null,
+  worldSnapshot: null,
+  isLoadingSnapshot: false,
+  snapshotError: null,
+
+  fetchWorldSnapshot: async (options) => {
+    set({ isLoadingSnapshot: true, snapshotError: null });
+    try {
+      const snapshot = await getWorldSnapshot(options);
+      const currentSeq = get().lastSequenceId;
+      // Prevent stale snapshot from regressing sequence cursor or overwriting newer state
+      if (currentSeq > 0 && snapshot.sequence_id < currentSeq) {
+        console.warn(`[worldStore] Discarded older snapshot (seq ${snapshot.sequence_id} < current ${currentSeq})`);
+        set({ isLoadingSnapshot: false, snapshotError: null });
+        return get().worldSnapshot;
+      }
+      set({
+        worldSnapshot: snapshot,
+        isLoadingSnapshot: false,
+        snapshotError: null,
+        lastSequenceId: Math.max(currentSeq, snapshot.sequence_id || 0),
+      });
+      return snapshot;
+    } catch (err: any) {
+      const msg = err?.message || "Failed to load authoritative world snapshot";
+      set({ isLoadingSnapshot: false, snapshotError: msg });
+      return null;
+    }
+  },
 
   setIsMissionTerminalOpen: (open: boolean) => set({ isMissionTerminalOpen: open }),
   setMovingAgent: (moving) => set({ movingAgent: moving }),
@@ -328,8 +373,25 @@ export const useWorldStore = create<WorldState>((set, get) => ({
           [agentId]: {
             ...existing,
             status,
+            behavioralState: normalizeBehavioralState(undefined, status),
             currentTask: currentTask !== undefined ? currentTask : existing.currentTask,
           },
+        },
+      };
+    });
+  },
+
+  stepAgentSpatialMovement: (agentId: string, deltaSeconds: number) => {
+    set((state) => {
+      const existing = state.agents[agentId];
+      if (!existing || !existing.isMoving || !existing.movementPlan) {
+        return state;
+      }
+      const nextAgent = stepAgentMovement(existing, deltaSeconds);
+      return {
+        agents: {
+          ...state.agents,
+          [agentId]: nextAgent,
         },
       };
     });
@@ -354,18 +416,52 @@ export const useWorldStore = create<WorldState>((set, get) => ({
           mappedStatus = "idle";
         }
 
-        const posX = ba.pos_x ?? (updated[ba.id]?.position?.[0] || 0);
-        const posY = ba.pos_y ?? (updated[ba.id]?.position?.[1] || 1);
-        const posZ = ba.pos_z ?? (updated[ba.id]?.position?.[2] || 0);
+        const existing = updated[ba.id];
+        const posX = typeof ba.pos_x === "number" ? ba.pos_x : (existing?.position?.[0] ?? 0);
+        const posY = typeof ba.pos_y === "number" ? ba.pos_y : (existing?.position?.[1] ?? 1);
+        const posZ = typeof ba.pos_z === "number" ? ba.pos_z : (existing?.position?.[2] ?? 0);
 
-        if (updated[ba.id]) {
+        const hasTarget =
+          typeof ba.target_pos_x === "number" &&
+          typeof ba.target_pos_z === "number";
+        const targetPos: [number, number, number] | null = hasTarget
+          ? [
+              Number(ba.target_pos_x),
+              typeof ba.target_pos_y === "number" ? Number(ba.target_pos_y) : posY,
+              Number(ba.target_pos_z),
+            ]
+          : null;
+
+        // Reconcile position without teleporting existing non-demo agents
+        const isFirstHydrationFromDemo = Boolean(existing?.isDemo);
+        const reconciled = reconcileAgentPositionOnSnapshot(
+          existing,
+          [posX, posY, posZ],
+          targetPos,
+          ba.target_destination ?? null,
+          ba.active_movement_id ?? null,
+          ba.behavioral_state ?? null,
+          mappedStatus,
+          isFirstHydrationFromDemo
+        );
+
+        if (existing) {
           updated[ba.id] = {
-            ...updated[ba.id],
-            name: ba.name,
-            role: ba.role,
+            ...existing,
+            name: ba.name ?? existing.name,
+            role: ba.role ?? existing.role,
+            station: ba.station || existing.station,
             status: mappedStatus,
-            color: ba.color || updated[ba.id].color,
-            description: ba.description || updated[ba.id].description,
+            behavioralState: reconciled.behavioralState,
+            position: reconciled.position,
+            targetPosition: reconciled.targetPosition,
+            targetDestination: reconciled.targetDestination,
+            activeMovementId: reconciled.activeMovementId,
+            movementPlan: reconciled.movementPlan,
+            isMoving: reconciled.isMoving,
+            headingRadians: reconciled.headingRadians,
+            color: ba.color || existing.color,
+            description: ba.description || existing.description,
             isDemo: false,
           };
         } else {
@@ -374,8 +470,15 @@ export const useWorldStore = create<WorldState>((set, get) => ({
             name: ba.name,
             role: ba.role,
             station: ba.station || "harbor",
-            position: [posX, posY, posZ],
+            position: reconciled.position,
+            targetPosition: reconciled.targetPosition,
+            targetDestination: reconciled.targetDestination,
+            activeMovementId: reconciled.activeMovementId,
+            movementPlan: reconciled.movementPlan,
+            isMoving: reconciled.isMoving,
+            headingRadians: reconciled.headingRadians,
             status: mappedStatus,
+            behavioralState: reconciled.behavioralState,
             appearance: ba.avatar || "captain",
             color: ba.color || "#f59e0b",
             description: ba.description,
@@ -447,16 +550,38 @@ export const useWorldStore = create<WorldState>((set, get) => ({
       const updatedAgents = { ...state.agents };
       let updatedWorkflow = state.activeWorkflow ? { ...state.activeWorkflow } : null;
 
+      // 1. Task Lifecycle Events
       if (event_type === "task.created") {
         if (payload && payload.task) {
           updatedTasks[payload.task.id] = payload.task;
+        } else if (payload && payload.id) {
+          updatedTasks[payload.id] = payload as any;
         }
       } else if (event_type === "task.assigned") {
         if (agent_id && updatedAgents[agent_id]) {
           updatedAgents[agent_id] = {
             ...updatedAgents[agent_id],
             status: "working",
-            currentTask: payload?.task_title || "Executing subtask",
+            behavioralState: "PLANNING",
+            currentTask: payload?.task_title || "Assigned task",
+          };
+        }
+      } else if (event_type === "task.started") {
+        if (agent_id && updatedAgents[agent_id]) {
+          updatedAgents[agent_id] = {
+            ...updatedAgents[agent_id],
+            status: "working",
+            behavioralState: "THINKING",
+            currentTask: payload?.task_title || "Task running",
+          };
+        }
+      } else if (event_type === "task.step.started") {
+        if (agent_id && updatedAgents[agent_id]) {
+          updatedAgents[agent_id] = {
+            ...updatedAgents[agent_id],
+            status: "working",
+            behavioralState: "WORKING",
+            currentTask: payload?.step_title || `Step ${payload?.step_index ?? ""}`,
           };
         }
       } else if (event_type === "task.completed") {
@@ -466,25 +591,185 @@ export const useWorldStore = create<WorldState>((set, get) => ({
         if (agent_id && updatedAgents[agent_id]) {
           updatedAgents[agent_id] = {
             ...updatedAgents[agent_id],
-            status: "idle",
+            status: updatedAgents[agent_id].status === "offline" ? "offline" : "idle",
+            behavioralState: "IDLE",
             currentTask: null,
           };
         }
-      } else if (event_type === "tool.execution_started") {
+      } else if (event_type === "task.failed" || event_type === "task.cancelled") {
+        if (task_id && updatedTasks[task_id]) {
+          delete updatedTasks[task_id];
+        }
+        if (agent_id && updatedAgents[agent_id]) {
+          updatedAgents[agent_id] = {
+            ...updatedAgents[agent_id],
+            status: updatedAgents[agent_id].status === "offline" ? "offline" : "idle",
+            behavioralState: "IDLE",
+            currentTask: null,
+          };
+        }
+      }
+
+      // 2. Tool Execution Events
+      else if (event_type === "tool.execution_started") {
         if (agent_id && updatedAgents[agent_id]) {
           const toolName = payload?.tool_name || "tool";
           updatedAgents[agent_id] = {
             ...updatedAgents[agent_id],
             status: "working",
+            behavioralState: "WORKING",
             currentTask: `🛠️ ${toolName}`,
           };
         }
-      } else if (event_type === "tool.awaiting_approval") {
+      } else if (event_type === "tool.execution_completed") {
+        if (agent_id && updatedAgents[agent_id]) {
+          updatedAgents[agent_id] = {
+            ...updatedAgents[agent_id],
+            status: "working",
+            behavioralState: "THINKING",
+            currentTask: payload?.task_title || "Tool completed",
+          };
+        }
+      } else if (event_type === "tool.awaiting_approval" || event_type === "approval.required") {
         if (agent_id && updatedAgents[agent_id]) {
           updatedAgents[agent_id] = {
             ...updatedAgents[agent_id],
             status: "waiting_approval",
+            behavioralState: "WAITING",
             currentTask: "⚠️ Tool Authorization Required!",
+          };
+        }
+      }
+
+      // 2b. Authoritative Behavioral State & Spatial Navigation Events (Phase 3.3.3)
+      else if (event_type === "agent.behavioral_state_changed") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          const nextBehavioral = normalizeBehavioralState(
+            payload?.behavioral_state,
+            payload?.operational_status
+          );
+          const nextOpStatus: WorldAgentStatus = payload?.operational_status
+            ? (payload.operational_status as WorldAgentStatus)
+            : behavioralToOperationalStatus(nextBehavioral, updatedAgents[targetAgentId].status);
+
+          updatedAgents[targetAgentId] = {
+            ...updatedAgents[targetAgentId],
+            behavioralState: nextBehavioral,
+            status: nextOpStatus,
+            currentTask:
+              nextBehavioral === "IDLE" || nextBehavioral === "COMPLETED"
+                ? null
+                : payload?.reason || updatedAgents[targetAgentId].currentTask,
+          };
+        }
+      } else if (event_type === "agent.movement_started") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          updatedAgents[targetAgentId] = applyMovementStarted(
+            updatedAgents[targetAgentId],
+            payload || {}
+          );
+        }
+      } else if (event_type === "agent.movement_progress") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          updatedAgents[targetAgentId] = applyMovementProgress(
+            updatedAgents[targetAgentId],
+            payload || {}
+          );
+        }
+      } else if (event_type === "agent.movement_completed") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          updatedAgents[targetAgentId] = applyMovementCompleted(
+            updatedAgents[targetAgentId],
+            payload || {}
+          );
+        }
+      } else if (event_type === "agent.movement_interrupted") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          updatedAgents[targetAgentId] = applyMovementInterrupted(
+            updatedAgents[targetAgentId],
+            payload || {}
+          );
+        }
+      }
+
+      // 3. Recruitment & Lifecycle Events
+      else if (event_type === "agent.recruited") {
+        const recruitedId = payload?.agent_id || agent_id;
+        if (recruitedId) {
+          const pos = payload?.position || [0, 1, 0];
+          updatedAgents[recruitedId] = {
+            id: recruitedId,
+            name: payload?.name || "Dynamic Specialist",
+            role: payload?.role || "Specialist",
+            station: payload?.station || "research_lab",
+            position: [pos[0] ?? 0, pos[1] ?? 1, pos[2] ?? 0],
+            status: "idle",
+            behavioralState: "IDLE",
+            appearance: "researcher",
+            color: payload?.color || "#38bdf8",
+            description: `Recruited specialist (${payload?.specialist_slug || "specialist"})`,
+            isDemo: false,
+          };
+        }
+      } else if (event_type === "agent.lifecycle_changed") {
+        const targetState = payload?.current_state;
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          if (targetState === "SUSPENDED" || targetState === "RETIRED" || targetState === "OFFBOARDED") {
+            updatedAgents[targetAgentId] = {
+              ...updatedAgents[targetAgentId],
+              status: "offline",
+              behavioralState: "IDLE",
+              isMoving: false,
+              movementPlan: null,
+              currentTask: null,
+            };
+          } else if (targetState === "ACTIVE") {
+            updatedAgents[targetAgentId] = {
+              ...updatedAgents[targetAgentId],
+              status: "idle",
+              behavioralState: "IDLE",
+            };
+          }
+        }
+      } else if (event_type === "agent.activated") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          updatedAgents[targetAgentId] = {
+            ...updatedAgents[targetAgentId],
+            status: "idle",
+            behavioralState: "IDLE",
+          };
+        }
+      } else if (event_type === "agent.suspended" || event_type === "agent.offboarded") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          updatedAgents[targetAgentId] = {
+            ...updatedAgents[targetAgentId],
+            status: "offline",
+            behavioralState: "IDLE",
+            isMoving: false,
+            movementPlan: null,
+            currentTask: null,
+          };
+        }
+      }
+
+      // 4. Workstation Spatial Events
+      else if (event_type === "workstation.allocated" || event_type === "workstation.reassigned") {
+        const targetAgentId = payload?.agent_id || agent_id;
+        if (targetAgentId && updatedAgents[targetAgentId]) {
+          const pos = payload?.position;
+          const zone = payload?.office_zone || payload?.department;
+          updatedAgents[targetAgentId] = {
+            ...updatedAgents[targetAgentId],
+            position: pos ? [pos[0], pos[1], pos[2]] : updatedAgents[targetAgentId].position,
+            station: zone || updatedAgents[targetAgentId].station,
           };
         }
       }

@@ -2,6 +2,7 @@ import logging
 from sqlalchemy.orm import Session
 from backend.app.agent_runtime.dispatcher.dispatcher import task_dispatcher
 from backend.app.agent_runtime.dispatcher.crash_recovery import recover_abandoned_tasks
+from backend.app.agent_runtime.heartbeat.ceo_heartbeat import ceo_heartbeat
 from backend.app.agent_runtime.tools.registry import default_tool_registry
 from backend.app.agent_runtime.policies.engine import policy_engine
 from backend.app.agent_runtime.general_agent import GENERAL_AGENT
@@ -15,6 +16,7 @@ class AgentRuntime:
     """
     def __init__(self):
         self.dispatcher = task_dispatcher
+        self.ceo_heartbeat = ceo_heartbeat
         self.tool_registry = default_tool_registry
         self.policy_engine = policy_engine
         self.general_agent = GENERAL_AGENT
@@ -35,10 +37,14 @@ class AgentRuntime:
 
         # 3. Start background task dispatcher
         self.dispatcher.start()
+
+        # 4. Start CEO Supervisory Heartbeat (only runs if CEO_HEARTBEAT_ENABLED=True)
+        self.ceo_heartbeat.start()
         logger.info("Agent Runtime initialized and ready for execution.")
 
     async def on_shutdown(self) -> None:
         logger.info("Shutting down Agent Runtime...")
+        await self.ceo_heartbeat.stop()
         await self.dispatcher.stop()
         logger.info("Agent Runtime shutdown complete.")
 

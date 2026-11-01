@@ -108,13 +108,14 @@ class TaskService:
         )
         db.add(initial_step)
 
-        # 4. Log event in same transaction
+        # 4. Log events in same transaction
         ev = event_service.create_event(
             db=db,
             event_type="task.created",
             agent_id=task.assigned_agent_id,
             task_id=task.id,
             payload={
+                "id": task.id,
                 "title": task.title,
                 "priority": task.priority,
                 "assigned_agent_id": task.assigned_agent_id,
@@ -196,7 +197,8 @@ class TaskService:
         # Free assigned agent if this was their active task
         agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
         if agent and agent.current_task_id == task.id:
-            agent.status = "idle"
+            agent.status = "idle" if agent.status != "offline" else "offline"
+            agent.behavioral_state = "IDLE"
             agent.current_task_id = None
             agent.updated_at = datetime.utcnow()
 

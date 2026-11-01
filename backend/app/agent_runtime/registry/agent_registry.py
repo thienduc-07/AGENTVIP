@@ -35,12 +35,56 @@ class AgentDefinition(BaseModel):
 class AgentRegistry:
     def __init__(self):
         self._registry: Dict[str, AgentDefinition] = {}
+        self._agent_id_map: Dict[str, str] = {}
 
-    def register(self, definition: AgentDefinition) -> None:
+    def register(self, definition: AgentDefinition, allow_override: bool = False) -> None:
+        if definition.default_assigned_agent_id:
+            existing_type = self._agent_id_map.get(definition.default_assigned_agent_id)
+            if existing_type and existing_type != definition.agent_type and not allow_override:
+                raise ValueError(
+                    f"Duplicate employee ID conflict: employee '{definition.default_assigned_agent_id}' "
+                    f"is already mapped to agent_type '{existing_type}'. Silent overwrite rejected."
+                )
+            self._agent_id_map[definition.default_assigned_agent_id] = definition.agent_type
         self._registry[definition.agent_type] = definition
 
-    def get(self, agent_type: str) -> Optional[AgentDefinition]:
+    def get(self, key: str) -> Optional[AgentDefinition]:
+        """
+        Backward-compatible getter. Resolves by agent_type first,
+        falling back to default_assigned_agent_id (physical employee ID).
+        """
+        if key in self._registry:
+            return self._registry[key]
+        return self.get_by_employee_id(key)
+
+    def get_by_type(self, agent_type: str) -> Optional[AgentDefinition]:
+        """Strictly resolves by specialized agent_type."""
         return self._registry.get(agent_type)
+
+    def get_by_employee_id(self, employee_id: str) -> Optional[AgentDefinition]:
+        """Strictly resolves by physical employee ID (e.g. 'agent-research-ai')."""
+        # 1. Check indexed map
+        atype = self._agent_id_map.get(employee_id)
+        if atype and atype in self._registry:
+            return self._registry[atype]
+        # 2. Iterate definitions for matching default_assigned_agent_id
+        for d in self._registry.values():
+            if d.default_assigned_agent_id == employee_id:
+                return d
+        # 3. Dynamically recruited specialists where agent_type is the agent.id
+        if employee_id in self._registry:
+            return self._registry[employee_id]
+        return None
+
+    def resolve_agent_def(self, identifier: str) -> Optional[AgentDefinition]:
+        """
+        Authoritative identity resolution API: checks physical employee ID first,
+        then agent_type. Returns None if unresolvable (no silent generic fallback).
+        """
+        defn = self.get_by_employee_id(identifier)
+        if defn:
+            return defn
+        return self.get_by_type(identifier)
 
     def list_all(self) -> List[AgentDefinition]:
         return list(self._registry.values())
@@ -49,10 +93,17 @@ class AgentRegistry:
         return [a for a in self._registry.values() if a.enabled]
 
     def resolve_agent_type_for_agent_id(self, agent_id: str) -> Optional[AgentDefinition]:
-        for a in self._registry.values():
-            if a.default_assigned_agent_id == agent_id and a.enabled:
-                return a
-        return self.get("general")
+        """
+        Resolves active AgentDefinition for physical employee ID.
+        Returns None if not registered or disabled. Never silently defaults to generic agent.
+        """
+        defn = self.get_by_employee_id(agent_id)
+        if defn and defn.enabled:
+            return defn
+        by_type = self._registry.get(agent_id)
+        if by_type and by_type.enabled:
+            return by_type
+        return None
 
 # Define Standard Specialized Agents
 GENERAL_AGENT_DEF = AgentDefinition(
@@ -122,7 +173,8 @@ RESEARCH_AGENT_DEF = AgentDefinition(
         "- Read-only access: you cannot write files or execute scripts.\n"
         "- Always cite file paths, line ranges, or specific items in your findings.\n"
         "- Explicitly distinguish verified facts from assumptions or unverified information.\n"
-        "- Return structured, evidence-backed findings to upstream workflows."
+        "- Return structured, evidence-backed findings to upstream workflows.\n"
+        "- Efficiency: Once you have read the relevant data file(s), synthesize your factual findings and return your final response immediately without performing repetitive searches."
     ),
     allowed_tools=[
         "workspace_list",
@@ -141,8 +193,8 @@ RESEARCH_AGENT_DEF = AgentDefinition(
         "memory_get",
         "memory.get",
     ],
-    max_tool_calls=10,
-    max_iterations=8,
+    max_tool_calls=25,
+    max_iterations=12,
     timeout_seconds=90,
     permission_level=ToolPermissionLevel.LEVEL_0_READ_ONLY,
     enabled=True,
@@ -181,8 +233,8 @@ ANALYST_AGENT_DEF = AgentDefinition(
         "memory_get",
         "memory.get",
     ],
-    max_tool_calls=10,
-    max_iterations=8,
+    max_tool_calls=25,
+    max_iterations=12,
     timeout_seconds=90,
     permission_level=ToolPermissionLevel.LEVEL_0_READ_ONLY,
     enabled=True,
@@ -200,7 +252,8 @@ WRITER_AGENT_DEF = AgentDefinition(
         "Strict Operational Boundaries:\n"
         "- All report files MUST be written strictly inside workspace_sandbox/.\n"
         "- Cite upstream evidence, files, and findings accurately.\n"
-        "- Always verify generated files using verification_tool before declaring completion."
+        "- Always verify generated files using verification_tool before declaring completion.\n"
+        "- Efficiency: Once the report is written and verified, conclude with your final summary response."
     ),
     allowed_tools=[
         "file_read",
@@ -220,8 +273,8 @@ WRITER_AGENT_DEF = AgentDefinition(
         "memory_propose",
         "memory.propose",
     ],
-    max_tool_calls=12,
-    max_iterations=8,
+    max_tool_calls=25,
+    max_iterations=12,
     timeout_seconds=120,
     permission_level=ToolPermissionLevel.LEVEL_1_WORKSPACE_WRITE,
     enabled=True,
@@ -257,8 +310,128 @@ REVIEWER_AGENT_DEF = AgentDefinition(
         "memory_archive",
         "memory.archive",
     ],
-    max_tool_calls=8,
-    max_iterations=6,
+    max_tool_calls=25,
+    max_iterations=12,
+    timeout_seconds=90,
+    permission_level=ToolPermissionLevel.LEVEL_0_READ_ONLY,
+    enabled=True,
+    concurrency_limit=2,
+)
+
+SALES_AGENT_DEF = AgentDefinition(
+    agent_type="sales",
+    display_name="Enterprise Solutions & Sales Director Agent",
+    description="Director of Enterprise Sales managing client qualification, proposal generation, and enterprise contracts.",
+    default_assigned_agent_id="agent-sales-director",
+    system_prompt=(
+        "You are the Director of Enterprise Sales (Marcus Reynolds) in AI Agency — Autonomous Business Headquarters.\n"
+        "Your mission is to qualify prospects, draft enterprise proposals, and analyze market requirements.\n"
+        "Strict Operational Boundaries:\n"
+        "- Read-only inspection of client dossiers and market research.\n"
+        "- Draft proposals and client correspondence in verified sandbox artifacts.\n"
+        "- Never promise pricing or terms beyond authorized board guardrails."
+    ),
+    allowed_tools=[
+        "workspace_list",
+        "workspace.list_files",
+        "file_read",
+        "workspace.read_file",
+        "file_search",
+        "workspace.search",
+        "artifact.get",
+        "artifact.list",
+        "web.search",
+        "web.fetch_page",
+        "memory_search",
+        "memory.search",
+        "memory_get",
+        "memory.get",
+        "memory_propose",
+        "memory.propose",
+    ],
+    max_tool_calls=10,
+    max_iterations=8,
+    timeout_seconds=90,
+    permission_level=ToolPermissionLevel.LEVEL_0_READ_ONLY,
+    enabled=True,
+    concurrency_limit=2,
+)
+
+OPERATIONS_AGENT_DEF = AgentDefinition(
+    agent_type="operations",
+    display_name="People & Autonomous Operations Agent",
+    description="Head of Operations managing agent recruitment, onboarding, process documentation, and departmental allocation.",
+    default_assigned_agent_id="agent-ops-recruiter",
+    system_prompt=(
+        "You are the Head of Operations (Amara Okafor) in AI Agency — Autonomous Business Headquarters.\n"
+        "Your mission is to manage workforce allocation, monitor operational health, and document standard operating procedures.\n"
+        "Strict Operational Boundaries:\n"
+        "- All process artifacts must be written to workspace_sandbox/.\n"
+        "- Respect organizational boundaries and multi-tenant isolation.\n"
+        "- Verify workforce telemetry before recommending structural changes."
+    ),
+    allowed_tools=[
+        "workspace_list",
+        "workspace.list_files",
+        "file_read",
+        "workspace.read_file",
+        "file_search",
+        "workspace.search",
+        "calculator",
+        "workspace_write",
+        "workspace.write_file",
+        "verification_tool",
+        "workspace.verify_file",
+        "artifact.create",
+        "artifact.get",
+        "artifact.list",
+        "artifact.verify",
+        "memory_search",
+        "memory.search",
+        "memory_get",
+        "memory.get",
+        "memory_propose",
+        "memory.propose",
+    ],
+    max_tool_calls=12,
+    max_iterations=8,
+    timeout_seconds=120,
+    permission_level=ToolPermissionLevel.LEVEL_1_WORKSPACE_WRITE,
+    enabled=True,
+    concurrency_limit=2,
+)
+
+SUPPORT_AGENT_DEF = AgentDefinition(
+    agent_type="support",
+    display_name="Customer Success & Support Operations Agent",
+    description="Head of Customer Success managing client health, automated ticket triage, SLA compliance, and support documentation.",
+    default_assigned_agent_id="agent-support-lead",
+    system_prompt=(
+        "You are the Head of Customer Success (Liam O'Connor) in AI Agency — Autonomous Business Headquarters.\n"
+        "Your mission is to ensure client satisfaction, analyze support telemetry, and diagnose reported issues.\n"
+        "Strict Operational Boundaries:\n"
+        "- Analyze incoming tickets and triage according to SLA urgency.\n"
+        "- Cite relevant knowledge base records when forming recommendations.\n"
+        "- Do not execute destructive actions or modify production without escalation."
+    ),
+    allowed_tools=[
+        "workspace_list",
+        "workspace.list_files",
+        "file_read",
+        "workspace.read_file",
+        "file_search",
+        "workspace.search",
+        "artifact.get",
+        "artifact.list",
+        "memory_search",
+        "memory.search",
+        "memory_get",
+        "memory.get",
+        "memory_propose",
+        "memory.propose",
+    ],
+    max_tool_calls=10,
+    max_iterations=8,
     timeout_seconds=90,
     permission_level=ToolPermissionLevel.LEVEL_0_READ_ONLY,
     enabled=True,
@@ -272,6 +445,9 @@ def create_default_agent_registry() -> AgentRegistry:
     reg.register(ANALYST_AGENT_DEF)
     reg.register(WRITER_AGENT_DEF)
     reg.register(REVIEWER_AGENT_DEF)
+    reg.register(SALES_AGENT_DEF)
+    reg.register(OPERATIONS_AGENT_DEF)
+    reg.register(SUPPORT_AGENT_DEF)
     return reg
 
 default_agent_registry = create_default_agent_registry()

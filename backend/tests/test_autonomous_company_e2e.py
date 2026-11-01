@@ -4,11 +4,8 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Ensure app is importable
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from app.autonomous_company.models import Base
-from app.autonomous_company.engine import AutonomousCompanyEngine
+from backend.app.autonomous_company.models import Base
+from backend.app.autonomous_company.engine import AutonomousCompanyEngine
 
 
 def test_full_autonomous_company_lifecycle(tmp_path):

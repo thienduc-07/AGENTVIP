@@ -4,10 +4,11 @@ import React, { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Billboard, Text } from "@react-three/drei";
-import { WorldAgentStatus } from "@/types";
+import { WorldAgentStatus, AgentBehavioralState } from "@/types";
 
 interface AgentStatusIndicatorProps {
   status: WorldAgentStatus;
+  behavioralState?: AgentBehavioralState;
   color: string;
   name: string;
   role: string;
@@ -19,6 +20,7 @@ interface AgentStatusIndicatorProps {
 
 export default function AgentStatusIndicator({
   status,
+  behavioralState,
   color,
   name,
   role,
@@ -35,10 +37,10 @@ export default function AgentStatusIndicator({
     const t = state.clock.getElapsedTime();
 
     if (baseRingRef.current) {
-      if (status === "working") {
+      if (status === "working" || behavioralState === "MOVING") {
         baseRingRef.current.rotation.z = t * 3.5;
         baseRingRef.current.scale.setScalar(1 + Math.sin(t * 8) * 0.12);
-      } else if (status === "waiting_approval") {
+      } else if (status === "waiting_approval" || behavioralState === "WAITING") {
         baseRingRef.current.rotation.z = t * 0.8;
         baseRingRef.current.scale.setScalar(1 + Math.sin(t * 6) * 0.22);
       } else {
@@ -58,6 +60,9 @@ export default function AgentStatusIndicator({
   });
 
   const getStatusColor = () => {
+    if (behavioralState === "MOVING") return "#38bdf8"; // Sky blue navigation
+    if (behavioralState === "PLANNING" || behavioralState === "THINKING") return "#a855f7"; // Violet cognition
+    if (behavioralState === "COMMUNICATING") return "#06b6d4"; // Cyan coordination
     switch (status) {
       case "working":
         return "#f59e0b"; // Amber working
@@ -73,6 +78,10 @@ export default function AgentStatusIndicator({
   };
 
   const getStatusLabel = () => {
+    if (status === "offline") return "OFFLINE";
+    if (behavioralState && behavioralState !== "IDLE") {
+      return behavioralState;
+    }
     switch (status) {
       case "working":
         return "WORKING";
@@ -80,8 +89,6 @@ export default function AgentStatusIndicator({
         return "AWAITING APPROVAL";
       case "error":
         return "ERROR";
-      case "offline":
-        return "OFFLINE";
       default:
         return "READY";
     }

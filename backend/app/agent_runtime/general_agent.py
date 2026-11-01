@@ -26,10 +26,10 @@ class AgentDefinition(BaseModel):
 
 GENERAL_AGENT = AgentDefinition(
     agent_id="agent-general",
-    name="Grand Line General Fleet Agent",
+    name="Corporate Operations General Agent",
     role="Multi-Tool Operations Specialist",
     system_prompt=(
-        "You are the Grand Line General Agent operating in AI Agent City.\n"
+        "You are the Corporate Operations General Agent operating in AI Agency — Autonomous Business Headquarters.\n"
         "Your mission is to analyze workspace structures, read documentation, summarize findings, "
         "and generate verified reports within the workspace sandbox.\n"
         "Security Rules:\n"

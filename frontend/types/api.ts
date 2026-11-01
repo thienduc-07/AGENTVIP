@@ -14,6 +14,17 @@ export type WorldAgentStatus =
   | "error"
   | "offline";
 
+export type AgentBehavioralState =
+  | "IDLE"
+  | "PLANNING"
+  | "THINKING"
+  | "WORKING"
+  | "COMMUNICATING"
+  | "MOVING"
+  | "WAITING"
+  | "COMPLETED"
+  | "ERROR";
+
 export interface ApiAgent {
   id: string;
   name: string;
@@ -23,9 +34,15 @@ export interface ApiAgent {
   pos_x: number;
   pos_y: number;
   pos_z: number;
+  target_pos_x?: number | null;
+  target_pos_y?: number | null;
+  target_pos_z?: number | null;
+  target_destination?: string | null;
+  active_movement_id?: string | null;
   color?: string;
   avatar?: string;
   status: WorldAgentStatus;
+  behavioral_state?: AgentBehavioralState | string;
   current_task_id?: string | null;
   created_at: string;
   updated_at: string;
@@ -103,6 +120,7 @@ export interface EventEnvelope {
   sequence_id: number;
   agent_id: string | null;
   task_id: string | null;
+  organization_id?: string | null;
   payload: Record<string, any>;
 }
 

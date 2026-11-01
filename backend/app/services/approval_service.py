@@ -7,6 +7,7 @@ from backend.app.core.errors import NotFoundError, ConflictError
 from backend.app.services.event_service import event_service
 
 from backend.app.models.task import TaskModel
+from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
 
 class ApprovalService:
     @staticmethod
@@ -58,9 +59,27 @@ class ApprovalService:
         approval.resolved_at = datetime.utcnow()
         approval.decision_reason = reason
 
+        task = db.query(TaskModel).filter(TaskModel.id == approval.task_id).first()
+        if task and task.assigned_agent_id and decision == "rejected":
+            if task.status == "waiting_approval":
+                task.status = "failed"
+                task.error_reason = f"Approval rejected: {reason or 'No reason provided'}"
+                task.completed_at = datetime.utcnow()
+            behavioral_state_service.safe_release_agent(
+                db=db,
+                agent_id=task.assigned_agent_id,
+                organization_id=task.organization_id,
+                task_id=task.id,
+                failure_reason=f"Approval '{approval.id}' rejected: {reason or 'No reason provided'}",
+                use_error_state=False,
+                commit=False,
+                broadcast=True,
+            )
+
         event_service.create_event(
             db=db,
             event_type="approval.decided",
+            agent_id=task.assigned_agent_id if task else None,
             task_id=approval.task_id,
             payload={"approval_id": approval.id, "decision": decision, "reason": reason},
             commit=False

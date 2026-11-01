@@ -26,6 +26,8 @@ async def lifespan(app: FastAPI):
     validate_signing_secret()
 
     ws_manager.main_loop = asyncio.get_running_loop()
+    from backend.app.core.database import configure_sqlite_wal
+    configure_sqlite_wal(engine)
     logger.info("Initializing database schema...")
     Base.metadata.create_all(bind=engine)
     

@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 from backend.app.agent_runtime.llm.base import (
     LLMProvider,
     LLMResponse,
+    LLMHealthCheckResult,
     ToolCallRequest,
     LLMUsage,
 )
@@ -15,9 +16,22 @@ class DeterministicProvider:
     High-reliability, zero-cost deterministic local reasoning engine.
     Parses intent, generates structured plans and dispatches real tool calls
     according to user instructions, enabling offline operation and CI testing.
+    NOTE: DeterministicProvider is NEVER counted as a live LLM provider.
     """
     def __init__(self, model: str = "deterministic-v1"):
+        self.provider_name = "deterministic"
         self.model = model
+        self.is_live_provider = False
+
+    async def check_health(self) -> LLMHealthCheckResult:
+        return LLMHealthCheckResult(
+            healthy=True,
+            provider=self.provider_name,
+            model=self.model,
+            base_url=None,
+            is_live_provider=False,
+            latency_ms=0.0,
+        )
 
     async def generate(
         self,

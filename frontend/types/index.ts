@@ -6,6 +6,17 @@ export type AgentStatus =
   | "COMPLETED" 
   | "FAILED";
 
+export type AgentBehavioralState =
+  | "IDLE"
+  | "PLANNING"
+  | "THINKING"
+  | "WORKING"
+  | "COMMUNICATING"
+  | "MOVING"
+  | "WAITING"
+  | "COMPLETED"
+  | "ERROR";
+
 export type WorldAgentStatus =
   | "idle"
   | "working"
@@ -13,13 +24,44 @@ export type WorldAgentStatus =
   | "error"
   | "offline";
 
+export interface NavigationWaypoint {
+  index: number;
+  node_id: string;
+  label: string;
+  x: number;
+  y: number;
+  z: number;
+  segment_distance: number;
+  cumulative_distance: number;
+}
+
+export interface AgentMovementPlan {
+  movementId: string;
+  origin: [number, number, number];
+  destination: string;
+  targetPosition: [number, number, number];
+  waypoints: NavigationWaypoint[];
+  currentWaypointIndex: number;
+  speed: number;
+  totalDistance: number;
+  progressRatio: number;
+  startedAtMs: number;
+}
+
 export interface AgentCharacterData {
   id: string;
   name: string;
   role: string;
   station: string;
   position: [number, number, number];
+  targetPosition?: [number, number, number] | null;
+  targetDestination?: string | null;
+  activeMovementId?: string | null;
+  movementPlan?: AgentMovementPlan | null;
+  headingRadians?: number;
+  isMoving?: boolean;
   status: WorldAgentStatus;
+  behavioralState?: AgentBehavioralState;
   currentTask?: string | null;
   appearance: "executive-ceo" | "engineer-lead" | "researcher-lead" | "marketing-lead" | "sales-lead" | "finance-lead" | "operations-lead" | "support-lead" | string;
   color: string;

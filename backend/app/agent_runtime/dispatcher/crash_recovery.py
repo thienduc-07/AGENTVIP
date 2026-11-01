@@ -32,9 +32,15 @@ def recover_abandoned_tasks(db: Session) -> int:
 
         # Free assigned agent
         agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
-        if agent and agent.status == "working":
-            agent.status = "idle"
+        if agent and (agent.status == "working" or getattr(agent, "behavioral_state", "IDLE") != "IDLE"):
+            agent.status = "idle" if agent.status != "offline" else "offline"
+            agent.behavioral_state = "IDLE"
             agent.current_task_id = None
+            agent.active_movement_id = None
+            agent.target_pos_x = None
+            agent.target_pos_y = None
+            agent.target_pos_z = None
+            agent.target_destination = None
             agent.updated_at = datetime.utcnow()
 
         # Record audit event
@@ -48,6 +54,33 @@ def recover_abandoned_tasks(db: Session) -> int:
             commit=False,
         )
         recovered_count += 1
+
+    # Also recover any agents left in non-IDLE behavioral_state with no active task
+    active_task_ids = {
+        t[0]
+        for t in db.query(TaskModel.id)
+        .filter(TaskModel.status.in_(["queued", "planning", "running", "waiting_approval"]))
+        .all()
+    }
+    stuck_agents = (
+        db.query(AgentModel)
+        .filter(
+            (AgentModel.status == "working")
+            | (AgentModel.behavioral_state.in_(["PLANNING", "THINKING", "WORKING", "COMMUNICATING", "MOVING"]))
+        )
+        .all()
+    )
+    for ag in stuck_agents:
+        if not ag.current_task_id or ag.current_task_id not in active_task_ids:
+            ag.status = "idle" if ag.status != "offline" else "offline"
+            ag.behavioral_state = "IDLE"
+            ag.current_task_id = None
+            ag.active_movement_id = None
+            ag.target_pos_x = None
+            ag.target_pos_y = None
+            ag.target_pos_z = None
+            ag.target_destination = None
+            ag.updated_at = datetime.utcnow()
 
     db.commit()
     logger.info(f"Crash recovery complete: Safely resolved {recovered_count} abandoned tasks.")

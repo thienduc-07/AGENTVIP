@@ -63,6 +63,27 @@ MEMORY_EXPIRED = "memory.expired"
 MEMORY_DELETED = "memory.deleted"
 MEMORY_RETRIEVAL_COMPLETED = "memory.retrieval_completed"
 
+# Phase 3.3.2: Workforce Lifecycle, Task Assignment & Spatial Workstation Events
+AGENT_RECRUITED = "agent.recruited"
+AGENT_LIFECYCLE_CHANGED = "agent.lifecycle_changed"
+AGENT_ACTIVATED = "agent.activated"
+AGENT_SUSPENDED = "agent.suspended"
+AGENT_OFFBOARDED = "agent.offboarded"
+
+TASK_ASSIGNED = "task.assigned"
+WORKSTATION_ALLOCATED = "workstation.allocated"
+WORKSTATION_REASSIGNED = "workstation.reassigned"
+
+# Phase 3.3.3: Autonomous Agent Behavior, Spatial Navigation & CEO Supervisory Heartbeat Events
+AGENT_BEHAVIORAL_STATE_CHANGED = "agent.behavioral_state_changed"
+AGENT_MOVEMENT_STARTED = "agent.movement_started"
+AGENT_MOVEMENT_PROGRESS = "agent.movement_progress"
+AGENT_MOVEMENT_COMPLETED = "agent.movement_completed"
+AGENT_MOVEMENT_INTERRUPTED = "agent.movement_interrupted"
+CEO_HEARTBEAT_STARTED = "ceo.heartbeat_started"
+CEO_HEARTBEAT_COMPLETED = "ceo.heartbeat_completed"
+CEO_HEARTBEAT_FAILED = "ceo.heartbeat_failed"
+
 VALID_EVENT_TYPES: Set[str] = {
     TASK_CREATED,
     TASK_QUEUED,
@@ -72,11 +93,27 @@ VALID_EVENT_TYPES: Set[str] = {
     TASK_FAILED,
     TASK_CANCEL_REQUESTED,
     TASK_CANCELLED,
+    TASK_ASSIGNED,
     AGENT_STATUS_CHANGED,
+    AGENT_BEHAVIORAL_STATE_CHANGED,
     AGENT_IDLE,
     AGENT_WORKING,
     AGENT_WAITING_FOR_APPROVAL,
     AGENT_ERROR,
+    AGENT_RECRUITED,
+    AGENT_LIFECYCLE_CHANGED,
+    AGENT_ACTIVATED,
+    AGENT_SUSPENDED,
+    AGENT_OFFBOARDED,
+    AGENT_MOVEMENT_STARTED,
+    AGENT_MOVEMENT_PROGRESS,
+    AGENT_MOVEMENT_COMPLETED,
+    AGENT_MOVEMENT_INTERRUPTED,
+    WORKSTATION_ALLOCATED,
+    WORKSTATION_REASSIGNED,
+    CEO_HEARTBEAT_STARTED,
+    CEO_HEARTBEAT_COMPLETED,
+    CEO_HEARTBEAT_FAILED,
     TASK_STEP_STARTED,
     TASK_STEP_COMPLETED,
     TASK_STEP_FAILED,
@@ -118,11 +155,27 @@ class EventService:
     TASK_FAILED = TASK_FAILED
     TASK_CANCEL_REQUESTED = TASK_CANCEL_REQUESTED
     TASK_CANCELLED = TASK_CANCELLED
+    TASK_ASSIGNED = TASK_ASSIGNED
     AGENT_STATUS_CHANGED = AGENT_STATUS_CHANGED
+    AGENT_BEHAVIORAL_STATE_CHANGED = AGENT_BEHAVIORAL_STATE_CHANGED
     AGENT_IDLE = AGENT_IDLE
     AGENT_WORKING = AGENT_WORKING
     AGENT_WAITING_FOR_APPROVAL = AGENT_WAITING_FOR_APPROVAL
     AGENT_ERROR = AGENT_ERROR
+    AGENT_RECRUITED = AGENT_RECRUITED
+    AGENT_LIFECYCLE_CHANGED = AGENT_LIFECYCLE_CHANGED
+    AGENT_ACTIVATED = AGENT_ACTIVATED
+    AGENT_SUSPENDED = AGENT_SUSPENDED
+    AGENT_OFFBOARDED = AGENT_OFFBOARDED
+    AGENT_MOVEMENT_STARTED = AGENT_MOVEMENT_STARTED
+    AGENT_MOVEMENT_PROGRESS = AGENT_MOVEMENT_PROGRESS
+    AGENT_MOVEMENT_COMPLETED = AGENT_MOVEMENT_COMPLETED
+    AGENT_MOVEMENT_INTERRUPTED = AGENT_MOVEMENT_INTERRUPTED
+    WORKSTATION_ALLOCATED = WORKSTATION_ALLOCATED
+    WORKSTATION_REASSIGNED = WORKSTATION_REASSIGNED
+    CEO_HEARTBEAT_STARTED = CEO_HEARTBEAT_STARTED
+    CEO_HEARTBEAT_COMPLETED = CEO_HEARTBEAT_COMPLETED
+    CEO_HEARTBEAT_FAILED = CEO_HEARTBEAT_FAILED
     TASK_STEP_STARTED = TASK_STEP_STARTED
     TASK_STEP_COMPLETED = TASK_STEP_COMPLETED
     TASK_STEP_FAILED = TASK_STEP_FAILED
@@ -225,6 +278,11 @@ class EventService:
             # Arbitrary payload metadata (e.g. payload.get("organization_id")) is NEVER trusted as authoritative ownership.
             resolved_org_id = None
 
+        # Globally monotonic sequence allocation:
+        # sequence_id is incremented monotonically across the persistent agent_events store.
+        # This provides a deterministic point-in-time watermark for snapshot hydration and replay.
+        # In multi-tenant environments, individual tenants observe monotonically increasing sequence IDs (seq > last_seq);
+        # non-consecutive sequence numbers within a single tenant are normal and expected due to other tenant traffic.
         max_seq = db.query(func.coalesce(func.max(AgentEventModel.sequence_id), 0)).scalar() or 0
         next_seq = int(max_seq) + 1
 
@@ -349,11 +407,17 @@ class EventService:
                         "role": a.role,
                         "station": a.station,
                         "status": a.status,
+                        "behavioral_state": getattr(a, "behavioral_state", None) or "IDLE",
                         "color": a.color,
                         "avatar": a.avatar,
                         "pos_x": a.pos_x,
                         "pos_y": a.pos_y,
                         "pos_z": a.pos_z,
+                        "target_pos_x": getattr(a, "target_pos_x", None),
+                        "target_pos_y": getattr(a, "target_pos_y", None),
+                        "target_pos_z": getattr(a, "target_pos_z", None),
+                        "target_destination": getattr(a, "target_destination", None),
+                        "active_movement_id": getattr(a, "active_movement_id", None),
                         "current_task_id": a.current_task_id,
                         "description": a.description,
                     }

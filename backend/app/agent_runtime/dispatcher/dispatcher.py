@@ -13,6 +13,7 @@ from backend.app.models.agent_event import AgentEventModel
 from backend.app.models.approval import ApprovalModel
 from backend.app.models.artifact import ArtifactModel
 from backend.app.agent_runtime.cancellation import CancellationToken, TaskCancelledException
+from backend.app.agent_runtime.llm.base import redact_secrets
 from backend.app.agent_runtime.llm.factory import get_llm_provider
 from backend.app.agent_runtime.tools.registry import default_tool_registry
 from backend.app.agent_runtime.policies.engine import policy_engine
@@ -169,8 +170,23 @@ class TaskDispatcher:
 
             if agent:
                 agent.status = "working"
+                agent.behavioral_state = "PLANNING"
                 agent.current_task_id = task.id
                 agent.updated_at = datetime.utcnow()
+                try:
+                    from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
+                    behavioral_state_service.transition_state(
+                        db=db,
+                        agent_id=agent.id,
+                        target_state=BehavioralState.PLANNING,
+                        organization_id=task.organization_id,
+                        task_id=task.id,
+                        reason="Task claimed for planning",
+                        commit=False,
+                        broadcast=True,
+                    )
+                except Exception as bs_err:
+                    logger.debug(f"Behavioral state PLANNING transition on claim skipped: {bs_err}")
 
             # Record transactional events with monotonic sequence_id
             ev_task = event_service.create_event(
@@ -220,6 +236,7 @@ class TaskDispatcher:
 
             # Lifecycle guard immediately before execution
             from backend.app.models.recruitment import RecruitmentRecordModel
+            from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
             rec = db.query(RecruitmentRecordModel).filter(RecruitmentRecordModel.agent_id == task.assigned_agent_id).first()
             agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
             if (rec and rec.lifecycle_state != "ACTIVE") or (agent and agent.status == "offline"):
@@ -228,6 +245,14 @@ class TaskDispatcher:
                 task.error_message = f"Task execution rejected: employee '{task.assigned_agent_id}' is in lifecycle state '{state_desc}'."
                 task.completed_at = datetime.utcnow()
                 task.updated_at = datetime.utcnow()
+                behavioral_state_service.safe_release_agent(
+                    db=db,
+                    agent_id=task.assigned_agent_id,
+                    task_id=task.id,
+                    reason=task.error_message,
+                    commit=False,
+                    broadcast=True,
+                )
                 db.commit()
                 logger.warning(f"Task '{task_id}' rejected immediately before execution: agent is {state_desc}.")
                 return
@@ -239,6 +264,14 @@ class TaskDispatcher:
                 task.error_message = f"Task execution rejected: cross-tenant violation. Employee '{task.assigned_agent_id}' belongs to organization '{agent_org}', not '{task.organization_id}'."
                 task.completed_at = datetime.utcnow()
                 task.updated_at = datetime.utcnow()
+                behavioral_state_service.safe_release_agent(
+                    db=db,
+                    agent_id=task.assigned_agent_id,
+                    task_id=task.id,
+                    reason=task.error_message,
+                    commit=False,
+                    broadcast=True,
+                )
                 db.commit()
                 logger.error(f"Task '{task_id}' rejected immediately before execution: cross-tenant violation.")
                 return
@@ -249,6 +282,14 @@ class TaskDispatcher:
                 task.error_message = f"Task execution rejected: employee '{task.assigned_agent_id}' has an unpinned legacy version."
                 task.completed_at = datetime.utcnow()
                 task.updated_at = datetime.utcnow()
+                behavioral_state_service.safe_release_agent(
+                    db=db,
+                    agent_id=task.assigned_agent_id,
+                    task_id=task.id,
+                    reason=task.error_message,
+                    commit=False,
+                    broadcast=True,
+                )
                 db.commit()
                 logger.error(f"Task '{task_id}' rejected immediately before execution: unpinned version.")
                 return
@@ -260,7 +301,12 @@ class TaskDispatcher:
 
             # Resolve authoritative agent definition and pinned specialist prompt
             from backend.app.agent_runtime.registry.agent_registry import default_agent_registry
-            agent_def = default_agent_registry.get(task.assigned_agent_id)
+            # Dual resolution: employee ID first, then specialized agent_type
+            agent_def = default_agent_registry.get_by_employee_id(task.assigned_agent_id)
+            if not agent_def and getattr(task, "agent_type", None):
+                agent_def = default_agent_registry.get_by_type(task.agent_type)
+            if not agent_def:
+                agent_def = default_agent_registry.get(task.assigned_agent_id)
 
             if not agent_def and rec:
                 from backend.app.models.specialist import SpecialistDefinitionModel, SpecialistVersionModel
@@ -269,31 +315,89 @@ class TaskDispatcher:
                 if spec and agent and ver:
                     from backend.app.services.recruitment_service import recruitment_service
                     recruitment_service._register_in_runtime(agent, spec, rec.department, ver)
-                    agent_def = default_agent_registry.get(task.assigned_agent_id)
+                    agent_def = default_agent_registry.get_by_employee_id(task.assigned_agent_id) or default_agent_registry.get(task.assigned_agent_id)
 
             if agent_def:
+                if not agent_def.enabled:
+                    task.status = "cancelled"
+                    task.error_message = f"Task execution rejected: agent '{task.assigned_agent_id}' is disabled in registry."
+                    task.completed_at = datetime.utcnow()
+                    task.updated_at = datetime.utcnow()
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=task.assigned_agent_id,
+                        task_id=task.id,
+                        reason=task.error_message,
+                        commit=False,
+                        broadcast=True,
+                    )
+                    db.commit()
+                    logger.error(f"Task '{task_id}' rejected: agent '{task.assigned_agent_id}' is disabled.")
+                    return
+
                 agent_policy = agent_def.to_policy()
                 agent_policy.agent_id = task.assigned_agent_id
                 agent_role = agent_def.description
                 effective_system_instruction = agent_def.system_prompt
                 logger.info(
                     f"Resolved authoritative pinned instruction for task '{task.id}': "
-                    f"agent='{task.assigned_agent_id}', version_id='{getattr(rec, 'specialist_version_id', 'n/a')}', "
+                    f"agent='{task.assigned_agent_id}', agent_type='{agent_def.agent_type}', "
+                    f"version_id='{getattr(rec, 'specialist_version_id', 'n/a')}', "
                     f"version_num='{getattr(rec, 'specialist_version_num', 1)}'"
                 )
+            elif task.assigned_agent_id in ("agent-general", "general") or getattr(task, "agent_type", None) == "general":
+                # Explicit general agent execution
+                gen_def = default_agent_registry.get("general")
+                if gen_def and gen_def.enabled:
+                    agent_role = gen_def.description
+                    agent_policy = gen_def.to_policy()
+                    agent_policy.agent_id = task.assigned_agent_id or "agent-general"
+                    effective_system_instruction = gen_def.system_prompt
+                else:
+                    agent_role = "Executive General Agent"
+                    agent_policy = GENERAL_AGENT.to_policy()
+                    agent_policy.agent_id = task.assigned_agent_id or "agent-general"
+                    effective_system_instruction = GENERAL_AGENT.system_prompt
             else:
-                agent_role = agent.role if agent else "General Fleet Agent"
-                agent_policy = GENERAL_AGENT.to_policy()
-                agent_policy.agent_id = task.assigned_agent_id
-                effective_system_instruction = None
+                # Reject unresolvable employee identity without silent generic fallback
+                task.status = "failed"
+                task.error_message = f"Task execution rejected: unresolvable agent identity '{task.assigned_agent_id}'. No active AgentDefinition found."
+                task.completed_at = datetime.utcnow()
+                task.updated_at = datetime.utcnow()
+                behavioral_state_service.safe_release_agent(
+                    db=db,
+                    agent_id=task.assigned_agent_id,
+                    task_id=task.id,
+                    terminal_state=BehavioralState.ERROR,
+                    reason=task.error_message,
+                    commit=False,
+                    broadcast=True,
+                )
+                db.commit()
+                logger.error(f"Task '{task_id}' rejected: unresolvable agent identity '{task.assigned_agent_id}'.")
+                return
 
-            # Broadcast initial WebSocket update with event envelope
+            # Transition to PLANNING behavioral state & broadcast initial WebSocket update
+            if agent:
+                try:
+                    behavioral_state_service.transition_state(
+                        db=db,
+                        agent_id=agent.id,
+                        target_state=BehavioralState.PLANNING,
+                        organization_id=task.organization_id,
+                        task_id=task.id,
+                        reason="Generating execution plan",
+                        commit=False,
+                        broadcast=True,
+                    )
+                except Exception as bs_err:
+                    logger.debug(f"Behavioral state PLANNING transition skipped: {bs_err}")
             ev_thinking = event_service.create_event(
                 db,
                 event_type=event_service.EVENT_AGENT_STATUS_CHANGED,
                 agent_id=task.assigned_agent_id,
                 task_id=task.id,
-                payload={"status": "working", "sub_status": "THINKING"}
+                payload={"status": "working", "sub_status": "THINKING", "behavioral_state": "PLANNING"}
             )
             db.commit()
             await ws_manager.broadcast_envelope(ev_thinking.to_envelope())
@@ -302,8 +406,19 @@ class TaskDispatcher:
             token.check()
 
             # 1. Plan Generation Phase
-            llm_provider = get_llm_provider()
-            logger.info(f"Generating plan for task '{task_id}' via {settings.LLM_PROVIDER}")
+            llm_provider = get_llm_provider(
+                organization_id=task.organization_id,
+                task_id=task.id,
+                agent_id=task.assigned_agent_id,
+            )
+            if hasattr(llm_provider, "bind_context"):
+                llm_provider.bind_context(
+                    organization_id=task.organization_id,
+                    task_id=task.id,
+                    agent_id=task.assigned_agent_id,
+                    task_priority=getattr(task, "priority", None),
+                )
+            logger.info(f"Generating plan for task '{task_id}' via {getattr(llm_provider, 'provider_name', settings.LLM_PROVIDER)}")
             plan = await self.planner.create_plan(
                 task_title=task.title,
                 task_description=task.description,
@@ -330,6 +445,9 @@ class TaskDispatcher:
                     "description": step.description,
                     "required_tool": step.required_tool,
                 })
+
+            if hasattr(llm_provider, "bind_context"):
+                llm_provider.bind_context(plan_steps_count=len(plan_step_dicts))
 
             task.status = "running"
             task.updated_at = datetime.utcnow()
@@ -388,7 +506,21 @@ class TaskDispatcher:
                 task.updated_at = datetime.utcnow()
                 if agent:
                     agent.status = "waiting_approval"
+                    agent.behavioral_state = "WAITING"
                     agent.updated_at = datetime.utcnow()
+                    try:
+                        behavioral_state_service.transition_state(
+                            db=db,
+                            agent_id=agent.id,
+                            target_state=BehavioralState.WAITING,
+                            organization_id=task.organization_id,
+                            task_id=task.id,
+                            reason=exec_result.approval_details.get("description", "Requires authorization"),
+                            commit=False,
+                            broadcast=True,
+                        )
+                    except Exception as bs_err:
+                        logger.debug(f"Behavioral state WAITING transition skipped: {bs_err}")
 
                 approval = ApprovalModel(
                     task_id=task.id,
@@ -413,7 +545,7 @@ class TaskDispatcher:
                     event_type=AGENT_WAITING_FOR_APPROVAL,
                     agent_id=task.assigned_agent_id,
                     task_id=task.id,
-                    payload={"status": "waiting_approval"},
+                    payload={"status": "waiting_approval", "behavioral_state": "WAITING"},
                     commit=False
                 )
                 db.commit()
@@ -428,9 +560,16 @@ class TaskDispatcher:
                 task.updated_at = datetime.utcnow()
 
                 if agent:
-                    agent.status = "idle"
-                    agent.current_task_id = None
-                    agent.updated_at = datetime.utcnow()
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=agent.id,
+                        organization_id=task.organization_id,
+                        task_id=task.id,
+                        terminal_state=BehavioralState.COMPLETED,
+                        reason="Task completed successfully",
+                        commit=False,
+                        broadcast=True,
+                    )
 
                 # Mark all steps completed
                 steps = db.query(TaskStepModel).filter(TaskStepModel.task_id == task.id).all()
@@ -463,7 +602,17 @@ class TaskDispatcher:
                     event_type=TASK_COMPLETED,
                     agent_id=task.assigned_agent_id,
                     task_id=task.id,
-                    payload={"result_summary": task.result_summary, "artifacts_count": len(exec_result.artifacts)},
+                    payload={
+                        "result_summary": task.result_summary,
+                        "artifacts_count": len(exec_result.artifacts),
+                        "llm_provider": exec_result.llm_provider_name,
+                        "llm_model": exec_result.llm_model_name,
+                        "is_live_provider": exec_result.is_live_provider,
+                        "prompt_tokens": exec_result.prompt_tokens,
+                        "completion_tokens": exec_result.completion_tokens,
+                        "total_tokens": exec_result.total_tokens,
+                        "estimated_cost_usd": exec_result.estimated_cost_usd,
+                    },
                     commit=False
                 )
                 ev_idle = event_service.create_event(
@@ -471,7 +620,7 @@ class TaskDispatcher:
                     event_type=AGENT_IDLE,
                     agent_id=task.assigned_agent_id,
                     task_id=task.id,
-                    payload={"status": "idle"},
+                    payload={"status": "idle", "behavioral_state": "IDLE"},
                     commit=False
                 )
                 db.commit()
@@ -497,22 +646,38 @@ class TaskDispatcher:
 
             else: # failed
                 task.status = "failed"
-                task.error_message = exec_result.error_message or "Execution failed"
+                task.error_message = redact_secrets(exec_result.error_message or "Execution failed")
                 task.result_summary = exec_result.result_summary
                 task.completed_at = datetime.utcnow()
                 task.updated_at = datetime.utcnow()
 
                 if agent:
-                    agent.status = "idle"
-                    agent.current_task_id = None
-                    agent.updated_at = datetime.utcnow()
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=agent.id,
+                        organization_id=task.organization_id,
+                        task_id=task.id,
+                        terminal_state=BehavioralState.ERROR,
+                        reason=task.error_message,
+                        commit=False,
+                        broadcast=True,
+                    )
 
                 ev_fail = event_service.create_event(
                     db=db,
                     event_type=TASK_FAILED,
                     agent_id=task.assigned_agent_id,
                     task_id=task.id,
-                    payload={"error": task.error_message},
+                    payload={
+                        "error": task.error_message,
+                        "llm_provider": exec_result.llm_provider_name,
+                        "llm_model": exec_result.llm_model_name,
+                        "is_live_provider": exec_result.is_live_provider,
+                        "prompt_tokens": exec_result.prompt_tokens,
+                        "completion_tokens": exec_result.completion_tokens,
+                        "total_tokens": exec_result.total_tokens,
+                        "estimated_cost_usd": exec_result.estimated_cost_usd,
+                    },
                     commit=False
                 )
                 ev_idle = event_service.create_event(
@@ -520,7 +685,7 @@ class TaskDispatcher:
                     event_type=AGENT_IDLE,
                     agent_id=task.assigned_agent_id,
                     task_id=task.id,
-                    payload={"status": "idle"},
+                    payload={"status": "idle", "behavioral_state": "IDLE"},
                     commit=False
                 )
                 db.commit()
@@ -531,14 +696,20 @@ class TaskDispatcher:
         except TaskCancelledException as e:
             logger.info(f"Task '{task_id}' aborted by cancellation token: {e}")
             try:
+                from backend.app.services.behavioral_state_service import behavioral_state_service
                 task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
                 if task:
                     task.status = "cancelled"
                     task.updated_at = datetime.utcnow()
-                    agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
-                    if agent:
-                        agent.status = "idle"
-                        agent.current_task_id = None
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=task.assigned_agent_id,
+                        organization_id=task.organization_id,
+                        task_id=task.id,
+                        reason=str(e),
+                        commit=False,
+                        broadcast=True,
+                    )
                     ev_cancel = event_service.create_event(
                         db=db,
                         event_type=TASK_CANCELLED,
@@ -552,7 +723,7 @@ class TaskDispatcher:
                         event_type=AGENT_IDLE,
                         agent_id=task.assigned_agent_id,
                         task_id=task.id,
-                        payload={"status": "idle"},
+                        payload={"status": "idle", "behavioral_state": "IDLE"},
                         commit=False
                     )
                     db.commit()
@@ -563,17 +734,25 @@ class TaskDispatcher:
                 logger.error(f"Error handling task cancellation rollback: {rollback_err}")
 
         except Exception as e:
-            logger.error(f"Unhandled error processing task '{task_id}': {e}", exc_info=True)
+            safe_err = redact_secrets(str(e))
+            logger.error(f"Unhandled error processing task '{task_id}': {safe_err}", exc_info=True)
             try:
+                from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
                 task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
                 if task:
                     task.status = "failed"
-                    task.error_message = str(e)
+                    task.error_message = safe_err
                     task.updated_at = datetime.utcnow()
-                    agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()
-                    if agent:
-                        agent.status = "idle"
-                        agent.current_task_id = None
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=task.assigned_agent_id,
+                        organization_id=task.organization_id,
+                        task_id=task.id,
+                        terminal_state=BehavioralState.ERROR,
+                        reason=safe_err,
+                        commit=False,
+                        broadcast=True,
+                    )
                     db.commit()
             except Exception:
                 db.rollback()

@@ -15,16 +15,22 @@ class AgentModel(Base):
     role = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     status = Column(String(32), nullable=False, default="idle", index=True) # idle, working, waiting_approval, error, offline
+    behavioral_state = Column(String(32), nullable=False, default="IDLE", index=True) # IDLE, PLANNING, THINKING, WORKING, COMMUNICATING, MOVING, WAITING, COMPLETED, ERROR
     current_task_id = Column(String(64), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     last_seen_at = Column(DateTime, nullable=True)
 
-    # 3D Environment Placement & Appearance
+    # 3D Environment Placement, Spatial Navigation & Appearance
     station = Column(String(64), nullable=False, default="captain_hq")
     pos_x = Column(Float, default=0.0)
     pos_y = Column(Float, default=1.0)
     pos_z = Column(Float, default=0.0)
+    target_pos_x = Column(Float, nullable=True)
+    target_pos_y = Column(Float, nullable=True)
+    target_pos_z = Column(Float, nullable=True)
+    target_destination = Column(String(64), nullable=True)
+    active_movement_id = Column(String(64), nullable=True)
     color = Column(String(32), default="#f59e0b")
     avatar = Column(String(32), default="captain")
 
@@ -39,4 +45,5 @@ class AgentModel(Base):
     __table_args__ = (
         Index("ix_agents_status_created", "status", "created_at"),
         Index("ix_agents_org_status", "organization_id", "status"),
+        Index("ix_agents_org_behavioral_state", "organization_id", "behavioral_state"),
     )

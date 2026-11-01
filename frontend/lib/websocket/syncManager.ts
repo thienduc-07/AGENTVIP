@@ -137,7 +137,8 @@ export class SyncManager {
 
     try {
       const url = this.buildWebSocketUrl();
-      this.ws = new WebSocket(url);
+      const protocols = this.config.token ? [`bearer.${this.config.token}`] : undefined;
+      this.ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
       this.setupSocketHandlers(this.ws);
     } catch (err: any) {
       this.lastError = err?.message || "Failed to initialize WebSocket";
@@ -205,6 +206,13 @@ export class SyncManager {
 
   public getLastSequenceId(): number {
     return this.lastAppliedSequenceId;
+  }
+
+  public setSnapshotWatermark(watermark: number): void {
+    if (typeof watermark === "number" && !isNaN(watermark)) {
+      this.snapshotWatermark = Math.max(this.snapshotWatermark, watermark);
+      this.lastAppliedSequenceId = Math.max(this.lastAppliedSequenceId, watermark);
+    }
   }
 
   public getTelemetry(): SyncTelemetry {

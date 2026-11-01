@@ -73,6 +73,25 @@ def setup_test_db():
     yield
     Base.metadata.drop_all(bind=test_engine)
 
+@pytest.fixture(autouse=True)
+def isolate_live_llm_keys_in_tests(monkeypatch):
+    """
+    Prevent offline unit tests from inadvertently using live cloud API keys from .env.
+    Tests that verify cloud configuration or routing inject their own test keys via monkeypatch.
+    """
+    from backend.app.core.config import settings
+    for attr in (
+        "LLM_API_KEY",
+        "OPENAI_API_KEY",
+        "GROQ_API_KEY",
+        "OPENROUTER_API_KEY",
+        "GEMINI_API_KEY",
+        "GOOGLE_API_KEY",
+    ):
+        monkeypatch.setattr(settings, attr, None)
+        monkeypatch.delenv(attr, raising=False)
+
+
 @pytest.fixture
 def db_session():
     connection = test_engine.connect()
@@ -116,6 +135,20 @@ def seed_test_agent(db_session):
     db_session.add(agent)
     db_session.commit()
     db_session.refresh(agent)
+
+    from backend.app.agent_runtime.registry.agent_registry import default_agent_registry, AgentDefinition
+    from backend.app.agent_runtime.tools.base import ToolPermissionLevel
+    test_def = AgentDefinition(
+        agent_type="test_lead",
+        display_name=agent.name,
+        description=agent.description or "Lead testing agent",
+        default_assigned_agent_id=agent.id,
+        system_prompt=f"You are {agent.name}, testing lead in AI Agency.",
+        allowed_tools=["workspace_list", "file_read", "file_search", "workspace_write", "verification_tool"],
+        permission_level=ToolPermissionLevel.LEVEL_1_WORKSPACE_WRITE,
+        enabled=True,
+    )
+    default_agent_registry.register(test_def)
     return agent
 
 @pytest.fixture

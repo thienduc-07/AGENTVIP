@@ -236,10 +236,12 @@ class RecruitmentService:
         # 8. Register dynamically in AgentRegistry using pinned version
         self._register_in_runtime(agent, specialist, dept, version_record)
 
-        # 9. Broadcast realtime WebSocket event
-        self._broadcast_event(
+        # 9. Persist and broadcast realtime WebSocket event
+        self._publish_event(
+            db=db,
             event_type="agent.recruited",
             agent_id=agent.id,
+            organization_id=organization_id,
             payload={
                 "agent_id": agent.id,
                 "name": agent.name,
@@ -345,6 +347,17 @@ class RecruitmentService:
         )
         default_agent_registry.register(agent_def)
 
+        # Equip recruited specialist with domain skills in SkillLoader
+        try:
+            from backend.app.agent_runtime.skills.skill_loader import skill_loader, DEPARTMENT_SKILL_ASSIGNMENTS
+            assigned_skills = specialist.skills if isinstance(specialist.skills, list) else []
+            if not assigned_skills and department:
+                assigned_skills = DEPARTMENT_SKILL_ASSIGNMENTS.get(department, [])
+            if assigned_skills:
+                skill_loader.register_agent_skills(agent.id, assigned_skills)
+        except Exception as e:
+            logger.warning(f"Could not bind skills for recruited agent '{agent.id}': {e}")
+
     def transition_lifecycle(
         self,
         db: Session,
@@ -365,6 +378,16 @@ class RecruitmentService:
             raise PermissionError(f"Agent '{agent_id}' does not belong to organization '{organization_id}'.")
 
         current_state = record.lifecycle_state
+        if current_state == target_state:
+            return {
+                "success": True,
+                "agent_id": agent_id,
+                "previous_state": current_state,
+                "current_state": target_state,
+                "lifecycle_state": target_state,
+                "reason": reason or "Already in target state",
+            }
+
         allowed = VALID_TRANSITIONS.get(current_state, [])
         if target_state not in allowed:
             raise ValueError(f"Invalid transition from {current_state} to {target_state}. Allowed: {allowed}")
@@ -377,12 +400,15 @@ class RecruitmentService:
 
             agent = db.query(AgentModel).filter(AgentModel.id == agent_id).first()
             if agent:
+                agent.behavioral_state = "IDLE"
                 if target_state == "SUSPENDED":
                     agent.status = "offline"
+                    agent.current_task_id = None
                 elif target_state == "ACTIVE":
                     agent.status = "idle"
                 elif target_state == "RETIRED":
                     agent.status = "offline"
+                    agent.current_task_id = None
 
             # Update runtime registry enabled flag
             reg_def = default_agent_registry.get(agent_id)
@@ -428,22 +454,67 @@ class RecruitmentService:
             logger.error(f"Failed to transition lifecycle: {e}")
             raise
 
-        self._broadcast_event(
+        # Persist and broadcast authoritative lifecycle transition events
+        self._publish_event(
+            db=db,
             event_type="agent.lifecycle_changed",
             agent_id=agent_id,
+            organization_id=record.organization_id,
             payload={
                 "agent_id": agent_id,
                 "previous_state": current_state,
                 "current_state": target_state,
                 "reason": reason,
+                "organization_id": record.organization_id,
             },
         )
+
+        if target_state == "ACTIVE":
+            self._publish_event(
+                db=db,
+                event_type="agent.activated",
+                agent_id=agent_id,
+                organization_id=record.organization_id,
+                payload={
+                    "agent_id": agent_id,
+                    "previous_state": current_state,
+                    "reason": reason,
+                    "organization_id": record.organization_id,
+                },
+            )
+        elif target_state == "SUSPENDED":
+            self._publish_event(
+                db=db,
+                event_type="agent.suspended",
+                agent_id=agent_id,
+                organization_id=record.organization_id,
+                payload={
+                    "agent_id": agent_id,
+                    "previous_state": current_state,
+                    "reason": reason,
+                    "organization_id": record.organization_id,
+                },
+            )
+        elif target_state in ("RETIRED", "OFFBOARDED"):
+            self._publish_event(
+                db=db,
+                event_type="agent.offboarded",
+                agent_id=agent_id,
+                organization_id=record.organization_id,
+                payload={
+                    "agent_id": agent_id,
+                    "previous_state": current_state,
+                    "reason": reason,
+                    "organization_id": record.organization_id,
+                },
+            )
 
         return {
             "success": True,
             "agent_id": agent_id,
             "previous_state": current_state,
             "current_state": target_state,
+            "lifecycle_state": target_state,
             "reason": reason,
         }
 
@@ -578,22 +649,53 @@ class RecruitmentService:
             })
         return comparison
 
-    def _broadcast_event(self, event_type: str, agent_id: str, payload: Dict[str, Any]):
+    def _publish_event(
+        self,
+        db: Session,
+        event_type: str,
+        agent_id: Optional[str] = None,
+        organization_id: Optional[str] = None,
+        payload: Optional[Dict[str, Any]] = None,
+    ):
         """
-        Broadcasts event via WebSocket manager if active.
+        Canonical persistent event pipeline:
+        1. Persists event to database via event_service.
+        2. Assigns authoritative sequence_id.
+        3. Broadcasts full envelope via WebSocketManager.
+        4. Guarantees event is recoverable via replay.
         """
         try:
-            import asyncio
-            if ws_manager and ws_manager.main_loop:
-                asyncio.run_coroutine_threadsafe(
-                    ws_manager.broadcast_event(
-                        event_type=event_type,
-                        agent_id=agent_id,
-                        payload=payload,
-                    ),
-                    ws_manager.main_loop,
-                )
+            from backend.app.services.event_service import event_service
+            ev = event_service.create_event(
+                db=db,
+                event_type=event_type,
+                agent_id=agent_id,
+                organization_id=organization_id,
+                payload=payload or {},
+                commit=True,
+            )
+            ws_manager.broadcast_sync(ev.to_envelope())
+            return ev
         except Exception as e:
-            logger.debug(f"Event broadcast skipped: {e}")
+            logger.error(f"Failed to persist and publish event '{event_type}': {e}")
+            return None
+
+    def _broadcast_event(self, event_type: str, agent_id: str, payload: Dict[str, Any]):
+        """
+        Backward-compatible fallback routing through persistent event pipeline.
+        """
+        from backend.app.core.database import SessionLocal
+        db = SessionLocal()
+        try:
+            org_id = payload.get("organization_id")
+            self._publish_event(
+                db=db,
+                event_type=event_type,
+                agent_id=agent_id,
+                organization_id=org_id,
+                payload=payload,
+            )
+        finally:
+            db.close()
 
 recruitment_service = RecruitmentService()

@@ -81,9 +81,29 @@ class MultiAgentOrchestrator:
             logger.info(f"Starting Multi-Agent Orchestrator for workflow '{task_id}': {parent_task.title}")
             token.check()
 
-            llm_provider = get_llm_provider()
+            llm_provider = get_llm_provider(
+                organization_id=parent_task.organization_id,
+                task_id=parent_task.id,
+                agent_id=parent_task.assigned_agent_id,
+            )
 
             # 1. Plan Decomposition Phase
+            from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
+            if parent_task.assigned_agent_id:
+                try:
+                    behavioral_state_service.transition_state(
+                        db=db,
+                        agent_id=parent_task.assigned_agent_id,
+                        target_state=BehavioralState.PLANNING,
+                        organization_id=parent_task.organization_id,
+                        task_id=parent_task.id,
+                        reason="Decomposing multi-agent workflow DAG",
+                        commit=False,
+                        broadcast=True,
+                    )
+                except Exception as bs_err:
+                    logger.debug(f"Workflow PLANNING state transition skipped: {bs_err}")
+
             existing_subtasks = db.query(TaskModel).filter(TaskModel.parent_task_id == task_id).all()
             if not existing_subtasks:
                 logger.info(f"Planning subtasks for workflow '{task_id}'...")
@@ -92,6 +112,21 @@ class MultiAgentOrchestrator:
                     parent_task.description,
                     llm_provider
                 )
+
+                if parent_task.assigned_agent_id:
+                    try:
+                        behavioral_state_service.transition_state(
+                            db=db,
+                            agent_id=parent_task.assigned_agent_id,
+                            target_state=BehavioralState.COMMUNICATING,
+                            organization_id=parent_task.organization_id,
+                            task_id=parent_task.id,
+                            reason="Delegating subtasks across specialist workforce",
+                            commit=False,
+                            broadcast=True,
+                        )
+                    except Exception as bs_err:
+                        logger.debug(f"Workflow COMMUNICATING state transition skipped: {bs_err}")
 
                 # Broadcast workflow.planned
                 ev_planned = event_service.create_event(
@@ -116,9 +151,30 @@ class MultiAgentOrchestrator:
                     agent_def = self.registry.get(st_item.agent_type) or self.registry.get("general")
                     assigned_agent = agent_def.default_assigned_agent_id if agent_def else parent_task.assigned_agent_id
 
+                    # Ensure assigned agent belongs to the parent task organization
+                    agent_rec = (
+                        db.query(AgentModel)
+                        .filter(
+                            AgentModel.id == assigned_agent,
+                            AgentModel.organization_id == parent_task.organization_id,
+                        )
+                        .first()
+                    )
+                    if not agent_rec:
+                        scoped_ag = (
+                            db.query(AgentModel)
+                            .filter(AgentModel.organization_id == parent_task.organization_id)
+                            .first()
+                        )
+                        if scoped_ag:
+                            assigned_agent = scoped_ag.id
+                        else:
+                            assigned_agent = parent_task.assigned_agent_id
+
                     initial_status = "queued" if len(st_item.dependencies) == 0 else "pending"
                     subtask_record = TaskModel(
                         parent_task_id=parent_task.id,
+                        organization_id=parent_task.organization_id,
                         task_type="subtask",
                         agent_type=st_item.agent_type,
                         assigned_agent_id=assigned_agent,
@@ -318,11 +374,17 @@ class MultiAgentOrchestrator:
                     commit=False
                 )
 
-            # Reset primary agent status
-            primary_agent = db.query(AgentModel).filter(AgentModel.id == parent_task.assigned_agent_id).first()
-            if primary_agent:
-                primary_agent.status = "idle"
-                primary_agent.current_task_id = None
+            # Reset primary agent status and behavioral state
+            behavioral_state_service.safe_release_agent(
+                db=db,
+                agent_id=parent_task.assigned_agent_id,
+                organization_id=parent_task.organization_id,
+                task_id=parent_task.id,
+                terminal_state=BehavioralState.COMPLETED if aggregated["is_success"] else BehavioralState.ERROR,
+                reason=f"Workflow finalized with status {parent_task.status}",
+                commit=False,
+                broadcast=True,
+            )
 
             db.commit()
             await ws_manager.broadcast_envelope(ev_wf_end.to_envelope())
@@ -349,20 +411,71 @@ class MultiAgentOrchestrator:
 
         except TaskCancelledException:
             logger.warning(f"Workflow '{task_id}' was cancelled by user.")
+            from backend.app.services.behavioral_state_service import behavioral_state_service
             parent_task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
             if parent_task:
                 parent_task.status = "cancelled"
                 parent_task.error_message = "Workflow execution cancelled by user request."
                 parent_task.completed_at = _utcnow()
+                behavioral_state_service.safe_release_agent(
+                    db=db,
+                    agent_id=parent_task.assigned_agent_id,
+                    organization_id=parent_task.organization_id,
+                    task_id=parent_task.id,
+                    reason="Workflow cancelled",
+                    commit=False,
+                    broadcast=True,
+                )
+                subtasks = db.query(TaskModel).filter(TaskModel.parent_task_id == parent_task.id).all()
+                for st in subtasks:
+                    if st.status in ("pending", "queued", "running"):
+                        st.status = "cancelled"
+                        st.completed_at = _utcnow()
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=st.assigned_agent_id,
+                        organization_id=parent_task.organization_id,
+                        task_id=st.id,
+                        reason="Parent workflow cancelled",
+                        commit=False,
+                        broadcast=True,
+                    )
                 db.commit()
         except Exception as e:
             logger.error(f"Unhandled error in workflow '{task_id}': {e}", exc_info=True)
             db.rollback()
+            from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
             parent_task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
             if parent_task:
                 parent_task.status = "failed"
                 parent_task.error_message = str(e)
                 parent_task.completed_at = _utcnow()
+                behavioral_state_service.safe_release_agent(
+                    db=db,
+                    agent_id=parent_task.assigned_agent_id,
+                    organization_id=parent_task.organization_id,
+                    task_id=parent_task.id,
+                    terminal_state=BehavioralState.ERROR,
+                    reason=str(e),
+                    commit=False,
+                    broadcast=True,
+                )
+                subtasks = db.query(TaskModel).filter(TaskModel.parent_task_id == parent_task.id).all()
+                for st in subtasks:
+                    if st.status in ("pending", "queued", "running"):
+                        st.status = "failed"
+                        st.error_message = f"Parent workflow aborted: {str(e)}"
+                        st.completed_at = _utcnow()
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=st.assigned_agent_id,
+                        organization_id=parent_task.organization_id,
+                        task_id=st.id,
+                        terminal_state=BehavioralState.ERROR,
+                        reason=f"Parent workflow error: {str(e)}",
+                        commit=False,
+                        broadcast=True,
+                    )
                 db.commit()
         finally:
             if close_db:
@@ -378,6 +491,7 @@ class MultiAgentOrchestrator:
         token: CancellationToken,
     ) -> None:
         """Executes an individual specialized subtask."""
+        from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
         subtask_key = (subtask.input_data_json or {}).get("subtask_key", subtask.id)
         agent_def = self.registry.get(subtask.agent_type) or self.registry.get("general")
         if agent_def is None:
@@ -393,6 +507,61 @@ class MultiAgentOrchestrator:
         if agent_entity:
             agent_entity.status = "working"
             agent_entity.current_task_id = subtask.id
+            try:
+                from backend.app.services.navigation_service import navigation_service
+                from backend.app.models.workstation import WorkstationAllocationModel
+
+                ws_alloc = (
+                    db.query(WorkstationAllocationModel)
+                    .filter(
+                        WorkstationAllocationModel.agent_id == assigned_agent_id,
+                        WorkstationAllocationModel.organization_id == parent_task.organization_id,
+                        WorkstationAllocationModel.allocation_status == "ASSIGNED",
+                        WorkstationAllocationModel.is_virtual == False,  # noqa: E712
+                    )
+                    .first()
+                )
+                dest_target = (
+                    ws_alloc.logical_workstation_id
+                    if ws_alloc
+                    else (getattr(agent_entity, "station", None) or "executive_suite")
+                )
+                nav_plan = navigation_service.start_movement(
+                    db=db,
+                    agent_id=assigned_agent_id,
+                    destination=dest_target,
+                    organization_id=parent_task.organization_id,
+                    task_id=subtask.id,
+                    allow_interrupt=True,
+                    target_state_on_arrival="THINKING",
+                    commit=False,
+                    broadcast=True,
+                )
+                navigation_service.complete_movement(
+                    db=db,
+                    agent_id=assigned_agent_id,
+                    movement_id=nav_plan.get("movement_id"),
+                    target_state="THINKING",
+                    organization_id=parent_task.organization_id,
+                    task_id=subtask.id,
+                    commit=False,
+                    broadcast=True,
+                )
+            except Exception as nav_err:
+                logger.debug(f"Subtask workstation navigation skipped: {nav_err}")
+                try:
+                    behavioral_state_service.transition_state(
+                        db=db,
+                        agent_id=assigned_agent_id,
+                        target_state=BehavioralState.THINKING,
+                        organization_id=parent_task.organization_id,
+                        task_id=subtask.id,
+                        reason=f"Starting subtask '{subtask.title}'",
+                        commit=False,
+                        broadcast=True,
+                    )
+                except Exception as bs_err:
+                    logger.debug(f"Subtask THINKING state transition skipped: {bs_err}")
 
         ev_start = event_service.create_event(
             db=db,
@@ -413,7 +582,7 @@ class MultiAgentOrchestrator:
             event_type=AGENT_WORKING,
             agent_id=assigned_agent_id,
             task_id=subtask.id,
-            payload={"status": "working", "task_id": subtask.id},
+            payload={"status": "working", "behavioral_state": "THINKING", "task_id": subtask.id},
             commit=False
         )
         db.commit()
@@ -464,7 +633,7 @@ class MultiAgentOrchestrator:
             task_id=subtask.id,
         )
 
-        # 3. Execute Loop
+        # 3. Execute Loop (wrapped so unhandled exceptions never leave subtask agent WORKING)
         executor = ExecutionLoop(
             tool_registry=self.tool_registry,
             policy_engine=self.policy_engine,
@@ -474,17 +643,33 @@ class MultiAgentOrchestrator:
         agent_policy = agent_def.to_policy()
         agent_policy.agent_id = assigned_agent_id
 
-        exec_res: ExecutionResult = await executor.run(
-            task_id=subtask.id,
-            agent_id=assigned_agent_id,
-            user_prompt=subtask_prompt,
-            llm_provider=llm_provider,
-            agent_policy=agent_policy,
-            cancellation_token=token,
-            db=db,
-            system_instruction=agent_def.system_prompt,
-            memory_context=subtask_memory_ctx,
-        )
+        try:
+            exec_res: ExecutionResult = await executor.run(
+                task_id=subtask.id,
+                agent_id=assigned_agent_id,
+                user_prompt=subtask_prompt,
+                llm_provider=llm_provider,
+                agent_policy=agent_policy,
+                cancellation_token=token,
+                db=db,
+                system_instruction=agent_def.system_prompt,
+                memory_context=subtask_memory_ctx,
+            )
+        except TaskCancelledException:
+            behavioral_state_service.safe_release_agent(
+                db=db,
+                agent_id=assigned_agent_id,
+                organization_id=parent_task.organization_id,
+                task_id=subtask.id,
+                reason="Subtask cancelled",
+                commit=False,
+                broadcast=True,
+            )
+            db.commit()
+            raise
+        except Exception as sub_err:
+            logger.error(f"Unhandled error in subtask '{subtask.id}': {sub_err}")
+            exec_res = ExecutionResult(status="failed", error_message=str(sub_err))
 
         # 4. Handle Result & Emit Events
         if exec_res.success:
@@ -515,6 +700,21 @@ class MultiAgentOrchestrator:
             subtask.output_data_json = contract.to_dict()
             subtask_results[subtask.id] = contract
 
+            if agent_entity:
+                try:
+                    behavioral_state_service.transition_state(
+                        db=db,
+                        agent_id=assigned_agent_id,
+                        target_state=BehavioralState.COMMUNICATING,
+                        organization_id=parent_task.organization_id,
+                        task_id=subtask.id,
+                        reason=f"Transmitting subtask result '{subtask_key}'",
+                        commit=False,
+                        broadcast=True,
+                    )
+                except Exception as bs_err:
+                    logger.debug(f"Subtask COMMUNICATING state transition skipped: {bs_err}")
+
             ev_done = event_service.create_event(
                 db=db,
                 event_type=SUBTASK_COMPLETED,
@@ -541,12 +741,20 @@ class MultiAgentOrchestrator:
                 event_type=AGENT_IDLE,
                 agent_id=assigned_agent_id,
                 task_id=subtask.id,
-                payload={"status": "idle"},
+                payload={"status": "idle", "behavioral_state": "IDLE"},
                 commit=False
             )
             if agent_entity:
-                agent_entity.status = "idle"
-                agent_entity.current_task_id = None
+                behavioral_state_service.safe_release_agent(
+                    db=db,
+                    agent_id=assigned_agent_id,
+                    organization_id=parent_task.organization_id,
+                    task_id=subtask.id,
+                    terminal_state=BehavioralState.COMPLETED,
+                    reason=f"Subtask '{subtask_key}' completed",
+                    commit=False,
+                    broadcast=True,
+                )
 
             db.commit()
             await ws_manager.broadcast_envelope(ev_done.to_envelope())
@@ -558,6 +766,16 @@ class MultiAgentOrchestrator:
             if subtask.retry_count < subtask.max_retries:
                 subtask.retry_count += 1
                 subtask.status = "queued"
+                if agent_entity:
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=assigned_agent_id,
+                        organization_id=parent_task.organization_id,
+                        task_id=subtask.id,
+                        reason=f"Subtask retry {subtask.retry_count}/{subtask.max_retries}",
+                        commit=False,
+                        broadcast=True,
+                    )
                 logger.warning(
                     f"Subtask '{subtask.id}' failed ({exec_res.error}). "
                     f"Retrying attempt {subtask.retry_count}/{subtask.max_retries}..."
@@ -580,12 +798,20 @@ class MultiAgentOrchestrator:
                     event_type=AGENT_IDLE,
                     agent_id=assigned_agent_id,
                     task_id=subtask.id,
-                    payload={"status": "idle"},
+                    payload={"status": "idle", "behavioral_state": "IDLE"},
                     commit=False
                 )
                 if agent_entity:
-                    agent_entity.status = "idle"
-                    agent_entity.current_task_id = None
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=assigned_agent_id,
+                        organization_id=parent_task.organization_id,
+                        task_id=subtask.id,
+                        terminal_state=BehavioralState.ERROR,
+                        reason=subtask.error_message,
+                        commit=False,
+                        broadcast=True,
+                    )
 
                 db.commit()
                 await ws_manager.broadcast_envelope(ev_fail.to_envelope())

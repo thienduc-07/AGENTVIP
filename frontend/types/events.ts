@@ -13,10 +13,19 @@ export type BackendEventType =
   | "tool.approval_rejected"
   | "tool.execution_completed"
   | "agent.status_updated"
+  | "agent.behavioral_state_changed"
+  | "agent.movement_started"
+  | "agent.movement_progress"
+  | "agent.movement_completed"
+  | "agent.movement_interrupted"
   | "agent.recruited"
   | "agent.reassigned"
   | "workstation.allocated"
+  | "workstation.reassigned"
   | "workstation.released"
+  | "ceo.heartbeat_started"
+  | "ceo.heartbeat_completed"
+  | "ceo.heartbeat_failed"
   | (string & {});
 
 export interface EventEnvelope {

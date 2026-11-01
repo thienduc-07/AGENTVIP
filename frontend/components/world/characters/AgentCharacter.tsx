@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { AgentCharacterData } from "@/types";
 import { useWorldStore } from "@/store/worldStore";
+import { computeHeadingRadians, lerpAngleRadians } from "@/lib/spatialMovement";
 import CorporateAgentAvatar from "./CorporateAgentAvatar";
 import AgentStatusIndicator from "./AgentStatusIndicator";
 
@@ -14,6 +15,8 @@ interface AgentCharacterProps {
 
 export default function AgentCharacter({ agent }: AgentCharacterProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const avatarRotationRef = useRef<THREE.Group>(null);
+  const currentHeadingRef = useRef<number>(agent.headingRadians ?? 0);
 
   const selectedAgentId = useWorldStore((s) => s.selectedAgentId);
   const selectAgent = useWorldStore((s) => s.selectAgent);
@@ -29,10 +32,11 @@ export default function AgentCharacter({ agent }: AgentCharacterProps) {
 
   const currentPos = useRef(homePos.clone());
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!groupRef.current) return;
 
-    const movingAgent = useWorldStore.getState().movingAgent;
+    const storeState = useWorldStore.getState();
+    const movingAgent = storeState.movingAgent;
     const isThisAgentTaskMoving = movingAgent && movingAgent.agentId === agent.id;
 
     if (isThisAgentTaskMoving) {
@@ -42,12 +46,49 @@ export default function AgentCharacter({ agent }: AgentCharacterProps) {
       // Slight arc height during data transfer
       const curY = Math.sin(p * Math.PI) * 0.4;
 
+      const targetHeading = computeHeadingRadians(
+        [currentPos.current.x, 0, currentPos.current.z],
+        [movingAgent.targetPos[0], 0, movingAgent.targetPos[2]],
+        currentHeadingRef.current
+      );
+      currentHeadingRef.current = lerpAngleRadians(
+        currentHeadingRef.current,
+        targetHeading,
+        Math.min(1, delta * 10)
+      );
+
       currentPos.current.set(curX, curY, curZ);
       groupRef.current.position.copy(currentPos.current);
     } else {
-      // Return smoothly to home position
-      currentPos.current.lerp(homePos, 0.1);
+      const liveAgent = storeState.agents[agent.id] || agent;
+      if (liveAgent.isMoving && liveAgent.movementPlan) {
+        storeState.stepAgentSpatialMovement(agent.id, delta);
+      }
+      const updatedAgent = useWorldStore.getState().agents[agent.id] || liveAgent;
+      const targetVec = new THREE.Vector3(
+        updatedAgent.position[0],
+        0,
+        updatedAgent.position[2]
+      );
+
+      if (updatedAgent.isMoving) {
+        currentPos.current.lerp(targetVec, Math.min(1, delta * 16));
+      } else {
+        currentPos.current.lerp(targetVec, Math.min(1, delta * 10));
+      }
       groupRef.current.position.copy(currentPos.current);
+
+      if (typeof updatedAgent.headingRadians === "number") {
+        currentHeadingRef.current = lerpAngleRadians(
+          currentHeadingRef.current,
+          updatedAgent.headingRadians,
+          Math.min(1, delta * 10)
+        );
+      }
+    }
+
+    if (avatarRotationRef.current) {
+      avatarRotationRef.current.rotation.y = currentHeadingRef.current;
     }
   });
 
@@ -59,6 +100,10 @@ export default function AgentCharacter({ agent }: AgentCharacterProps) {
       [agent.position[0], 1.2, agent.position[2]]
     );
   };
+
+  const isWalking = Boolean(
+    agent.isMoving || agent.behavioralState === "MOVING"
+  );
 
   return (
     <group
@@ -75,17 +120,22 @@ export default function AgentCharacter({ agent }: AgentCharacterProps) {
         document.body.style.cursor = "auto";
       }}
     >
-      {/* 3D Stylized Corporate Professional Avatar */}
-      <CorporateAgentAvatar
-        status={agent.status}
-        color={agent.color}
-        appearance={agent.appearance}
-        isWorking={agent.status === "working"}
-      />
+      {/* Rotatable 3D Stylized Corporate Professional Avatar */}
+      <group ref={avatarRotationRef}>
+        <CorporateAgentAvatar
+          status={agent.status}
+          behavioralState={agent.behavioralState}
+          color={agent.color}
+          appearance={agent.appearance}
+          isWorking={agent.status === "working" && !isWalking}
+          isMoving={isWalking}
+        />
+      </group>
 
       {/* Floating Status Ring, Department Title & Approval Beacon */}
       <AgentStatusIndicator
         status={agent.status}
+        behavioralState={agent.behavioralState}
         color={agent.color}
         name={agent.name}
         role={agent.role}

@@ -245,7 +245,33 @@ class WorkstationService:
             agent.pos_x = allocation.pos_x
             agent.pos_y = allocation.pos_y
             agent.pos_z = allocation.pos_z
+        # 5. Persist and broadcast workstation allocation event
+        try:
+            from backend.app.services.event_service import event_service
+            from backend.app.websocket_manager import ws_manager
+            event_type = "workstation.reassigned" if existing else "workstation.allocated"
+            ev = event_service.create_event(
+                db=db,
+                event_type=event_type,
+                agent_id=agent_id,
+                organization_id=organization_id,
+                payload={
+                    "allocation_id": allocation.id,
+                    "agent_id": agent_id,
+                    "department": department,
+                    "office_zone": zone_name,
+                    "desk_number": desk_num,
+                    "position": [pos_x, pos_y, pos_z],
+                    "is_virtual": is_virtual,
+                    "allocation_status": status,
+                    "organization_id": organization_id,
+                },
+                commit=False,
+            )
             db.flush()
+            ws_manager.broadcast_sync(ev.to_envelope())
+        except Exception as ev_err:
+            logger.debug(f"Workstation event dispatch skipped: {ev_err}")
 
         logger.info(
             f"Allocated workstation '{allocation.logical_workstation_id}' (status: {allocation.allocation_status}) for agent '{agent_id}' in {department} (Org: {organization_id})."
@@ -328,6 +354,27 @@ class WorkstationService:
             allocation.notes = reason
             allocation.updated_at = datetime.utcnow()
             db.flush()
+            try:
+                from backend.app.services.event_service import event_service
+                from backend.app.websocket_manager import ws_manager
+                ev = event_service.create_event(
+                    db=db,
+                    event_type="workstation.reassigned",
+                    agent_id=agent_id,
+                    organization_id=organization_id,
+                    payload={
+                        "allocation_id": allocation.id,
+                        "agent_id": agent_id,
+                        "allocation_status": "UNASSIGNED",
+                        "reason": reason,
+                        "organization_id": organization_id,
+                    },
+                    commit=False,
+                )
+                db.flush()
+                ws_manager.broadcast_sync(ev.to_envelope())
+            except Exception as ev_err:
+                logger.debug(f"Workstation release event dispatch skipped: {ev_err}")
             logger.info(f"Released workstation for agent '{agent_id}': {reason}")
         return allocation
 

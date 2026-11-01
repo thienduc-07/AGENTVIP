@@ -14,7 +14,7 @@ class SkillSummary(BaseModel):
 
 @router.get("", response_model=List[SkillSummary])
 def list_skills():
-    """List all available Anthropic skills and their assigned Straw Hat agents"""
+    """List all available Anthropic skills and their assigned corporate employees"""
     return [
         SkillSummary(
             name=s.name,
@@ -36,7 +36,7 @@ def get_skill(skill_name: str):
 
 @router.get("/agent/{agent_id}")
 def get_agent_skills(agent_id: str):
-    """List skills equipped for a specific Straw Hat agent"""
+    """List skills equipped for a specific corporate employee"""
     skills = skill_loader.get_agent_skills(agent_id)
     return [
         SkillSummary(

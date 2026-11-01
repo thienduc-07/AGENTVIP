@@ -38,13 +38,18 @@ class ToolRegistry:
     def register(self, tool: Tool, aliases: Optional[List[str]] = None) -> None:
         canonical_name = tool.name
         self._tools[canonical_name] = tool
-        if aliases:
-            for alias in aliases:
-                self._aliases[alias] = canonical_name
-        logger.debug(f"Registered tool: {canonical_name} (aliases={aliases or []})")
+        all_aliases = list(aliases or [])
+        if "." in canonical_name:
+            all_aliases.append(canonical_name.replace(".", "_"))
+        for alias in all_aliases:
+            self._aliases[alias] = canonical_name
+        logger.debug(f"Registered tool: {canonical_name} (aliases={all_aliases})")
 
     def get(self, name: str) -> Optional[Tool]:
         canonical = self._aliases.get(name, name)
+        if canonical not in self._tools and "_" in name:
+            dot_candidate = name.replace("_", ".")
+            canonical = self._aliases.get(dot_candidate, dot_candidate)
         return self._tools.get(canonical)
 
     def is_enabled(self, name: str) -> bool:
@@ -107,18 +112,25 @@ class ToolRegistry:
         if allowed_tool_names:
             for name in allowed_tool_names:
                 canonical = self._aliases.get(name, name)
+                if canonical not in self._tools and "_" in name:
+                    canonical = self._aliases.get(name.replace("_", "."), name.replace("_", "."))
                 allowed_canonical.add(canonical)
                 allowed_canonical.add(name)
+                if "." in name:
+                    allowed_canonical.add(name.replace(".", "_"))
 
         for name, tool in self._tools.items():
             if allowed_tool_names and name not in allowed_canonical:
                 continue
             if not self.is_enabled(name):
                 continue
+            # Ensure valid function identifier matching ^[a-zA-Z0-9_-]+$ for all cloud providers
+            clean_func_name = tool.name.replace(".", "_")
+            self._aliases[clean_func_name] = tool.name
             schemas.append({
                 "type": "function",
                 "function": {
-                    "name": tool.name,
+                    "name": clean_func_name,
                     "description": tool.description,
                     "parameters": tool.input_schema,
                 }
