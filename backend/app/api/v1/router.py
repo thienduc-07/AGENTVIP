@@ -1,5 +1,20 @@
 from fastapi import APIRouter
-from backend.app.api.v1.endpoints import health, agents, tasks, events, approvals, artifacts, workflows, memories, tools, skills, specialists, recruitment, auth
+from backend.app.api.v1.endpoints import (
+    health,
+    agents,
+    tasks,
+    events,
+    approvals,
+    artifacts,
+    workflows,
+    memories,
+    tools,
+    skills,
+    specialists,
+    recruitment,
+    auth,
+    workstations,
+)
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -17,4 +32,5 @@ api_v1_router.include_router(approvals.router)
 api_v1_router.include_router(artifacts.router)
 api_v1_router.include_router(specialists.router, prefix="/specialists", tags=["specialists"])
 api_v1_router.include_router(recruitment.router, prefix="/recruitment", tags=["recruitment"])
+api_v1_router.include_router(workstations.router)
 

@@ -220,6 +220,16 @@ def test_context_builder_isolated_reference_tag(test_db):
 async def test_memory_tools_execution(test_db):
     """Verify agent tools: memory_search, memory_get, memory_propose, memory_archive."""
     # 1. Propose memory via MemoryProposeTool
+    from backend.app.models.agent import AgentModel
+    from backend.app.models.task import TaskModel
+    from backend.app.models.auth import OrganizationModel
+
+    org = OrganizationModel(id="org_default_company", name="Default Org", slug="default-org", is_active=True)
+    agent = AgentModel(id="agent-franky-shipwright", name="Franky", role="Shipwright", station="dock", organization_id="org_default_company")
+    task = TaskModel(id="task-test-123", title="Test Task", description="desc", assigned_agent_id="agent-franky-shipwright", organization_id="org_default_company")
+    test_db.add_all([org, agent, task])
+    test_db.commit()
+
     propose_tool = MemoryProposeTool()
     class DummyContext:
         agent_id = "agent-franky-shipwright"

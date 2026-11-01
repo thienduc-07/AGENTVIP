@@ -109,6 +109,13 @@ interface WorldState {
   backendConnection: "connected" | "connecting" | "reconnecting" | "error" | "demo_fallback";
   backendError: string | null;
 
+  // Demo Simulation Control
+  isDemoMode: boolean;
+  setIsDemoMode: (enabled: boolean) => void;
+  addTask: (task: ApiTask) => void;
+  addChatMessage: (msg: ChatMessage) => void;
+  clearActiveDeliverables: () => void;
+
   // Actions
   selectAgent: (agentId: string | null) => void;
   selectArea: (areaId: string | null) => void;
@@ -148,7 +155,22 @@ const initialAgentsMap = DEMO_AGENTS.reduce<Record<string, AgentCharacterData>>(
   return acc;
 }, {});
 
+export const ENABLE_DEMO_SIMULATION = process.env.NEXT_PUBLIC_ENABLE_DEMO_SIMULATION === "true";
+
 export const useWorldStore = create<WorldState>((set, get) => ({
+  // Demo Mode is false by default in production; explicitly enabled via NEXT_PUBLIC_ENABLE_DEMO_SIMULATION=true
+  isDemoMode: ENABLE_DEMO_SIMULATION,
+  setIsDemoMode: (enabled: boolean) => set({ isDemoMode: enabled }),
+  addTask: (task: ApiTask) =>
+    set((state) => ({
+      activeTasks: { ...state.activeTasks, [task.id]: task },
+    })),
+  addChatMessage: (msg: ChatMessage) =>
+    set((state) => ({
+      chatMessages: [...state.chatMessages, msg],
+    })),
+  clearActiveDeliverables: () => set({ activeDeliverables: [] }),
+
   agents: initialAgentsMap,
   areas: ISLAND_AREAS,
 
@@ -482,6 +504,13 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   // MASTER PIPELINE: SEQUENTIAL CORPORATE WORKFLOW & TELEMETRY HANDOFF
   // =========================================================================
   executeMissionPipeline: async (userPrompt: string) => {
+    if (!get().isDemoMode) {
+      console.warn(
+        "[worldStore] Synthetic demo simulation is DISABLED (production default). Real tasks must be submitted via backend task API."
+      );
+      return;
+    }
+
     const ceoId = "agent-exec-ceo";
     const agents = get().agents;
 

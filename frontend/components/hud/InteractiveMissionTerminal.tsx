@@ -23,7 +23,10 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { useWorldStore, QueueStep, DeliverableArtifact } from "@/store/worldStore";
+import { useWorldStore, QueueStep, DeliverableArtifact, ChatMessage } from "@/store/worldStore";
+import { createTask, getTaskById } from "@/lib/api/tasks";
+
+import { ApiClientError } from "@/lib/api/client";
 
 const QUICK_PROMPTS = [
   {
@@ -48,6 +51,8 @@ const QUICK_PROMPTS = [
   },
 ];
 
+export type SubmissionState = "IDLE" | "SUBMITTING" | "CONFIRMED" | "FAILED" | "OUTCOME_UNKNOWN";
+
 export default function InteractiveMissionTerminal() {
   const isMissionTerminalOpen = useWorldStore((s) => s.isMissionTerminalOpen);
   const setIsMissionTerminalOpen = useWorldStore((s) => s.setIsMissionTerminalOpen);
@@ -56,18 +61,27 @@ export default function InteractiveMissionTerminal() {
   const activeDeliverables = useWorldStore((s) => s.activeDeliverables);
   const isExecutingMission = useWorldStore((s) => s.isExecutingMission);
   const executeMissionPipeline = useWorldStore((s) => s.executeMissionPipeline);
+  const isDemoMode = useWorldStore((s) => s.isDemoMode);
+  const selectedAgentId = useWorldStore((s) => s.selectedAgentId);
+  const addTask = useWorldStore((s) => s.addTask);
+  const addChatMessage = useWorldStore((s) => s.addChatMessage);
 
   const [activeTab, setActiveTab] = useState<"chat" | "queue" | "artifacts" | "skills">("chat");
   const [inputText, setInputText] = useState("");
   const [loadedSkills, setLoadedSkills] = useState<any[]>([]);
   const [activePreviewArtifact, setActivePreviewArtifact] = useState<DeliverableArtifact | null>(null);
 
+  // Milestone 3.2.1: Submission lifecycle states
+  const [submissionState, setSubmissionState] = useState<SubmissionState>("IDLE");
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [confirmedTaskId, setConfirmedTaskId] = useState<string | null>(null);
+
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll chat to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages, isExecutingMission]);
+  }, [chatMessages, isExecutingMission, submissionState]);
 
   // Fetch loaded Anthropic skills from backend API
   useEffect(() => {
@@ -95,12 +109,112 @@ export default function InteractiveMissionTerminal() {
     fetchSkills();
   }, []);
 
-  const handleSendMessage = (e?: React.FormEvent) => {
+  const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputText.trim() || isExecutingMission) return;
-    const p = inputText.trim();
+    if (!inputText.trim()) return;
+    if (submissionState === "SUBMITTING" || isExecutingMission) return;
+
+    const promptText = inputText.trim();
     setInputText("");
-    executeMissionPipeline(p);
+
+    // If demo simulation is explicitly enabled, route to presentation pipeline
+    if (isDemoMode) {
+      executeMissionPipeline(promptText);
+      return;
+    }
+
+    // Production mode: Connect to REAL backend task endpoint
+    const userMsg: ChatMessage = {
+      id: `usr_${Date.now()}`,
+      sender: "user",
+      text: promptText,
+      timestamp: Date.now(),
+    };
+    addChatMessage(userMsg);
+
+    setSubmissionState("SUBMITTING");
+    setSubmissionError(null);
+
+    const targetAgentId = selectedAgentId || "agent-exec-ceo";
+    const clientTaskId = `task_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+    try {
+      const createdTask = await createTask({
+        id: clientTaskId,
+        title: promptText.slice(0, 100),
+        description: promptText,
+        assigned_agent_id: targetAgentId,
+        priority: "normal",
+      });
+
+      setSubmissionState("CONFIRMED");
+      setConfirmedTaskId(createdTask.id);
+      addTask(createdTask);
+
+      const confirmMsg: ChatMessage = {
+        id: `sys_confirm_${createdTask.id}`,
+        sender: "system",
+        text: `📋 [BACKEND CONFIRMED] Nhiệm vụ đã được khởi tạo thành công!\n• Task ID: ${createdTask.id}\n• Trạng thái: ${createdTask.status.toUpperCase()}\n• Phụ trách: ${createdTask.assigned_agent_id}\n• Thời gian tạo: ${new Date(createdTask.created_at).toLocaleTimeString()}`,
+        timestamp: Date.now(),
+      };
+      addChatMessage(confirmMsg);
+
+      setTimeout(() => {
+        setSubmissionState("IDLE");
+      }, 3500);
+    } catch (err: any) {
+      if (err instanceof ApiClientError && err.code === "TIMEOUT_ERROR") {
+        setSubmissionState("OUTCOME_UNKNOWN");
+        setSubmissionError("Yêu cầu quá hạn mạng. Đang đối chiếu trạng thái tác vụ với máy chủ...");
+
+        // Active server reconciliation: Check if backend created the task despite network timeout
+        try {
+          const reconciled = await getTaskById(clientTaskId);
+          if (reconciled && reconciled.id) {
+            setSubmissionState("CONFIRMED");
+            setConfirmedTaskId(reconciled.id);
+            addTask(reconciled);
+            addChatMessage({
+              id: `sys_reconcile_${reconciled.id}`,
+              sender: "system",
+              text: `✅ [OUTCOME_RESOLVED] Tác vụ đã được đối chiếu thành công trên máy chủ!\n• Task ID: ${reconciled.id}\n• Trạng thái: ${reconciled.status.toUpperCase()}`,
+              timestamp: Date.now(),
+            });
+            setTimeout(() => {
+              setSubmissionState("IDLE");
+            }, 3500);
+            return;
+          }
+        } catch {
+          // Reconcile could not confirm task on server
+        }
+
+        const timeoutMsg: ChatMessage = {
+          id: `sys_timeout_${Date.now()}`,
+          sender: "system",
+          text: `⚠️ [OUTCOME_UNKNOWN] Yêu cầu gửi nhiệm vụ bị quá hạn mạng (Request Timeout). Kết quả phía máy chủ chưa xác định. Khóa phân định: ${clientTaskId}.`,
+          timestamp: Date.now(),
+        };
+        addChatMessage(timeoutMsg);
+      } else {
+        const errorMsg = err?.message || "Lỗi không xác định khi gửi nhiệm vụ lên máy chủ.";
+        setSubmissionState("FAILED");
+        setSubmissionError(errorMsg);
+
+        const failMsg: ChatMessage = {
+          id: `sys_err_${Date.now()}`,
+          sender: "system",
+          text: `❌ [SUBMISSION FAILED] Không thể khởi tạo nhiệm vụ: ${errorMsg}`,
+          timestamp: Date.now(),
+        };
+        addChatMessage(failMsg);
+      }
+
+      setTimeout(() => {
+        setSubmissionState("IDLE");
+      }, 6000);
+    }
+
   };
 
   const handleDownload = (artifact: DeliverableArtifact) => {
@@ -145,6 +259,16 @@ export default function InteractiveMissionTerminal() {
         </div>
 
         <div className="flex items-center gap-2">
+          {isDemoMode ? (
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-mono font-bold tracking-wider">
+              🧪 DEMO MODE
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-mono font-bold tracking-wider flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              PROD RUNTIME
+            </span>
+          )}
           {isExecutingMission && (
             <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-bold animate-pulse">
               ⚡ ĐANG THỰC THI
@@ -340,29 +464,71 @@ export default function InteractiveMissionTerminal() {
             </div>
 
             {/* Chat Input Bar */}
-            <form onSubmit={handleSendMessage} className="mt-auto pt-2 flex gap-2">
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Nhập yêu cầu tác chiến (PRD docx, Excel xlsx, WebGL, Code...)"
-                disabled={isExecutingMission}
-                className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors disabled:opacity-50"
-              />
-              <button
-                type="submit"
-                disabled={!inputText.trim() || isExecutingMission}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {isExecutingMission ? (
-                  <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Lệnh</span>
-                  </>
-                )}
-              </button>
+            <form onSubmit={handleSendMessage} className="mt-auto pt-2 flex flex-col gap-1.5">
+              {submissionState === "OUTCOME_UNKNOWN" && (
+                <div className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-300 flex items-center justify-between">
+                  <span>⚠️ Trạng thái máy chủ chưa xác định sau khi hết thời gian chờ</span>
+                  <button
+                    type="button"
+                    onClick={() => setSubmissionState("IDLE")}
+                    className="text-[9px] underline hover:text-amber-200"
+                  >
+                    Bỏ qua
+                  </button>
+                </div>
+              )}
+              {submissionState === "FAILED" && submissionError && (
+                <div className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-[10px] text-rose-300 flex items-center justify-between">
+                  <span>❌ {submissionError}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSubmissionState("IDLE")}
+                    className="text-[9px] underline hover:text-rose-200"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder={
+                    isDemoMode
+                      ? "Nhập kịch bản demo (PRD docx, Excel xlsx, WebGL...)"
+                      : "Giao nhiệm vụ trực tiếp cho AI Backend Runtime..."
+                  }
+                  disabled={isExecutingMission || submissionState === "SUBMITTING"}
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputText.trim() || isExecutingMission || submissionState === "SUBMITTING"}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 ${
+                    submissionState === "CONFIRMED"
+                      ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20"
+                      : "bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-lg shadow-amber-500/20"
+                  }`}
+                >
+                  {submissionState === "SUBMITTING" || isExecutingMission ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span>{submissionState === "SUBMITTING" ? "ĐANG GỬI..." : "ĐANG CHẠY"}</span>
+                    </>
+                  ) : submissionState === "CONFIRMED" ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>ĐÃ TẠO</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Lệnh</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         )}

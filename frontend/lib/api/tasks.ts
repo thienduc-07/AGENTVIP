@@ -1,5 +1,12 @@
-import { apiClient } from "./client";
+import { apiClient, RequestOptions, ApiClientError } from "./client";
 import { ApiTask, CreateTaskRequest, TaskCancelResponse, ApiTaskStep, ApiEvent } from "@/types/api";
+
+export interface CreateTaskOptions {
+  timeoutMs?: number;
+  signal?: AbortSignal;
+  token?: string | null;
+  organizationId?: string | null;
+}
 
 export interface ListTasksParams {
   status?: string;
@@ -8,12 +15,42 @@ export interface ListTasksParams {
   offset?: number;
 }
 
-export async function createTask(data: CreateTaskRequest): Promise<ApiTask> {
+export function validateCreateTaskRequest(data: CreateTaskRequest): void {
+  if (!data.title || !data.title.trim()) {
+    throw new ApiClientError("Tiêu đề nhiệm vụ không được để trống", "VALIDATION_ERROR", 400);
+  }
+  if (data.title.trim().length > 200) {
+    throw new ApiClientError("Tiêu đề nhiệm vụ không được vượt quá 200 ký tự", "VALIDATION_ERROR", 400);
+  }
+  if (!data.description || !data.description.trim()) {
+    throw new ApiClientError("Mô tả nhiệm vụ không được để trống", "VALIDATION_ERROR", 400);
+  }
+  if (!data.assigned_agent_id || !data.assigned_agent_id.trim()) {
+    throw new ApiClientError("Nhiệm vụ phải được chỉ định cho một Agent", "VALIDATION_ERROR", 400);
+  }
+}
+
+export async function createTask(data: CreateTaskRequest, options: CreateTaskOptions = {}): Promise<ApiTask> {
+  validateCreateTaskRequest(data);
+  const payload: Record<string, any> = {
+    title: data.title.trim(),
+    description: data.description.trim(),
+    assigned_agent_id: data.assigned_agent_id.trim(),
+    priority: data.priority || "normal",
+  };
+  if (data.id) payload.id = data.id.trim();
+  if (data.idempotency_key) payload.idempotency_key = data.idempotency_key.trim();
+
   return apiClient<ApiTask>("/api/v1/tasks", {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
+    timeoutMs: options.timeoutMs,
+    signal: options.signal,
+    token: options.token,
+    organizationId: options.organizationId,
   });
 }
+
 
 export async function getTasks(params?: ListTasksParams): Promise<ApiTask[]> {
   return apiClient<ApiTask[]>("/api/v1/tasks", {

@@ -3,7 +3,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from backend.app.models.agent import AgentModel
-from backend.app.models.task import TaskModel
+from backend.app.models.task import TaskModel, generate_uuid
 from backend.app.models.task_step import TaskStepModel
 from backend.app.models.agent_event import AgentEventModel
 from backend.app.schemas.task import TaskCreate, TaskCancelResponse
@@ -15,6 +15,22 @@ from backend.app.websocket_manager import ws_manager
 class TaskService:
     @staticmethod
     def create_task(db: Session, task_in: TaskCreate, organization_id: Optional[str] = None) -> TaskModel:
+        # Idempotency check: If client provided an explicit task ID / idempotency identity, return existing record
+        target_id = task_in.id.strip() if (task_in.id and task_in.id.strip()) else None
+        if target_id:
+            existing = db.query(TaskModel).filter(
+                TaskModel.id == target_id,
+            ).first()
+            if existing:
+                # If belongs to same tenant, return idempotently
+                if not organization_id or existing.organization_id == organization_id:
+                    return existing
+                else:
+                    raise ValidationError(
+                        message=f"Task ID '{target_id}' belongs to another organization",
+                        code="CROSS_TENANT_TASK_ID"
+                    )
+
         # 1. Verify assigned agent exists and is active
         agent = db.query(AgentModel).filter(AgentModel.id == task_in.assigned_agent_id).first()
         if not agent:
@@ -68,8 +84,9 @@ class TaskService:
         if not task_in.description.strip():
             raise ValidationError(message="Task description cannot be blank", code="EMPTY_TASK_DESC")
 
-        # 2. Create task record with tenant-scoped organization_id
+        # 2. Create task record with tenant-scoped organization_id and canonical task ID
         task = TaskModel(
+            id=target_id or generate_uuid(),
             organization_id=effective_org,
             title=task_in.title.strip(),
             description=task_in.description.strip(),
@@ -77,6 +94,7 @@ class TaskService:
             priority=task_in.priority,
             status="queued"
         )
+
         db.add(task)
         db.flush() # Flush to generate task.id
 

@@ -159,25 +159,74 @@ class EventService:
         event_type: str,
         agent_id: Optional[str] = None,
         task_id: Optional[str] = None,
+        organization_id: Optional[str] = None,
         payload: Optional[Dict[str, Any]] = None,
         commit: bool = True,
     ) -> AgentEventModel:
         """
-        Creates and persists an event record with monotonic sequence_id.
+        Creates and persists an event record with monotonic sequence_id and tenant organization ownership.
+        Strictly enforces resource existence, cross-tenant consistency, and non-repudiation.
         """
+        # Flush pending objects in the current transaction so newly created agents/tasks are queryable
+        try:
+            db.flush()
+        except Exception:
+            pass
+
+        # 1. Resolve and validate Agent reference
+        resolved_agent_id: Optional[str] = None
+        agent_org: Optional[str] = None
+        if agent_id:
+            if agent_id in ("system", "system-catalog") or agent_id.startswith("system_") or agent_id.startswith("system-"):
+                resolved_agent_id = None
+                agent_org = None
+            else:
+                agent_obj = db.query(AgentModel).filter(AgentModel.id == agent_id).first()
+                if not agent_obj:
+                    raise ValueError(f"Referenced agent '{agent_id}' does not exist")
+                resolved_agent_id = agent_obj.id
+                agent_org = agent_obj.organization_id
+
+        # 2. Resolve and validate Task reference
+        resolved_task_id: Optional[str] = None
+        task_org: Optional[str] = None
+        if task_id:
+            task_obj = db.query(TaskModel).filter(TaskModel.id == task_id).first()
+            if not task_obj:
+                raise ValueError(f"Referenced task '{task_id}' does not exist")
+            resolved_task_id = task_obj.id
+            task_org = task_obj.organization_id
+
+        # 3. Enforce cross-resource ownership consistency
+        if task_org and agent_org and task_org != agent_org:
+            raise ValueError("Ownership conflict: Task and Agent belong to different organizations")
+
+        relational_org = task_org or agent_org
+
+        # 4. Resolve and validate explicit organization_id
+        resolved_org_id: Optional[str] = None
+        if organization_id:
+            from backend.app.models.auth import OrganizationModel
+            org_exists = db.query(OrganizationModel.id).filter(
+                OrganizationModel.id == organization_id,
+                OrganizationModel.is_active == True,
+            ).first()
+            if not org_exists:
+                raise ValueError(f"Invalid organization: Organization '{organization_id}' does not exist or is inactive")
+
+            if relational_org and organization_id != relational_org:
+                raise ValueError("Ownership conflict: Explicit organization_id does not match related resource ownership")
+            resolved_org_id = organization_id
+        elif relational_org:
+            resolved_org_id = relational_org
+        else:
+            # Trusted system-event / unattributed event policy:
+            # Events without Task, Agent, or verified explicit organization_id are system-level events (organization_id = None).
+            # Arbitrary payload metadata (e.g. payload.get("organization_id")) is NEVER trusted as authoritative ownership.
+            resolved_org_id = None
+
         max_seq = db.query(func.coalesce(func.max(AgentEventModel.sequence_id), 0)).scalar() or 0
         next_seq = int(max_seq) + 1
-
-        # Safeguard FK existence to prevent FK constraint failures with system/mock callers
-        resolved_agent_id = agent_id
-        if resolved_agent_id:
-            if not db.query(AgentModel.id).filter(AgentModel.id == resolved_agent_id).first():
-                resolved_agent_id = None
-
-        resolved_task_id = task_id
-        if resolved_task_id:
-            if not db.query(TaskModel.id).filter(TaskModel.id == resolved_task_id).first():
-                resolved_task_id = None
 
         event = AgentEventModel(
             id=f"evt_{uuid.uuid4().hex[:16]}",
@@ -185,6 +234,7 @@ class EventService:
             event_type=event_type,
             agent_id=resolved_agent_id,
             task_id=resolved_task_id,
+            organization_id=resolved_org_id,
             payload_json=payload or {},
             created_at=datetime.utcnow(),
         )
@@ -200,6 +250,7 @@ class EventService:
         agent_id: Optional[str] = None,
         task_id: Optional[str] = None,
         event_type: Optional[str] = None,
+        organization_id: Optional[str] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[AgentEventModel]:
@@ -207,6 +258,8 @@ class EventService:
         offset = max(0, offset)
 
         query = db.query(AgentEventModel)
+        if organization_id:
+            query = query.filter(AgentEventModel.organization_id == organization_id)
         if agent_id:
             query = query.filter(AgentEventModel.agent_id == agent_id)
         if task_id:
@@ -219,35 +272,69 @@ class EventService:
     @staticmethod
     def get_events_after(
         db: Session,
+        organization_id: Optional[str],
         last_sequence_id: int,
         limit: int = 100,
+        is_superadmin: bool = False,
     ) -> List[AgentEventModel]:
         """
-        Retrieves missed events after a given sequence cursor for replay.
+        Retrieves missed events after a given sequence cursor strictly scoped to the tenant organization.
+        Enforces fail-closed tenant isolation at the database query level.
         """
-        return (
-            db.query(AgentEventModel)
-            .filter(AgentEventModel.sequence_id > last_sequence_id)
-            .order_by(AgentEventModel.sequence_id.asc())
-            .limit(limit)
-            .all()
+        if not organization_id and not is_superadmin:
+            return []
+
+        limit = min(max(1, limit), 100)
+        query = db.query(AgentEventModel).filter(
+            AgentEventModel.sequence_id > last_sequence_id
         )
+
+        if not is_superadmin:
+            query = query.filter(AgentEventModel.organization_id == organization_id)
+        elif organization_id:
+            query = query.filter(AgentEventModel.organization_id == organization_id)
+
+        return query.order_by(AgentEventModel.sequence_id.asc()).limit(limit).all()
 
     @staticmethod
-    def build_initial_snapshot(db: Session) -> Dict[str, Any]:
+    def build_initial_snapshot(
+        db: Session,
+        organization_id: Optional[str] = None,
+        is_superadmin: bool = False,
+    ) -> Dict[str, Any]:
         """
         Constructs an authoritative state snapshot for newly connected or resyncing clients.
+        Strictly tenant-scoped for non-superadmin connections.
         """
-        all_agents = db.query(AgentModel).all()
-        active_tasks = (
-            db.query(TaskModel)
-            .filter(TaskModel.status.in_(["queued", "planning", "running", "waiting_approval"]))
-            .order_by(TaskModel.created_at.desc())
-            .limit(20)
-            .all()
+        agent_query = db.query(AgentModel)
+        task_query = db.query(TaskModel).filter(
+            TaskModel.status.in_(["queued", "planning", "running", "waiting_approval"])
         )
+        seq_query = db.query(func.coalesce(func.max(AgentEventModel.sequence_id), 0))
 
-        max_seq = db.query(func.coalesce(func.max(AgentEventModel.sequence_id), 0)).scalar() or 0
+        if not is_superadmin:
+            if not organization_id:
+                # Fail closed if tenant context is missing
+                return {
+                    "message_type": "snapshot",
+                    "snapshot_id": f"snap_{uuid.uuid4().hex[:12]}",
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                    "last_sequence_id": 0,
+                    "data": {"agents": [], "active_tasks": []},
+                }
+            agent_query = agent_query.filter(AgentModel.organization_id == organization_id)
+            task_query = task_query.filter(TaskModel.organization_id == organization_id)
+            seq_query = seq_query.filter(AgentEventModel.organization_id == organization_id)
+        elif organization_id:
+            agent_query = agent_query.filter(AgentModel.organization_id == organization_id)
+            task_query = task_query.filter(TaskModel.organization_id == organization_id)
+
+        # Acquire authoritative sequence watermark prior to reading entity snapshots
+        # This guarantees that any event emitted during snapshot construction will have sequence_id > max_seq
+        # and will be safely delivered via replay without silent gap loss.
+        max_seq = seq_query.scalar() or 0
+        all_agents = agent_query.all()
+        active_tasks = task_query.order_by(TaskModel.created_at.desc()).limit(50).all()
 
         return {
             "message_type": "snapshot",

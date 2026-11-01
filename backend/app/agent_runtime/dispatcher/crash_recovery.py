@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from backend.app.models.task import TaskModel
 from backend.app.models.agent import AgentModel
-from backend.app.models.agent_event import AgentEventModel
+from backend.app.services.event_service import event_service
 
 logger = logging.getLogger("grandline.runtime.recovery")
 
@@ -38,14 +38,15 @@ def recover_abandoned_tasks(db: Session) -> int:
             agent.updated_at = datetime.utcnow()
 
         # Record audit event
-        recovery_event = AgentEventModel(
+        event_service.create_event(
+            db=db,
             event_type="task.interrupted",
             agent_id=task.assigned_agent_id,
             task_id=task.id,
-            payload_json={"reason": "Worker process rebooted during execution"},
-            created_at=datetime.utcnow(),
+            organization_id=task.organization_id,
+            payload={"reason": "Worker process rebooted during execution"},
+            commit=False,
         )
-        db.add(recovery_event)
         recovered_count += 1
 
     db.commit()

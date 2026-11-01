@@ -23,6 +23,11 @@ async def test_live_task_execution_streams_events_to_websocket(db_session, seed_
     """
     mock_ws = MockWebSocketClient()
     ws_manager.active_connections.add(mock_ws)
+    ws_manager.connection_metadata[mock_ws] = {
+        "user_id": "test_mock_user",
+        "organization_id": "org_default_company",
+        "is_superadmin": False,
+    }
 
     try:
         # 1. Create task
@@ -71,6 +76,11 @@ async def test_cancelled_task_streams_cancellation_events(db_session, seed_test_
     """
     mock_ws = MockWebSocketClient()
     ws_manager.active_connections.add(mock_ws)
+    ws_manager.connection_metadata[mock_ws] = {
+        "user_id": "test_mock_user",
+        "organization_id": "org_default_company",
+        "is_superadmin": False,
+    }
 
     try:
         task = task_service.create_task(

@@ -15,6 +15,12 @@ class AgentEventModel(Base):
     event_type = Column(String(64), nullable=False, index=True)
     agent_id = Column(String(64), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
     task_id = Column(String(64), ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True, index=True)
+    organization_id = Column(
+        String(64),
+        ForeignKey("organizations.id", ondelete="RESTRICT"),
+        nullable=True,
+        index=True
+    )
     payload_json = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
@@ -25,6 +31,7 @@ class AgentEventModel(Base):
         Index("ix_agent_events_type_created", "event_type", "created_at"),
         Index("ix_agent_events_task_created", "task_id", "created_at"),
         Index("ix_agent_events_sequence_id", "sequence_id"),
+        Index("ix_agent_events_org_seq", "organization_id", "sequence_id"),
     )
 
     def to_envelope(self) -> dict:
@@ -32,6 +39,8 @@ class AgentEventModel(Base):
         iso_str = self.created_at.isoformat()
         if not iso_str.endswith("Z") and "+" not in iso_str:
             iso_str += "Z"
+
+        payload_dict = self.payload_json or {}
 
         return {
             "schema_version": 1,
@@ -41,5 +50,6 @@ class AgentEventModel(Base):
             "sequence_id": self.sequence_id,
             "agent_id": self.agent_id,
             "task_id": self.task_id,
-            "payload": self.payload_json or {},
+            "organization_id": self.organization_id,
+            "payload": payload_dict,
         }

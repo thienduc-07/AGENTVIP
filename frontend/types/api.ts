@@ -59,11 +59,14 @@ export interface ApiTask {
 }
 
 export interface CreateTaskRequest {
+  id?: string;
+  idempotency_key?: string;
   title: string;
   description: string;
   assigned_agent_id: string;
   priority?: TaskPriority;
 }
+
 
 export interface TaskCancelResponse {
   id: string;

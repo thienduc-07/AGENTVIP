@@ -19,9 +19,10 @@ import CorporateAgentDock from "@/components/interface/CorporateAgentDock";
 import { useWorldStore } from "@/store/worldStore";
 import { Agent, EventLog, PendingAction, Task } from "@/types";
 import { getAgents } from "@/lib/api/agents";
+import { syncManager } from "@/lib/websocket/syncManager";
+import { stateBridge } from "@/lib/stateBridge";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || (API_BASE.replace(/^http/, "ws") + "/api/v1/events/ws");
 
 export default function CorporateHQ3DWorldPage() {
   const syncAgentsFromBackend = useWorldStore((s) => s.syncAgentsFromBackend);
@@ -46,12 +47,6 @@ export default function CorporateHQ3DWorldPage() {
   const [isDecidingApproval, setIsDecidingApproval] = useState<boolean>(false);
   const [isLoadingTask, setIsLoadingTask] = useState<boolean>(false);
   const [isFetchingAgents, setIsFetchingAgents] = useState<boolean>(true);
-
-  const wsRef = useRef<WebSocket | null>(null);
-  const retryCountRef = useRef<number>(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // 1. Initial Data Fetch from FastAPI backend
   useEffect(() => {
@@ -92,117 +87,15 @@ export default function CorporateHQ3DWorldPage() {
     }
   };
 
-  // Start polling fallback when WebSocket is down
-  const startPollingFallback = useCallback(() => {
-    if (pollingIntervalRef.current) return;
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        const list = await getAgents();
-        syncAgentsFromBackend(list);
-      } catch (e) {
-        // Fallback polling network error
-      }
-    }, 4000);
-  }, [syncAgentsFromBackend]);
-
-  const stopPollingFallback = useCallback(() => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-  }, []);
-
-  // 2. WebSocket Realtime Sync Engine with Reconnect & Replay
+  // 2. Real-Time Event Synchronization Engine (Milestone 3.2.2)
   useEffect(() => {
-    const connectWebSocket = () => {
-      try {
-        const ws = new WebSocket(WS_BASE);
-        wsRef.current = ws;
+    const unsubSnapshot = syncManager.onSnapshot((snapshot) => {
+      applySnapshot(snapshot.data, snapshot.last_sequence_id);
+    });
 
-        ws.onopen = () => {
-          retryCountRef.current = 0;
-          setLiveConnected(true);
-          setBackendStatus("connected", null);
-          stopPollingFallback();
-
-          // Start 15s Heartbeat Ping
-          if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
-          pingIntervalRef.current = setInterval(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ action: "ping", timestamp: Date.now() }));
-            }
-          }, 15000);
-
-          // Request replay for missed events if reconnected with prior cursor
-          const currentSeq = useWorldStore.getState().lastSequenceId;
-          if (currentSeq > 0) {
-            ws.send(JSON.stringify({ action: "replay", last_sequence_id: currentSeq }));
-          }
-        };
-
-        ws.onclose = () => {
-          setLiveConnected(false);
-          if (pingIntervalRef.current) {
-            clearInterval(pingIntervalRef.current);
-            pingIntervalRef.current = null;
-          }
-
-          // Exponential backoff with jitter
-          const delay = Math.min(1000 * Math.pow(1.5, retryCountRef.current) + Math.random() * 500, 10000);
-          retryCountRef.current += 1;
-          setBackendStatus("reconnecting", `Reconnecting in ${(delay / 1000).toFixed(1)}s...`);
-
-          // Activate polling fallback while disconnected
-          startPollingFallback();
-
-          reconnectTimeoutRef.current = setTimeout(connectWebSocket, delay);
-        };
-
-        ws.onerror = () => {
-          setLiveConnected(false);
-          startPollingFallback();
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const msg = JSON.parse(event.data);
-            handleWsMessage(msg);
-          } catch (e) {
-            console.error("WS Parse error:", e);
-          }
-        };
-      } catch (err) {
-        setLiveConnected(false);
-        startPollingFallback();
-        reconnectTimeoutRef.current = setTimeout(connectWebSocket, 4000);
-      }
-    };
-
-    connectWebSocket();
-
-    return () => {
-      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
-      stopPollingFallback();
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
-  }, [stopPollingFallback, startPollingFallback]);
-
-  const handleWsMessage = useCallback((msg: any) => {
-    // 1. Authoritative Initial / Resync Snapshot
-    if (msg.message_type === "snapshot" && msg.data) {
-      applySnapshot(msg.data, msg.last_sequence_id || 0);
-      return;
-    }
-
-    // 2. Standardized Event Envelope
-    if (msg.message_type === "event" && msg.event) {
-      const envelope = msg.event;
+    const unsubEvent = syncManager.onEvent((envelope) => {
       applyEvent(envelope);
 
-      // Append to Mission Control live log feed
       const newEvent: EventLog = {
         id: envelope.event_id,
         task_id: envelope.task_id || "",
@@ -213,8 +106,8 @@ export default function CorporateHQ3DWorldPage() {
       };
       setEvents((prev) => [...prev, newEvent]);
 
-      if (envelope.event_type === "approval.required") {
-        setPendingAction(envelope.payload);
+      if (envelope.event_type === "approval.required" || envelope.event_type === "tool.awaiting_approval") {
+        setPendingAction(envelope.payload as any);
       } else if (envelope.event_type === "task.completed") {
         setIsLoadingTask(false);
         confetti({
@@ -226,35 +119,34 @@ export default function CorporateHQ3DWorldPage() {
       } else if (envelope.event_type === "task.cancelled" || envelope.event_type === "task.failed") {
         setIsLoadingTask(false);
       }
-      return;
-    }
+    });
 
-    // 3. Backward-compatibility handlers
-    const { type, data } = msg;
-    if (type === "init_state" && data?.agents) {
-      syncAgentsFromBackend(data.agents);
-    } else if (type === "agent_status") {
-      const statusStr = data.status;
-      let mapped = "idle";
-      if (statusStr === "THINKING" || statusStr === "EXECUTING_TOOL") mapped = "working";
-      else if (statusStr === "AWAITING_APPROVAL") mapped = "waiting_approval";
-      else if (statusStr === "FAILED") mapped = "error";
-      else mapped = "idle";
-      updateAgentStatus(data.agent_id, mapped as any);
-    } else if (type === "approval_required") {
-      setPendingAction(data);
-    } else if (type === "task_completed") {
-      setIsLoadingTask(false);
-      confetti({
-        particleCount: 85,
-        spread: 65,
-        origin: { y: 0.8 },
-        colors: ["#f59e0b", "#fbbf24", "#38bdf8", "#10b981"],
-      });
-    } else if (type === "task_cancelled") {
-      setIsLoadingTask(false);
-    }
-  }, [applySnapshot, applyEvent, syncAgentsFromBackend, updateAgentStatus]);
+    const unsubState = syncManager.onStateChange((state, error) => {
+      if (state === "CONNECTED") {
+        setLiveConnected(true);
+        setBackendStatus("connected", null);
+      } else if (state === "RECONNECTING" || state === "CONNECTING") {
+        setLiveConnected(false);
+        setBackendStatus(state === "CONNECTING" ? "connecting" : "reconnecting", error);
+      } else if (state === "ERROR") {
+        setLiveConnected(false);
+        setBackendStatus("error", error);
+      } else {
+        setLiveConnected(false);
+      }
+    });
+
+    const stopBridge = stateBridge.start();
+    syncManager.connect();
+
+    return () => {
+      unsubSnapshot();
+      unsubEvent();
+      unsubState();
+      syncManager.disconnect();
+      stopBridge();
+    };
+  }, [applySnapshot, applyEvent, setLiveConnected, setBackendStatus]);
 
   // 3. User Task Submission via Authoritative REST API
   const handleSubmitTask = async (agentId: string, promptText: string) => {

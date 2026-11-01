@@ -44,12 +44,26 @@ class WebSocketManager:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             return False
 
-        # Authenticate token from query parameter or Authorization header
+        # Authenticate token from query parameter, Authorization header, or Sec-WebSocket-Protocol
         token = websocket.query_params.get("token")
+        selected_subprotocol = None
         if not token:
             auth_header = websocket.headers.get("authorization")
             if auth_header and auth_header.startswith("Bearer "):
                 token = auth_header.split(" ", 1)[1]
+
+        if not token:
+            raw_protocols = websocket.headers.get("sec-websocket-protocol", "")
+            if raw_protocols:
+                for p in [x.strip() for x in raw_protocols.split(",")]:
+                    if p.startswith("bearer."):
+                        token = p.split(".", 1)[1]
+                        selected_subprotocol = p
+                        break
+                    elif p.startswith("bearer_"):
+                        token = p.split("_", 1)[1]
+                        selected_subprotocol = p
+                        break
 
         if not token:
             logger.warning("Rejected WebSocket connection: Missing authentication token")
@@ -85,7 +99,7 @@ class WebSocketManager:
             user_orgs = {m.organization_id: m.role for m in memberships}
 
             if user.is_superadmin:
-                tenant_org = req_org or "org_default_company"
+                tenant_org = req_org
             else:
                 if req_org:
                     if req_org not in user_orgs:
@@ -96,7 +110,11 @@ class WebSocketManager:
                 else:
                     raise ValueError("User has no active organization memberships")
 
-            await websocket.accept()
+            if selected_subprotocol:
+                await websocket.accept(subprotocol=selected_subprotocol)
+            else:
+                await websocket.accept()
+
             self.active_connections.add(websocket)
             self.connection_metadata[websocket] = {
                 "user_id": user.id,
@@ -118,10 +136,14 @@ class WebSocketManager:
                 pass
         logger.info(f"WebSocket client connected [org={tenant_org}]. Active connections: {len(self.active_connections)}")
 
-        # Send authoritative initial snapshot
+        # Send authoritative initial snapshot scoped to client organization
         db = SessionLocal()
         try:
-            snapshot = build_initial_snapshot(db)
+            snapshot = build_initial_snapshot(
+                db,
+                organization_id=tenant_org,
+                is_superadmin=bool(user.is_superadmin),
+            )
             await websocket.send_text(json.dumps(snapshot, default=str))
         except Exception as e:
             logger.error(f"Error generating initial snapshot for client: {e}")
@@ -145,7 +167,7 @@ class WebSocketManager:
         if not self.active_connections:
             return
 
-        effective_org = target_org or envelope.get("payload", {}).get("organization_id")
+        effective_org = target_org or envelope.get("organization_id") or envelope.get("payload", {}).get("organization_id")
 
         message_data = {
             "message_type": "event",
@@ -158,9 +180,23 @@ class WebSocketManager:
 
         dead_connections = []
         for connection in list(self.active_connections):
-            meta = self.connection_metadata.get(connection, {})
-            conn_org = meta.get("organization_id", "org_default_company")
-            if effective_org and not meta.get("is_superadmin") and conn_org != effective_org:
+            meta = self.connection_metadata.get(connection)
+            if not meta:
+                # Fail closed: Any connection lacking verified metadata receives zero events
+                continue
+
+            is_superadmin = bool(meta.get("is_superadmin", False))
+            conn_org = meta.get("organization_id")
+
+            # Tenant isolation policy:
+            # - Superadmins with conn_org=None receive all broadcasts globally.
+            # - Superadmins with conn_org=<org> receive events for that specific organization.
+            # - Standard tenants receive ONLY events matching their authenticated organization_id.
+            # - Events with no organization ownership (system/legacy/orphan) fail closed and are NOT broadcast to tenant clients.
+            if not is_superadmin:
+                if not conn_org or not effective_org or conn_org != effective_org:
+                    continue
+            elif conn_org and effective_org and conn_org != effective_org:
                 continue
 
             try:
@@ -250,32 +286,103 @@ class WebSocketManager:
             }))
 
         elif action == "resync":
-            logger.info("Client requested authoritative resync.")
+            meta = self.connection_metadata.get(websocket)
+            if not meta or (not meta.get("is_superadmin") and not meta.get("organization_id")):
+                logger.warning("Rejecting resync: Connection lacks verified tenant organization identity")
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "FORBIDDEN",
+                    "detail": "Tenant organization identity is required for resync"
+                }))
+                return
+
+            conn_org = meta.get("organization_id")
+            is_superadmin = bool(meta.get("is_superadmin", False))
+            logger.info(f"Client requested authoritative resync [org={conn_org}, superadmin={is_superadmin}].")
             db = SessionLocal()
             try:
-                snapshot = build_initial_snapshot(db)
+                snapshot = build_initial_snapshot(
+                    db,
+                    organization_id=conn_org,
+                    is_superadmin=is_superadmin,
+                )
                 await websocket.send_text(json.dumps(snapshot, default=str))
+            except Exception as e:
+                logger.error(f"Error handling resync: {e}")
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "SERVER_ERROR",
+                    "detail": "Failed to generate resync snapshot"
+                }))
             finally:
                 db.close()
 
         elif action == "replay":
+            meta = self.connection_metadata.get(websocket)
+            if not meta or (not meta.get("is_superadmin") and not meta.get("organization_id")):
+                logger.warning("Rejecting replay: Connection lacks verified tenant organization identity (fail-closed)")
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "FORBIDDEN",
+                    "detail": "Tenant organization identity is required for event replay"
+                }))
+                return
+
+            conn_org = meta.get("organization_id")
+            is_superadmin = bool(meta.get("is_superadmin", False))
+
             last_seq = msg.get("last_sequence_id")
             if last_seq is None:
                 last_seq = payload.get("last_sequence_id", 0)
-            logger.info(f"Client requested event replay after sequence_id: {last_seq}")
+
+            try:
+                last_seq_int = int(last_seq)
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid last_sequence_id received: {last_seq}")
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "BAD_REQUEST",
+                    "detail": "Invalid last_sequence_id format"
+                }))
+                return
+
+            logger.info(f"Client requested event replay after sequence_id: {last_seq_int} [org={conn_org}, superadmin={is_superadmin}]")
             db = SessionLocal()
             try:
-                missed_events = get_events_after(db, last_sequence_id=int(last_seq), limit=100)
+                missed_events = get_events_after(
+                    db=db,
+                    last_sequence_id=last_seq_int,
+                    limit=100,
+                    organization_id=conn_org,
+                    is_superadmin=is_superadmin,
+                )
                 for ev in missed_events:
                     env = ev.to_envelope()
+                    ev_org = env.get("organization_id") or env.get("payload", {}).get("organization_id")
+
+                    # Defense in depth: Verify event ownership before transmission
+                    if not is_superadmin and ev_org != conn_org:
+                        logger.error(
+                            f"SECURITY ALERT: Suppressed cross-tenant replay leak attempt "
+                            f"(event_id={ev.id}, event_org={ev_org}, conn_org={conn_org})"
+                        )
+                        continue
+                    elif is_superadmin and conn_org and ev_org != conn_org:
+                        continue
+
                     await websocket.send_text(json.dumps({
                         "message_type": "event",
                         "event": env,
-                        "type": env["event_type"],
-                        "data": env["payload"],
+                        "type": env.get("event_type"),
+                        "data": env.get("payload", {}),
                     }, default=str))
             except Exception as e:
                 logger.error(f"Error handling event replay: {e}")
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "SERVER_ERROR",
+                    "detail": "Failed to replay events"
+                }))
             finally:
                 db.close()
 

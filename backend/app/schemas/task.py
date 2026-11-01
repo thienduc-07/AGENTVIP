@@ -8,11 +8,14 @@ TaskPriorityType = Literal["low", "normal", "high", "urgent"]
 TaskStepStatusType = Literal["pending", "running", "completed", "failed", "skipped"]
 
 class TaskCreate(BaseModel):
+    id: Optional[str] = Field(None, max_length=64, description="Optional client-generated task UUID for idempotent submission")
+    idempotency_key: Optional[str] = Field(None, max_length=64, description="Optional idempotency key")
     title: str = Field(..., min_length=1, max_length=settings.MAX_TASK_TITLE_LENGTH, description="Short descriptive task title")
     description: str = Field(..., min_length=1, max_length=settings.MAX_TASK_DESC_LENGTH, description="Full mission instructions")
     assigned_agent_id: str = Field(..., min_length=1, description="ID of the assigned agent")
     priority: TaskPriorityType = Field("normal", description="Task priority: low, normal, high, urgent")
     organization_id: Optional[str] = Field(None, description="Optional organization ID (server enforces tenant identity)")
+
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=settings.MAX_TASK_TITLE_LENGTH)
