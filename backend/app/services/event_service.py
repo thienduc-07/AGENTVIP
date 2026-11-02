@@ -19,6 +19,8 @@ TASK_COMPLETED = "task.completed"
 TASK_FAILED = "task.failed"
 TASK_CANCEL_REQUESTED = "task.cancel_requested"
 TASK_CANCELLED = "task.cancelled"
+TASK_PAUSED = "task.paused"
+TASK_RESUMED = "task.resumed"
 
 AGENT_STATUS_CHANGED = "agent.status_changed"
 AGENT_IDLE = "agent.idle"
@@ -105,6 +107,8 @@ VALID_EVENT_TYPES: Set[str] = {
     TASK_FAILED,
     TASK_CANCEL_REQUESTED,
     TASK_CANCELLED,
+    TASK_PAUSED,
+    TASK_RESUMED,
     TASK_ASSIGNED,
     TASK_WAITING,
     TASK_RETRYING,
@@ -233,6 +237,8 @@ class EventService:
     EVENT_TASK_CREATED = TASK_CREATED
     EVENT_TASK_STARTED = TASK_STARTED
     EVENT_TASK_COMPLETED = TASK_COMPLETED
+    EVENT_TASK_PAUSED = TASK_PAUSED
+    EVENT_TASK_RESUMED = TASK_RESUMED
 
     _sequence_lock = threading.Lock()
     _current_max_seq: Optional[int] = None

@@ -12,7 +12,11 @@ from backend.app.models.agent import AgentModel
 from backend.app.models.agent_event import AgentEventModel
 from backend.app.models.approval import ApprovalModel
 from backend.app.models.artifact import ArtifactModel
-from backend.app.agent_runtime.cancellation import CancellationToken, TaskCancelledException
+from backend.app.agent_runtime.cancellation import (
+    CancellationToken,
+    TaskCancelledException,
+    TaskPausedException,
+)
 from backend.app.agent_runtime.llm.base import redact_secrets
 from backend.app.agent_runtime.llm.factory import get_llm_provider
 from backend.app.agent_runtime.tools.registry import default_tool_registry
@@ -59,6 +63,14 @@ class TaskDispatcher:
         if token:
             token.cancel(reason)
             logger.info(f"Cancellation dispatched for active task '{task_id}'")
+            return True
+        return False
+
+    def request_pause(self, task_id: str, reason: str = "Operator paused task execution") -> bool:
+        token = self._active_cancellations.get(task_id)
+        if token:
+            token.pause(reason)
+            logger.info(f"Pause dispatched for active task '{task_id}'")
             return True
         return False
 
@@ -692,6 +704,54 @@ class TaskDispatcher:
 
                 await ws_manager.broadcast_envelope(ev_fail.to_envelope())
                 await ws_manager.broadcast_envelope(ev_idle.to_envelope())
+
+        except TaskPausedException as e:
+            logger.info(f"Task '{task_id}' suspended by pause token: {e}")
+            try:
+                from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
+                task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
+                if task:
+                    task.status = "paused"
+                    task.updated_at = datetime.utcnow()
+                    cur_out = dict(task.output_data_json or {})
+                    cur_out["paused_at"] = datetime.utcnow().isoformat()
+                    cur_out["pause_reason"] = str(e)
+                    task.output_data_json = cur_out
+
+                    behavioral_state_service.safe_release_agent(
+                        db=db,
+                        agent_id=task.assigned_agent_id,
+                        organization_id=task.organization_id,
+                        task_id=task.id,
+                        terminal_state=BehavioralState.IDLE,
+                        reason=str(e),
+                        commit=False,
+                        broadcast=True,
+                    )
+                    ev_pause = event_service.create_event(
+                        db=db,
+                        event_type="task.paused",
+                        agent_id=task.assigned_agent_id,
+                        task_id=task.id,
+                        organization_id=task.organization_id,
+                        payload={"reason": str(e), "task_id": task.id},
+                        commit=False,
+                    )
+                    ev_idle = event_service.create_event(
+                        db=db,
+                        event_type=AGENT_IDLE,
+                        agent_id=task.assigned_agent_id,
+                        task_id=task.id,
+                        organization_id=task.organization_id,
+                        payload={"status": "idle", "behavioral_state": "IDLE"},
+                        commit=False,
+                    )
+                    db.commit()
+                    await ws_manager.broadcast_envelope(ev_pause.to_envelope())
+                    await ws_manager.broadcast_envelope(ev_idle.to_envelope())
+            except Exception as pause_rollback_err:
+                db.rollback()
+                logger.error(f"Error handling task pause checkpoint: {pause_rollback_err}")
 
         except TaskCancelledException as e:
             logger.info(f"Task '{task_id}' aborted by cancellation token: {e}")

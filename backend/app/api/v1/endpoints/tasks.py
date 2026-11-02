@@ -11,7 +11,11 @@ from backend.app.schemas.task import (
     TaskCreate,
     TaskResponse,
     TaskStepResponse,
-    TaskCancelResponse
+    TaskCancelResponse,
+    TaskPauseRequest,
+    TaskPauseResponse,
+    TaskResumeRequest,
+    TaskResumeResponse,
 )
 from backend.app.schemas.event import AgentEventResponse
 from backend.app.services.task_service import task_service
@@ -67,6 +71,30 @@ def get_task_steps(
 ):
     """Retrieves task execution steps with strict tenant ownership validation."""
     return task_service.get_task_steps(db=db, task_id=task_id, organization_id=tenant_org)
+
+@router.post("/{task_id}/pause", response_model=TaskPauseResponse)
+def pause_task(
+    task_id: str,
+    payload: Optional[TaskPauseRequest] = None,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Pauses an in-flight or queued task with strict tenant ownership validation."""
+    reason = payload.reason if payload else None
+    return task_service.pause_task(db=db, task_id=task_id, reason=reason, organization_id=tenant_org)
+
+@router.post("/{task_id}/resume", response_model=TaskResumeResponse)
+def resume_task(
+    task_id: str,
+    payload: Optional[TaskResumeRequest] = None,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Resumes a paused task, optionally injecting operator guidance, strictly scoped to tenant."""
+    guidance = payload.guidance if payload else None
+    return task_service.resume_task(db=db, task_id=task_id, guidance=guidance, organization_id=tenant_org)
 
 @router.post("/{task_id}/cancel", response_model=TaskCancelResponse)
 def cancel_task(

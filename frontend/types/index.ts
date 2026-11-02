@@ -106,6 +106,7 @@ export type TaskStatus =
   | "PENDING" 
   | "IN_PROGRESS" 
   | "AWAITING_APPROVAL" 
+  | "PAUSED"
   | "COMPLETED" 
   | "FAILED" 
   | "CANCELLED";

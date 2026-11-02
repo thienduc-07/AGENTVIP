@@ -14,6 +14,7 @@ TaskStatusType = Literal[
     "waiting",
     "waiting_approval",
     "review",
+    "paused",
     "completed",
     "failed",
     "cancelled",
@@ -100,3 +101,24 @@ class TaskCancelResponse(BaseModel):
     id: str
     status: str
     message: str
+
+class TaskPauseRequest(BaseModel):
+    reason: Optional[str] = Field("Human operator paused execution", description="Reason for pausing the task")
+
+class TaskPauseResponse(BaseModel):
+    id: str
+    status: str = "paused"
+    is_paused: bool = True
+    paused_at: datetime
+    message: str = "Task successfully paused"
+
+class TaskResumeRequest(BaseModel):
+    guidance: Optional[str] = Field(None, description="Optional guidance or updated instructions from operator")
+    idempotency_key: Optional[str] = Field(None, description="Optional idempotency key for resume action")
+
+class TaskResumeResponse(BaseModel):
+    id: str
+    status: str = "queued"
+    is_paused: bool = False
+    resumed_at: datetime
+    message: str = "Task successfully resumed"

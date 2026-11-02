@@ -7,6 +7,8 @@ export type BackendEventType =
   | "task.completed"
   | "task.failed"
   | "task.cancelled"
+  | "task.paused"
+  | "task.resumed"
   | "tool.execution_started"
   | "tool.awaiting_approval"
   | "tool.approval_granted"

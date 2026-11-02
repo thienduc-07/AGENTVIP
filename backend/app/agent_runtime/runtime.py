@@ -51,4 +51,7 @@ class AgentRuntime:
     def cancel_task(self, task_id: str, reason: str = "User requested cancellation") -> bool:
         return self.dispatcher.request_cancellation(task_id, reason)
 
+    def pause_task(self, task_id: str, reason: str = "Operator paused task execution") -> bool:
+        return self.dispatcher.request_pause(task_id, reason)
+
 agent_runtime = AgentRuntime()

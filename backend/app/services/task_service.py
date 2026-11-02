@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
@@ -6,11 +7,18 @@ from backend.app.models.agent import AgentModel
 from backend.app.models.task import TaskModel, generate_uuid
 from backend.app.models.task_step import TaskStepModel
 from backend.app.models.agent_event import AgentEventModel
-from backend.app.schemas.task import TaskCreate, TaskCancelResponse
+from backend.app.schemas.task import (
+    TaskCreate,
+    TaskCancelResponse,
+    TaskPauseResponse,
+    TaskResumeResponse,
+)
 from backend.app.core.errors import NotFoundError, ConflictError, ValidationError
 from backend.app.services.event_service import event_service
 
 from backend.app.websocket_manager import ws_manager
+
+logger = logging.getLogger("grandline.service.task")
 
 class TaskService:
     @staticmethod
@@ -184,6 +192,147 @@ class TaskService:
             .filter(TaskStepModel.task_id == task_id)
             .order_by(TaskStepModel.step_index.asc())
             .all()
+        )
+
+    @staticmethod
+    def pause_task(
+        db: Session,
+        task_id: str,
+        reason: Optional[str] = None,
+        organization_id: Optional[str] = None,
+    ) -> TaskPauseResponse:
+        task = TaskService.get_task_by_id(db, task_id, organization_id=organization_id)
+
+        now = datetime.utcnow()
+
+        # Idempotent return if already paused
+        if task.status == "paused":
+            paused_at = now
+            if isinstance(task.output_data_json, dict) and task.output_data_json.get("paused_at"):
+                try:
+                    paused_at = datetime.fromisoformat(task.output_data_json["paused_at"])
+                except Exception:
+                    pass
+            return TaskPauseResponse(
+                id=task.id,
+                status="paused",
+                is_paused=True,
+                paused_at=paused_at,
+                message="Task is already paused",
+            )
+
+        # Invariant: Terminal states cannot be paused
+        if task.status in ("completed", "cancelled", "failed"):
+            raise ConflictError(
+                message=f"Cannot pause task in terminal state '{task.status}'",
+                code=f"TASK_ALREADY_{task.status.upper()}",
+            )
+
+        # Signal active worker if actively processing
+        try:
+            from backend.app.agent_runtime import agent_runtime
+            agent_runtime.pause_task(task.id, reason=reason or "Human operator paused execution")
+        except Exception as e:
+            logger.warning(f"Error signaling pause to worker for task '{task.id}': {e}")
+
+        out_data = dict(task.output_data_json or {})
+        out_data["paused_at"] = now.isoformat()
+        out_data["pause_reason"] = reason or "Human operator paused execution"
+        task.output_data_json = out_data
+        task.updated_at = now
+
+        # Authoritative transition via TaskLifecycleEngine
+        from backend.app.agent_runtime.lifecycle.task_lifecycle import task_lifecycle_engine, TaskStatus
+        task_lifecycle_engine.transition(
+            db=db,
+            task=task,
+            target_status=TaskStatus.PAUSED,
+            reason=reason or "Human operator paused execution",
+            commit=True,
+            broadcast=True,
+        )
+
+        return TaskPauseResponse(
+            id=task.id,
+            status="paused",
+            is_paused=True,
+            paused_at=now,
+            message="Task successfully paused",
+        )
+
+    @staticmethod
+    def resume_task(
+        db: Session,
+        task_id: str,
+        guidance: Optional[str] = None,
+        organization_id: Optional[str] = None,
+    ) -> TaskResumeResponse:
+        task = TaskService.get_task_by_id(db, task_id, organization_id=organization_id)
+
+        # Invariant: Terminal states cannot be resumed (Strict prevention of resurrection)
+        if task.status in ("completed", "cancelled", "failed"):
+            raise ConflictError(
+                message=f"Cannot resume task in terminal state '{task.status}'",
+                code=f"TASK_ALREADY_{task.status.upper()}",
+            )
+
+        if task.status != "paused":
+            raise ConflictError(
+                message=f"Cannot resume task in '{task.status}' state. Only paused tasks can be resumed.",
+                code="TASK_NOT_PAUSED",
+            )
+
+        now = datetime.utcnow()
+
+        # Update metadata with guidance & resume timestamp
+        out_data = dict(task.output_data_json or {})
+        out_data["resumed_at"] = now.isoformat()
+        if guidance:
+            out_data["operator_guidance"] = guidance
+            in_data = dict(task.input_data_json or {})
+            in_data["latest_guidance"] = guidance
+            task.input_data_json = in_data
+        task.output_data_json = out_data
+        task.updated_at = now
+
+        # Record step if operator guidance was injected
+        if guidance:
+            max_step = (
+                db.query(TaskStepModel)
+                .filter(TaskStepModel.task_id == task.id)
+                .order_by(TaskStepModel.step_index.desc())
+                .first()
+            )
+            next_idx = (max_step.step_index + 1) if max_step else 1
+            resume_step = TaskStepModel(
+                task_id=task.id,
+                step_index=next_idx,
+                title="Operator Guidance Injected",
+                description=guidance,
+                status="completed",
+                started_at=now,
+                completed_at=now,
+            )
+            db.add(resume_step)
+
+        # Transition task back to queued via TaskLifecycleEngine
+        from backend.app.agent_runtime.lifecycle.task_lifecycle import task_lifecycle_engine, TaskStatus
+        task_lifecycle_engine.transition(
+            db=db,
+            task=task,
+            target_status=TaskStatus.QUEUED,
+            reason=f"Resumed by operator: {guidance or ''}".strip(),
+            guidance=guidance,
+            commit=True,
+            broadcast=True,
+        )
+
+        return TaskResumeResponse(
+            id=task.id,
+            status="queued",
+            is_paused=False,
+            resumed_at=now,
+            message="Task successfully resumed",
         )
 
     @staticmethod

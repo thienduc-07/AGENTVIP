@@ -25,6 +25,7 @@ class TaskStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     WAITING = "waiting"
     REVIEW = "review"
+    PAUSED = "paused"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -43,6 +44,7 @@ STATUS_ALIASES: Dict[str, TaskStatus] = {
     "in_progress": TaskStatus.IN_PROGRESS,
     "waiting": TaskStatus.WAITING,
     "review": TaskStatus.REVIEW,
+    "paused": TaskStatus.PAUSED,
     "completed": TaskStatus.COMPLETED,
     "failed": TaskStatus.FAILED,
     "cancelled": TaskStatus.CANCELLED,
@@ -69,6 +71,7 @@ ALLOWED_TRANSITIONS: Dict[TaskStatus, Set[TaskStatus]] = {
         TaskStatus.ASSIGNED,
         TaskStatus.QUEUED,
         TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
     },
     TaskStatus.PLANNING: {
         TaskStatus.READY,
@@ -76,24 +79,28 @@ ALLOWED_TRANSITIONS: Dict[TaskStatus, Set[TaskStatus]] = {
         TaskStatus.QUEUED,
         TaskStatus.FAILED,
         TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
     },
     TaskStatus.READY: {
         TaskStatus.ASSIGNED,
         TaskStatus.QUEUED,
         TaskStatus.IN_PROGRESS,
         TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
     },
     TaskStatus.ASSIGNED: {
         TaskStatus.QUEUED,
         TaskStatus.IN_PROGRESS,
         TaskStatus.READY,
         TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
     },
     TaskStatus.QUEUED: {
         TaskStatus.IN_PROGRESS,
         TaskStatus.WAITING,
         TaskStatus.ASSIGNED,
         TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
     },
     TaskStatus.IN_PROGRESS: {
         TaskStatus.WAITING,
@@ -101,15 +108,24 @@ ALLOWED_TRANSITIONS: Dict[TaskStatus, Set[TaskStatus]] = {
         TaskStatus.COMPLETED,
         TaskStatus.FAILED,
         TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
     },
     TaskStatus.WAITING: {
         TaskStatus.IN_PROGRESS,
         TaskStatus.FAILED,
         TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
     },
     TaskStatus.REVIEW: {
         TaskStatus.COMPLETED,
         TaskStatus.FAILED,
+        TaskStatus.IN_PROGRESS,
+        TaskStatus.CANCELLED,
+        TaskStatus.PAUSED,
+    },
+    TaskStatus.PAUSED: {
+        TaskStatus.QUEUED,
+        TaskStatus.READY,
         TaskStatus.IN_PROGRESS,
         TaskStatus.CANCELLED,
     },
@@ -162,6 +178,7 @@ class TaskLifecycleEngine:
         error_message: Optional[str] = None,
         result_summary: Optional[str] = None,
         output_data: Optional[Dict[str, Any]] = None,
+        guidance: Optional[str] = None,
         commit: bool = True,
         broadcast: bool = True,
     ) -> TaskModel:
@@ -244,6 +261,13 @@ class TaskLifecycleEngine:
             task.completed_at = now
             task.error_message = reason or "Task cancelled by cooperative user request."
 
+        elif tgt == TaskStatus.PAUSED:
+            cur_out = dict(task.output_data_json or {})
+            cur_out["paused_at"] = now.isoformat()
+            if reason:
+                cur_out["pause_reason"] = reason
+            task.output_data_json = cur_out
+
         if output_data:
             existing_out = task.output_data_json or {}
             existing_out.update(output_data)
@@ -253,8 +277,8 @@ class TaskLifecycleEngine:
         old_status_val = task.status
         task.status = tgt.value
 
-        # Manage agent release on terminal states
-        if tgt in (TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED):
+        # Manage agent release on terminal or paused states
+        if tgt in (TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED, TaskStatus.PAUSED):
             from backend.app.services.behavioral_state_service import (
                 behavioral_state_service,
                 BehavioralState,
@@ -282,10 +306,13 @@ class TaskLifecycleEngine:
             "task_id": task.id,
             "previous_status": old_status_val,
             "new_status": tgt.value,
+            "status": tgt.value,
             "reason": reason,
             "assigned_agent_id": task.assigned_agent_id,
             "organization_id": task.organization_id,
         }
+        if guidance:
+            ev_payload["guidance"] = guidance
         if deliverable:
             ev_payload["deliverable_id"] = deliverable.deliverable_id
             ev_payload["verification_status"] = deliverable.verification_status
@@ -299,6 +326,44 @@ class TaskLifecycleEngine:
             payload=ev_payload,
             commit=False,
         )
+
+        # Emit specific lifecycle events alongside status_changed
+        if tgt == TaskStatus.PAUSED:
+            ev_paused = event_service.create_event(
+                db=db,
+                event_type="task.paused",
+                agent_id=task.assigned_agent_id,
+                task_id=task.id,
+                organization_id=task.organization_id,
+                payload=ev_payload,
+                commit=False,
+            )
+            if broadcast:
+                ws_manager.broadcast_sync(ev_paused.to_envelope())
+        elif cur == TaskStatus.PAUSED and tgt in (TaskStatus.QUEUED, TaskStatus.READY, TaskStatus.IN_PROGRESS):
+            ev_resumed = event_service.create_event(
+                db=db,
+                event_type="task.resumed",
+                agent_id=task.assigned_agent_id,
+                task_id=task.id,
+                organization_id=task.organization_id,
+                payload=ev_payload,
+                commit=False,
+            )
+            if broadcast:
+                ws_manager.broadcast_sync(ev_resumed.to_envelope())
+        elif tgt == TaskStatus.CANCELLED:
+            ev_cancelled = event_service.create_event(
+                db=db,
+                event_type="task.cancelled",
+                agent_id=task.assigned_agent_id,
+                task_id=task.id,
+                organization_id=task.organization_id,
+                payload=ev_payload,
+                commit=False,
+            )
+            if broadcast:
+                ws_manager.broadcast_sync(ev_cancelled.to_envelope())
 
         if commit:
             db.commit()
