@@ -24,7 +24,7 @@ _SECRET_PATTERNS = [
     # 6. AWS Access Keys
     (re.compile(r"\bAKIA[0-9A-Z]{16}\b"), "AKIA[REDACTED]"),
     # 7. GitHub Tokens
-    (re.compile(r"\bghp_[0-9a-zA-Z]{36}\b"), "ghp_[REDACTED]"),
+    (re.compile(r"\bghp_[0-9a-zA-Z]{20,}\b"), "ghp_[REDACTED]"),
     (re.compile(r"\bgithub_pat_[0-9a-zA-Z_]{20,}\b"), "github_pat_[REDACTED]"),
     # 8. Private Key Blocks (RSA, EC, OpenSSH, DSA, Generic)
     (
