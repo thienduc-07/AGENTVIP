@@ -50,15 +50,39 @@ export interface ApiAgent {
 }
 
 export type TaskStatus =
-  | "queued"
+  | "created"
   | "planning"
+  | "ready"
+  | "assigned"
+  | "queued"
   | "running"
+  | "in_progress"
+  | "waiting"
   | "waiting_approval"
+  | "review"
   | "completed"
   | "failed"
   | "cancelled";
 
 export type TaskPriority = "low" | "normal" | "high" | "urgent";
+
+export interface StructuredDeliverable {
+  deliverable_id: string;
+  task_id: string;
+  parent_task_id?: string | null;
+  agent_id: string;
+  organization_id: string;
+  execution_id: string;
+  objective: string;
+  actions_performed: string[];
+  tools_invoked: any[];
+  evidence_references: string[];
+  result_summary: string;
+  artifact_paths: string[];
+  verification_status: "VERIFIED" | "PARTIALLY_VERIFIED" | "FAILED" | "PENDING_REVIEW";
+  verification_notes?: string | null;
+  completion_timestamp: string;
+}
 
 export interface ApiTask {
   id: string;

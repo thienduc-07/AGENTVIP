@@ -87,3 +87,27 @@ def get_task_events(
 ):
     """Retrieves event audit trail for a task with strict tenant ownership validation."""
     return task_service.get_task_events(db=db, task_id=task_id, organization_id=tenant_org)
+
+@router.get("/{task_id}/deliverable")
+def get_task_deliverable(
+    task_id: str,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Retrieves the verified deliverable contract for a completed task or subtask."""
+    deliverable = task_service.get_task_deliverable(db=db, task_id=task_id, organization_id=tenant_org)
+    if not deliverable:
+        from backend.app.core.errors import NotFoundError
+        raise NotFoundError(message=f"No deliverable found for task '{task_id}'", code="DELIVERABLE_NOT_FOUND")
+    return deliverable
+
+@router.get("/workforce/workload")
+def get_workforce_workload(
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Returns real-time workload profiles and availability for recruited specialists in the organization."""
+    from backend.app.agent_runtime.workforce.workload_manager import specialist_workload_manager
+    return [p.model_dump() for p in specialist_workload_manager.list_workforce_profiles(db=db, organization_id=tenant_org)]

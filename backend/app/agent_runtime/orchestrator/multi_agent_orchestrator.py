@@ -18,6 +18,10 @@ from backend.app.agent_runtime.verifier import result_verifier
 from backend.app.agent_runtime.tools.registry import default_tool_registry
 from backend.app.agent_runtime.policies.engine import policy_engine
 from backend.app.agent_runtime.contracts.subtask_contract import SubtaskResultContract
+from backend.app.agent_runtime.contracts.deliverable_contract import StructuredDeliverable
+from backend.app.agent_runtime.lifecycle.task_lifecycle import task_lifecycle_engine, TaskStatus
+from backend.app.agent_runtime.lifecycle.retry_manager import retry_manager
+from backend.app.agent_runtime.workforce.workload_manager import specialist_workload_manager
 from backend.app.agent_runtime.aggregator.result_aggregator import ResultAggregator
 from backend.app.agent_runtime.llm.factory import get_llm_provider
 from backend.app.agent_runtime.memory.context_builder import memory_context_builder
@@ -104,6 +108,19 @@ class MultiAgentOrchestrator:
                 except Exception as bs_err:
                     logger.debug(f"Workflow PLANNING state transition skipped: {bs_err}")
 
+            if parent_task.status in ("created", "queued", "ready"):
+                try:
+                    task_lifecycle_engine.transition(
+                        db=db,
+                        task=parent_task,
+                        target_status=TaskStatus.PLANNING,
+                        reason="Decomposing multi-agent workflow DAG",
+                        commit=False,
+                        broadcast=False,
+                    )
+                except Exception as life_err:
+                    logger.debug(f"Parent workflow transition to PLANNING skipped: {life_err}")
+
             existing_subtasks = db.query(TaskModel).filter(TaskModel.parent_task_id == task_id).all()
             if not existing_subtasks:
                 logger.info(f"Planning subtasks for workflow '{task_id}'...")
@@ -149,27 +166,22 @@ class MultiAgentOrchestrator:
                 created_subtasks: List[TaskModel] = []
                 for st_item in plan.subtasks:
                     agent_def = self.registry.get(st_item.agent_type) or self.registry.get("general")
-                    assigned_agent = agent_def.default_assigned_agent_id if agent_def else parent_task.assigned_agent_id
+                    preferred_id = agent_def.default_assigned_agent_id if agent_def else parent_task.assigned_agent_id
 
-                    # Ensure assigned agent belongs to the parent task organization
-                    agent_rec = (
-                        db.query(AgentModel)
-                        .filter(
-                            AgentModel.id == assigned_agent,
-                            AgentModel.organization_id == parent_task.organization_id,
-                        )
-                        .first()
+                    # Dynamic Capability & Workload-Aware Specialist Matching
+                    matched_spec = specialist_workload_manager.find_best_specialist(
+                        db=db,
+                        organization_id=parent_task.organization_id,
+                        required_agent_type=st_item.agent_type,
+                        required_tools=agent_def.allowed_tools if agent_def else None,
+                        required_permission_level=(
+                            agent_def.permission_level.value
+                            if hasattr(agent_def, "permission_level") and hasattr(agent_def.permission_level, "value")
+                            else 0
+                        ),
+                        preferred_agent_id=preferred_id,
                     )
-                    if not agent_rec:
-                        scoped_ag = (
-                            db.query(AgentModel)
-                            .filter(AgentModel.organization_id == parent_task.organization_id)
-                            .first()
-                        )
-                        if scoped_ag:
-                            assigned_agent = scoped_ag.id
-                        else:
-                            assigned_agent = parent_task.assigned_agent_id
+                    assigned_agent = matched_spec.id if matched_spec else preferred_id
 
                     initial_status = "queued" if len(st_item.dependencies) == 0 else "pending"
                     subtask_record = TaskModel(
@@ -192,6 +204,22 @@ class MultiAgentOrchestrator:
                     )
                     db.add(subtask_record)
                     db.flush()
+
+                    # Emit specialist.assigned event
+                    event_service.create_event(
+                        db=db,
+                        event_type="specialist.assigned",
+                        agent_id=assigned_agent,
+                        task_id=subtask_record.id,
+                        organization_id=parent_task.organization_id,
+                        payload={
+                            "subtask_id": subtask_record.id,
+                            "subtask_key": st_item.subtask_key,
+                            "agent_id": assigned_agent,
+                            "agent_type": st_item.agent_type,
+                        },
+                        commit=False,
+                    )
 
                     ev_sub_created = event_service.create_event(
                         db=db,
@@ -228,8 +256,18 @@ class MultiAgentOrchestrator:
                         "payload": st.to_subtask_dict(),
                     })
 
-            # 2. Transition Workflow to Running
-            parent_task.status = "running"
+            # 2. Transition Workflow to Running / In Progress
+            try:
+                task_lifecycle_engine.transition(
+                    db=db,
+                    task=parent_task,
+                    target_status=TaskStatus.IN_PROGRESS,
+                    reason="Starting multi-agent workflow execution DAG",
+                    commit=False,
+                    broadcast=False,
+                )
+            except Exception as life_err:
+                parent_task.status = "running"
             parent_task.started_at = _utcnow()
             ev_wf_start = event_service.create_event(
                 db=db,
@@ -247,7 +285,6 @@ class MultiAgentOrchestrator:
             max_workflow_duration = 300 # 5 minutes hard cap
             start_time = asyncio.get_event_loop().time()
             max_concurrency = 2
-            semaphore = asyncio.Semaphore(max_concurrency)
 
             while asyncio.get_event_loop().time() - start_time < max_workflow_duration:
                 token.check()
@@ -270,7 +307,7 @@ class MultiAgentOrchestrator:
 
                 # Advance pending subtasks whose dependencies are complete
                 for st in subtasks:
-                    if st.status == "pending":
+                    if st.status in ("pending", "ready"):
                         deps = st.dependencies_json or []
                         # If any dep failed, fail this subtask
                         if any(d in failed_keys for d in deps):
@@ -311,17 +348,56 @@ class MultiAgentOrchestrator:
                     await asyncio.sleep(0.1)
                     continue
 
-                # Process ready subtasks within concurrency limit
-                for st in queued_subtasks[:max_concurrency]:
+                # Process ready subtasks within concurrency limit (concurrent execution of independent subtasks)
+                ready_batch = queued_subtasks[:max_concurrency]
+                if len(ready_batch) == 1:
                     token.check()
                     await self._execute_subtask(
                         db=db,
-                        subtask=st,
+                        subtask=ready_batch[0],
                         parent_task=parent_task,
                         subtask_results=subtask_results,
                         llm_provider=llm_provider,
                         token=token
                     )
+                elif len(ready_batch) > 1:
+                    async def _run_subtask_isolated(st_item: TaskModel):
+                        sub_db = None
+                        try:
+                            from sqlalchemy.orm import sessionmaker
+                            sub_session_factory = sessionmaker(bind=db.get_bind())
+                            sub_db = sub_session_factory()
+                            st_reloaded = sub_db.query(TaskModel).filter(TaskModel.id == st_item.id).first()
+                            p_reloaded = sub_db.query(TaskModel).filter(TaskModel.id == parent_task.id).first()
+                            if st_reloaded and p_reloaded:
+                                await self._execute_subtask(
+                                    db=sub_db,
+                                    subtask=st_reloaded,
+                                    parent_task=p_reloaded,
+                                    subtask_results=subtask_results,
+                                    llm_provider=llm_provider,
+                                    token=token,
+                                )
+                                return
+                        except Exception as c_err:
+                            logger.error(f"Concurrent subtask execution error for '{st_item.id}': {c_err}", exc_info=True)
+                        finally:
+                            if sub_db is not None:
+                                sub_db.close()
+
+                        # Fallback to current session if isolated worker session unavailable
+                        await self._execute_subtask(
+                            db=db,
+                            subtask=st_item,
+                            parent_task=parent_task,
+                            subtask_results=subtask_results,
+                            llm_provider=llm_provider,
+                            token=token,
+                        )
+
+                    tasks_to_run = [_run_subtask_isolated(st) for st in ready_batch]
+                    await asyncio.gather(*tasks_to_run, return_exceptions=True)
+                    db.expire_all()
 
                 await asyncio.sleep(0.05)
 
@@ -343,8 +419,40 @@ class MultiAgentOrchestrator:
                 "total_subtasks": aggregated["total_subtasks"]
             }
 
+            # CEO Supervisory Review & Deliverable Verification
+            ev_ceo_review = event_service.create_event(
+                db=db,
+                event_type="ceo.review_completed",
+                agent_id=parent_task.assigned_agent_id,
+                task_id=parent_task.id,
+                organization_id=parent_task.organization_id,
+                payload={
+                    "workflow_id": parent_task.id,
+                    "reviewer_verdict": aggregated["reviewer_verdict"],
+                    "is_success": aggregated["is_success"],
+                    "completed_subtasks": aggregated["completed_count"],
+                    "total_subtasks": aggregated["total_subtasks"],
+                },
+                commit=False,
+            )
+
+            try:
+                parent_target = TaskStatus.COMPLETED if aggregated["is_success"] else TaskStatus.FAILED
+                task_lifecycle_engine.transition(
+                    db=db,
+                    task=parent_task,
+                    target_status=parent_target,
+                    reason=f"Workflow finalized with verdict {aggregated['reviewer_verdict']}",
+                    result_summary=parent_task.result_summary,
+                    error_message=parent_task.error_message,
+                    deliverable_verified=aggregated["is_success"],
+                    commit=False,
+                    broadcast=False,
+                )
+            except Exception as life_err:
+                parent_task.status = "completed" if aggregated["is_success"] else "failed"
+
             if aggregated["is_success"]:
-                parent_task.status = "completed"
                 ev_wf_end = event_service.create_event(
                     db=db,
                     event_type=WORKFLOW_COMPLETED,
@@ -359,7 +467,6 @@ class MultiAgentOrchestrator:
                     commit=False
                 )
             else:
-                parent_task.status = "failed"
                 parent_task.error_message = "One or more required subtasks failed during workflow execution."
                 ev_wf_end = event_service.create_event(
                     db=db,
@@ -673,15 +780,28 @@ class MultiAgentOrchestrator:
 
         # 4. Handle Result & Emit Events
         if exec_res.success:
-            subtask.status = "completed"
-            subtask.completed_at = _utcnow()
-            subtask.result_summary = exec_res.summary
-
-            # Construct structured contract
             artifact_str_list = [
                 a.get("file_path", str(a)) if isinstance(a, dict) else str(a)
                 for a in (exec_res.artifacts or [])
             ]
+
+            deliverable = StructuredDeliverable(
+                task_id=subtask.id,
+                parent_task_id=parent_task.id,
+                agent_id=assigned_agent_id,
+                organization_id=parent_task.organization_id,
+                execution_id=f"exec_{subtask.id[:8]}",
+                objective=subtask.title,
+                actions_performed=[f"Executed subtask '{subtask_key}' via {assigned_agent_id}"],
+                tools_invoked=exec_res.tool_results or [],
+                evidence_references=artifact_str_list or [f"Verified by {assigned_agent_id}"],
+                result_summary=exec_res.summary,
+                artifact_paths=artifact_str_list,
+                verification_status="VERIFIED",
+                verification_notes="Deliverable output and artifacts verified by execution verifier.",
+            )
+
+            # Construct structured contract
             contract = SubtaskResultContract(
                 task_id=subtask.id,
                 subtask_key=subtask_key,
@@ -695,10 +815,48 @@ class MultiAgentOrchestrator:
                 artifact_ids=artifact_str_list,
                 warnings=[],
                 started_at=subtask.started_at.isoformat() if subtask.started_at else None,
-                completed_at=subtask.completed_at.isoformat() if subtask.completed_at else None,
+                completed_at=_utcnow().isoformat(),
             )
-            subtask.output_data_json = contract.to_dict()
+            out_dict = contract.to_dict()
+            out_dict["deliverable"] = deliverable.to_dict()
+            subtask.output_data_json = out_dict
             subtask_results[subtask.id] = contract
+
+            try:
+                task_lifecycle_engine.transition(
+                    db=db,
+                    task=subtask,
+                    target_status=TaskStatus.COMPLETED,
+                    reason=f"Subtask '{subtask_key}' completed and verified",
+                    deliverable=deliverable,
+                    result_summary=exec_res.summary,
+                    commit=False,
+                    broadcast=False,
+                )
+            except Exception as life_err:
+                subtask.status = "completed"
+                subtask.completed_at = _utcnow()
+                subtask.result_summary = exec_res.summary
+
+            # Emit deliverable audit events
+            ev_deliv_sub = event_service.create_event(
+                db=db,
+                event_type="deliverable.submitted",
+                agent_id=assigned_agent_id,
+                task_id=subtask.id,
+                organization_id=parent_task.organization_id,
+                payload=deliverable.to_dict(),
+                commit=False,
+            )
+            ev_deliv_ver = event_service.create_event(
+                db=db,
+                event_type="deliverable.verified",
+                agent_id=assigned_agent_id,
+                task_id=subtask.id,
+                organization_id=parent_task.organization_id,
+                payload={"deliverable_id": deliverable.deliverable_id, "verification_status": "VERIFIED"},
+                commit=False,
+            )
 
             if agent_entity:
                 try:
@@ -757,15 +915,29 @@ class MultiAgentOrchestrator:
                 )
 
             db.commit()
+            await ws_manager.broadcast_envelope(ev_deliv_sub.to_envelope())
+            await ws_manager.broadcast_envelope(ev_deliv_ver.to_envelope())
             await ws_manager.broadcast_envelope(ev_done.to_envelope())
             await ws_manager.broadcast_envelope(ev_recv.to_envelope())
             await ws_manager.broadcast_envelope(ev_idle.to_envelope())
 
         else:
-            # Check retry policy
-            if subtask.retry_count < subtask.max_retries:
-                subtask.retry_count += 1
-                subtask.status = "queued"
+            # Check retry policy using RetryManager
+            retry_decision = retry_manager.evaluate_retry(subtask, error_message=exec_res.error)
+            if retry_decision.should_retry:
+                retry_manager.record_retry_attempt(subtask, retry_decision, exec_res.error)
+                try:
+                    task_lifecycle_engine.transition(
+                        db=db,
+                        task=subtask,
+                        target_status=TaskStatus.QUEUED,
+                        reason=retry_decision.reason,
+                        commit=False,
+                        broadcast=False,
+                    )
+                except Exception as life_err:
+                    subtask.status = "queued"
+
                 if agent_entity:
                     behavioral_state_service.safe_release_agent(
                         db=db,
@@ -776,15 +948,36 @@ class MultiAgentOrchestrator:
                         commit=False,
                         broadcast=True,
                     )
+                ev_retry = event_service.create_event(
+                    db=db,
+                    event_type="task.retrying",
+                    agent_id=assigned_agent_id,
+                    task_id=subtask.id,
+                    organization_id=parent_task.organization_id,
+                    payload={"subtask_id": subtask.id, "attempt": subtask.retry_count, "backoff": retry_decision.backoff_seconds},
+                    commit=False,
+                )
                 logger.warning(
                     f"Subtask '{subtask.id}' failed ({exec_res.error}). "
                     f"Retrying attempt {subtask.retry_count}/{subtask.max_retries}..."
                 )
                 db.commit()
+                await ws_manager.broadcast_envelope(ev_retry.to_envelope())
             else:
-                subtask.status = "failed"
-                subtask.completed_at = _utcnow()
-                subtask.error_message = exec_res.error or "Subtask execution failed."
+                try:
+                    task_lifecycle_engine.transition(
+                        db=db,
+                        task=subtask,
+                        target_status=TaskStatus.FAILED,
+                        error_message=exec_res.error or "Subtask execution failed.",
+                        commit=False,
+                        broadcast=False,
+                    )
+                except Exception as life_err:
+                    subtask.status = "failed"
+                    subtask.completed_at = _utcnow()
+                    subtask.error_message = exec_res.error or "Subtask execution failed."
+
                 ev_fail = event_service.create_event(
                     db=db,
                     event_type=SUBTASK_FAILED,

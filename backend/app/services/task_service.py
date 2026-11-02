@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from backend.app.models.agent import AgentModel
@@ -237,6 +237,34 @@ class TaskService:
             .filter(AgentEventModel.task_id == task_id)
             .order_by(AgentEventModel.created_at.asc())
             .all()
+        )
+
+    @staticmethod
+    def get_task_deliverable(db: Session, task_id: str, organization_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        task = TaskService.get_task_by_id(db, task_id, organization_id=organization_id)
+        if isinstance(task.output_data_json, dict):
+            return task.output_data_json.get("deliverable")
+        return None
+
+    @staticmethod
+    def update_task_status(
+        db: Session,
+        task_id: str,
+        target_status: str,
+        organization_id: Optional[str] = None,
+        reason: Optional[str] = None,
+        deliverable_verified: Optional[bool] = None,
+    ) -> TaskModel:
+        task = TaskService.get_task_by_id(db, task_id, organization_id=organization_id)
+        from backend.app.agent_runtime.lifecycle.task_lifecycle import task_lifecycle_engine
+        return task_lifecycle_engine.transition(
+            db=db,
+            task=task,
+            target_status=target_status,
+            reason=reason,
+            deliverable_verified=deliverable_verified,
+            commit=True,
+            broadcast=True,
         )
 
 task_service = TaskService()

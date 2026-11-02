@@ -3,7 +3,21 @@ from typing import Optional, List, Literal
 from pydantic import BaseModel, Field, ConfigDict
 from backend.app.core.config import settings
 
-TaskStatusType = Literal["queued", "planning", "running", "waiting_approval", "completed", "failed", "cancelled"]
+TaskStatusType = Literal[
+    "created",
+    "planning",
+    "ready",
+    "assigned",
+    "queued",
+    "running",
+    "in_progress",
+    "waiting",
+    "waiting_approval",
+    "review",
+    "completed",
+    "failed",
+    "cancelled",
+]
 TaskPriorityType = Literal["low", "normal", "high", "urgent"]
 TaskStepStatusType = Literal["pending", "running", "completed", "failed", "skipped"]
 
@@ -35,14 +49,37 @@ class TaskStepResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class DeliverableResponse(BaseModel):
+    deliverable_id: str
+    task_id: str
+    parent_task_id: Optional[str] = None
+    agent_id: str
+    organization_id: str
+    execution_id: str
+    objective: str
+    actions_performed: List[str] = []
+    tools_invoked: List[dict] = []
+    evidence_references: List[str] = []
+    result_summary: str
+    artifact_paths: List[str] = []
+    verification_status: str
+    verification_notes: Optional[str] = None
+    completion_timestamp: str
+
+    model_config = ConfigDict(extra="ignore")
+
 class TaskResponse(BaseModel):
     id: str
     organization_id: str = "org_default_company"
+    parent_task_id: Optional[str] = None
     title: str
     description: str
     status: TaskStatusType
     priority: TaskPriorityType
     assigned_agent_id: str
+    agent_type: Optional[str] = None
+    retry_count: int = 0
+    max_retries: int = 2
     created_at: datetime
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
