@@ -21,6 +21,19 @@ export interface AgentAvatarData {
   assignedWorkstation?: string | null;
   isMoving?: boolean;
   waypoints?: Array<{ x: number; y: number; z: number }> | null;
+  meetingState?:
+    | "IDLE"
+    | "WALKING_TO_MEETING"
+    | "ARRIVING"
+    | "SITTING"
+    | "LISTENING"
+    | "THINKING"
+    | "SPEAKING"
+    | "PRESENTING"
+    | "VOTING"
+    | "WAITING"
+    | "LEAVING";
+  isSeated?: boolean;
 }
 
 interface AgentAvatarProps {
@@ -113,9 +126,13 @@ export default function AgentAvatar({
       groupRef.current.position.y = (currentPos.current.y || 0) + Math.sin(t * 1.8) * 0.015;
     }
 
-    // B. Legs Walk Animation
+    // B. Legs Walk Animation vs Sitting
     if (leftLegRef.current && rightLegRef.current) {
-      if (isMoving) {
+      if (data.isSeated) {
+        // Seated posture: legs bent at 90 degrees
+        leftLegRef.current.rotation.x = -1.48;
+        rightLegRef.current.rotation.x = -1.48;
+      } else if (isMoving) {
         leftLegRef.current.rotation.x = Math.sin(t * 9.0) * 0.45;
         rightLegRef.current.rotation.x = -Math.sin(t * 9.0) * 0.45;
       } else {
@@ -126,7 +143,38 @@ export default function AgentAvatar({
 
     // C. Arms State-Based Animation
     if (leftArmRef.current && rightArmRef.current) {
-      if (isMoving) {
+      // 1. Meeting Specific Animations
+      if (data.meetingState === "SPEAKING") {
+        // Active speaking gesture: rhythmic arm movement & forward engagement
+        leftArmRef.current.rotation.x = -1.1 + Math.sin(t * 6.5) * 0.22;
+        leftArmRef.current.rotation.z = 0.25;
+        rightArmRef.current.rotation.x = -1.0 + Math.cos(t * 6.5) * 0.22;
+        rightArmRef.current.rotation.z = -0.25;
+      } else if (data.meetingState === "PRESENTING") {
+        // Keynote / Presenting: right arm outstretched towards presentation display
+        leftArmRef.current.rotation.x = -0.6;
+        leftArmRef.current.rotation.z = 0.2;
+        rightArmRef.current.rotation.x = -1.7 + Math.sin(t * 2.0) * 0.08;
+        rightArmRef.current.rotation.z = -0.4;
+      } else if (data.meetingState === "VOTING") {
+        // Voting: right arm raised high in vote
+        leftArmRef.current.rotation.x = -1.0;
+        leftArmRef.current.rotation.z = 0.15;
+        rightArmRef.current.rotation.x = -2.6 + Math.sin(t * 2.0) * 0.05;
+        rightArmRef.current.rotation.z = -0.2;
+      } else if (data.meetingState === "THINKING") {
+        // Hand to chin contemplation
+        leftArmRef.current.rotation.x = -1.0;
+        leftArmRef.current.rotation.z = 0.25;
+        rightArmRef.current.rotation.x = -1.55 + Math.sin(t * 1.5) * 0.05;
+        rightArmRef.current.rotation.z = 0.35;
+      } else if (data.isSeated) {
+        // Neutral seated position: forearms resting on conference table
+        leftArmRef.current.rotation.x = -1.0 + Math.sin(t * 1.8) * 0.02;
+        leftArmRef.current.rotation.z = 0.18;
+        rightArmRef.current.rotation.x = -1.0 + Math.cos(t * 1.8) * 0.02;
+        rightArmRef.current.rotation.z = -0.18;
+      } else if (isMoving) {
         // Natural walking arm counter-swing
         leftArmRef.current.rotation.x = -0.2 - Math.sin(t * 9.0) * 0.38;
         leftArmRef.current.rotation.z = 0.15;
@@ -310,8 +358,23 @@ export default function AgentAvatar({
       {/* 3. Floating 3D Billboard Name & Status Badge */}
       <Html position={[0, 1.95, 0]} center distanceFactor={14}>
         <div className="pointer-events-none select-none flex flex-col items-center">
+          {/* Active Speaking Indicator in Meeting */}
+          {data.meetingState === "SPEAKING" && (
+            <div className="mb-1.5 px-2.5 py-0.5 rounded-full bg-emerald-600/95 text-[10px] font-semibold text-white shadow-md border border-emerald-400/50 flex items-center gap-1.5 animate-bounce">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+              <span>ĐANG PHÁT BIỂU</span>
+            </div>
+          )}
+
+          {/* Active Voting Indicator in Meeting */}
+          {data.meetingState === "VOTING" && (
+            <div className="mb-1.5 px-2.5 py-0.5 rounded-full bg-amber-600/95 text-[10px] font-semibold text-white shadow-md border border-amber-400/50 flex items-center gap-1.5 animate-pulse">
+              <span>ĐANG BIỂU QUYẾT</span>
+            </div>
+          )}
+
           {/* Active Task Floating Pill if Working */}
-          {data.currentTaskTitle && data.behavioralState === "IN_PROGRESS" && (
+          {data.currentTaskTitle && data.behavioralState === "IN_PROGRESS" && !data.meetingState && (
             <div className="mb-1.5 px-2.5 py-0.5 rounded-full bg-blue-600/95 text-[10px] font-medium text-white shadow-md border border-blue-400/50 flex items-center gap-1.5 max-w-[190px] truncate animate-pulse">
               <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
               <span className="truncate">{data.currentTaskTitle}</span>

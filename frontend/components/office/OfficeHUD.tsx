@@ -13,6 +13,8 @@ interface OfficeHUDProps {
   occupiedWorkstations: number;
   onResetCamera: () => void;
   onFocusCEO: () => void;
+  onFocusMeetingRoom?: () => void;
+  onOpenMeetingDiscovery?: () => void;
   onRefreshData?: () => void;
   onToggleMissionDrawer?: () => void;
   isMissionDrawerOpen?: boolean;
@@ -30,6 +32,8 @@ export default function OfficeHUD({
   occupiedWorkstations,
   onResetCamera,
   onFocusCEO,
+  onFocusMeetingRoom,
+  onOpenMeetingDiscovery,
   onRefreshData,
   onToggleMissionDrawer,
   isMissionDrawerOpen,
@@ -155,6 +159,16 @@ export default function OfficeHUD({
             <Eye className="w-3.5 h-3.5 text-indigo-400" />
             <span className="hidden sm:inline">CEO Suite</span>
           </button>
+          {onFocusMeetingRoom && (
+            <button
+              onClick={onFocusMeetingRoom}
+              title="Tiêu điểm Phòng Họp Điều Hành"
+              className="px-2.5 py-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-slate-100 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Users className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden sm:inline">Phòng Họp</span>
+            </button>
+          )}
         </div>
 
         {/* Operational Action Buttons */}

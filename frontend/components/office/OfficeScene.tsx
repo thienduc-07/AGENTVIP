@@ -6,7 +6,11 @@ import OfficeHUD from "./OfficeHUD";
 import OfficeInspector from "./OfficeInspector";
 import AgentInspectionHUD from "./AgentInspectionHUD";
 import EmptyOfficeState from "./EmptyOfficeState";
+import MeetingHUD from "./MeetingHUD";
+import MeetingDiscoveryModal from "./MeetingDiscoveryModal";
 import { useOfficeSync } from "@/hooks/useOfficeSync";
+import { useMeetingSync } from "@/hooks/useMeetingSync";
+import { useMeetingStore } from "@/store/meetingStore";
 import { OfficeSelection } from "@/types/office";
 
 interface OfficeSceneProps {
@@ -39,9 +43,18 @@ export default function OfficeScene({
     refresh,
   } = useOfficeSync(initialOrgId);
 
+  // Phase 4.3.5: Real-time meeting sync
+  useMeetingSync(organizationId);
+
+  const activeMeeting = useMeetingStore((s) => s.activeMeeting);
+  const isMeetingHUDOpen = useMeetingStore((s) => s.isMeetingHUDOpen);
+  const setMeetingHUDOpen = useMeetingStore((s) => s.setMeetingHUDOpen);
+
   const [selection, setSelection] = useState<OfficeSelection>({ type: "none" });
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(TACTICAL_OVERVIEW_POS);
   const [cameraTarget, setCameraTarget] = useState<[number, number, number]>(TACTICAL_OVERVIEW_LOOK);
+  const [isMeetingDiscoveryOpen, setIsMeetingDiscoveryOpen] = useState(false);
+  const [isMeetingViewActive, setMeetingViewActive] = useState(false);
 
   // 1. Selection Handlers
   const handleSelectAgent = useCallback(
@@ -101,15 +114,52 @@ export default function OfficeScene({
 
   const handleResetCamera = useCallback(() => {
     setSelection({ type: "none" });
+    setMeetingViewActive(false);
     setCameraPosition(TACTICAL_OVERVIEW_POS);
     setCameraTarget(TACTICAL_OVERVIEW_LOOK);
   }, []);
 
   const handleFocusCEO = useCallback(() => {
     // Focus on Executive Suite at (0, 1.2, -12)
+    setMeetingViewActive(false);
     setCameraTarget([0, 1.2, -12]);
     setCameraPosition([0, 7.5, -4]);
   }, []);
+
+  // Phase 4.3.5: Meeting Camera Navigation
+  const handleEnterMeetingView = useCallback(() => {
+    setSelection({ type: "meeting_room" });
+    setMeetingViewActive(true);
+    setMeetingHUDOpen(true);
+    setCameraTarget([0, 1.3, 3.5]);
+    setCameraPosition([0, 4.2, 8.4]);
+  }, [setMeetingHUDOpen]);
+
+  const handleExitMeetingView = useCallback(() => {
+    setSelection({ type: "none" });
+    setMeetingViewActive(false);
+    setCameraPosition(TACTICAL_OVERVIEW_POS);
+    setCameraTarget(TACTICAL_OVERVIEW_LOOK);
+  }, []);
+
+  const handleFocusMeetingDisplay = useCallback(() => {
+    setSelection({ type: "meeting_display" });
+    setMeetingViewActive(true);
+    setMeetingHUDOpen(true);
+    setCameraTarget([0, 1.85, 0.5]);
+    setCameraPosition([0, 2.3, 3.2]);
+  }, [setMeetingHUDOpen]);
+
+  const handleSelectMeetingChair = useCallback(
+    (seatIndex: number, agentId?: string) => {
+      if (agentId) {
+        handleSelectAgent(agentId);
+      } else {
+        handleEnterMeetingView();
+      }
+    },
+    [handleSelectAgent, handleEnterMeetingView]
+  );
 
   // Compute telemetry metrics
   const totalAgents = Object.keys(agents).length;
@@ -131,6 +181,8 @@ export default function OfficeScene({
         occupiedWorkstations={occupiedWorkstations}
         onResetCamera={handleResetCamera}
         onFocusCEO={handleFocusCEO}
+        onFocusMeetingRoom={handleEnterMeetingView}
+        onOpenMeetingDiscovery={() => setIsMeetingDiscoveryOpen(true)}
         onRefreshData={refresh}
         onToggleMissionDrawer={onToggleMissionDrawer}
         isMissionDrawerOpen={isMissionDrawerOpen}
@@ -150,6 +202,9 @@ export default function OfficeScene({
         onSelectWorkstation={handleSelectWorkstation}
         onSelectDepartment={handleSelectDepartment}
         onPointerMissed={handleResetCamera}
+        onEnterMeetingView={handleEnterMeetingView}
+        onSelectMeetingChair={handleSelectMeetingChair}
+        onSelectMeetingDisplay={handleFocusMeetingDisplay}
       />
 
       {/* Agent Inspection HUD (when an agent is selected) */}
@@ -163,7 +218,7 @@ export default function OfficeScene({
       )}
 
       {/* Office Inspector Drawer (when workstation or department is selected) */}
-      {selection.type !== "none" && selection.type !== "agent" && (
+      {(selection.type === "workstation" || selection.type === "department") && (
         <OfficeInspector
           selection={selection}
           agents={agents}
@@ -174,6 +229,28 @@ export default function OfficeScene({
           onFocusDepartment={handleSelectDepartment}
         />
       )}
+
+      {/* Phase 4.3.5: Interactive Meeting HUD */}
+      {(isMeetingViewActive || selection.type === "meeting_room" || selection.type === "meeting_display" || isMeetingHUDOpen) && (
+        <MeetingHUD
+          organizationId={organizationId}
+          onExitMeetingView={handleExitMeetingView}
+          onFocusParticipant={handleSelectAgent}
+          onFocusDisplay={handleFocusMeetingDisplay}
+          onOpenDiscovery={() => setIsMeetingDiscoveryOpen(true)}
+        />
+      )}
+
+      {/* Phase 4.3.5: Meeting Discovery & Creation Modal */}
+      <MeetingDiscoveryModal
+        organizationId={organizationId}
+        isOpen={isMeetingDiscoveryOpen}
+        onClose={() => setIsMeetingDiscoveryOpen(false)}
+        onSelectMeeting={() => {
+          setIsMeetingDiscoveryOpen(false);
+          handleEnterMeetingView();
+        }}
+      />
 
       {/* Empty Organization State Overlay */}
       {isEmptyOrg && (

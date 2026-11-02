@@ -2614,8 +2614,8 @@
     "semantic_hash": "9eaf425ba2ea4d32ab621081857c5a32"
   },
   "workspace_sandbox/audit_test.json": {
-    "mtime": 1793630175.789571,
-    "seen": 1793630217.397475,
+    "mtime": 1793637396.7821913,
+    "seen": 1793637452.9420009,
     "ast_hash": "6809c5c5948895abade0df80d1b16bd7",
     "semantic_hash": "6809c5c5948895abade0df80d1b16bd7",
     "ast_empty": true
@@ -2634,20 +2634,20 @@
     "semantic_hash": "60bf5540706954c2ec9ac04ffd73df1c"
   },
   "workspace_sandbox/test_calc.py": {
-    "mtime": 1793630175.310837,
-    "seen": 1793630217.3974779,
+    "mtime": 1793637396.3034565,
+    "seen": 1793637452.942004,
     "ast_hash": "95010a6ac35e2fa2e20497db781fd370",
     "semantic_hash": "95010a6ac35e2fa2e20497db781fd370"
   },
   "workspace_sandbox/test_err.py": {
-    "mtime": 1793630175.3528242,
-    "seen": 1793630217.3974788,
+    "mtime": 1793637396.353459,
+    "seen": 1793637452.942004,
     "ast_hash": "bd8476323d9d018a132b1b20c1a6de14",
     "semantic_hash": "bd8476323d9d018a132b1b20c1a6de14"
   },
   "workspace_sandbox/test_fleet.json": {
-    "mtime": 1793630175.7403805,
-    "seen": 1793630217.39748,
+    "mtime": 1793637396.746411,
+    "seen": 1793637452.942005,
     "ast_hash": "4d85256ba53dbca867e0468218a6ab5a",
     "semantic_hash": "4d85256ba53dbca867e0468218a6ab5a",
     "ast_empty": true
@@ -6073,8 +6073,8 @@
     "semantic_hash": ""
   },
   "workspace_sandbox/multiagent_report.md": {
-    "mtime": 1793630175.250308,
-    "seen": 1793630217.398251,
+    "mtime": 1793637396.2470908,
+    "seen": 1793637452.9427588,
     "ast_hash": "d6bd0ece0b0df87e683b0aadc5a72369",
     "semantic_hash": ""
   },
@@ -6085,8 +6085,8 @@
     "semantic_hash": ""
   },
   "workspace_sandbox/test_grandline.txt": {
-    "mtime": 1793630175.7331572,
-    "seen": 1793630217.398253,
+    "mtime": 1793637396.739934,
+    "seen": 1793637452.942761,
     "ast_hash": "52644bc64b20b337d282b5a8a9a51a31",
     "semantic_hash": ""
   },
@@ -7525,15 +7525,15 @@
     "semantic_hash": ""
   },
   "workspace_sandbox/artifacts/test_deliverable.md": {
-    "mtime": 1793630175.738214,
-    "seen": 1793630217.39825,
+    "mtime": 1793637396.744814,
+    "seen": 1793637452.9427578,
     "ast_hash": "4e56a12c9abc9b7285477aa622b31d85",
     "semantic_hash": ""
   },
   "frontend/components/office/AgentAvatar.tsx": {
-    "mtime": 1793606421.2205656,
-    "seen": 1793609190.194898,
-    "ast_hash": "57cef2d798ba8961d57e8d93933bfe45",
+    "mtime": 1793636652.913374,
+    "seen": 1793636700.369409,
+    "ast_hash": "e24cd8f1b654668a3e956db204ed5850",
     "semantic_hash": ""
   },
   "frontend/components/office/DepartmentZone.tsx": {
@@ -7555,9 +7555,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeCanvas.tsx": {
-    "mtime": 1793626998.6973767,
-    "seen": 1793630217.397372,
-    "ast_hash": "5263fa20a078c2f5e0dcca1ba9d9aefa",
+    "mtime": 1793636653.195431,
+    "seen": 1793636700.369439,
+    "ast_hash": "f57ffa9f947d457003967b2f1fbd55e4",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeEnvironment.tsx": {
@@ -7573,9 +7573,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeHUD.tsx": {
-    "mtime": 1793601665.7983615,
-    "seen": 1793604550.026415,
-    "ast_hash": "8e1c50fd347e2ceee18a2853e83f3db6",
+    "mtime": 1793636029.0428343,
+    "seen": 1793636700.36945,
+    "ast_hash": "5143804116c5170660dfcf6510506974",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeInspector.tsx": {
@@ -7591,9 +7591,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeScene.tsx": {
-    "mtime": 1793626998.716754,
-    "seen": 1793630217.397378,
-    "ast_hash": "6babe6987a8df20c65cd303a1b3ca3a2",
+    "mtime": 1793636653.2938428,
+    "seen": 1793636700.369458,
+    "ast_hash": "131e89dbc0c9a21c933622814ddc4e0f",
     "semantic_hash": ""
   },
   "frontend/components/office/Workstation.tsx": {
@@ -7615,9 +7615,9 @@
     "semantic_hash": ""
   },
   "frontend/types/office.ts": {
-    "mtime": 1793626998.7878196,
-    "seen": 1793630217.3974369,
-    "ast_hash": "6eaa42fb782cf8f56c2f7c70a5cbc983",
+    "mtime": 1793636653.6745577,
+    "seen": 1793636700.3697221,
+    "ast_hash": "072889f822fff1fce573e9c8d211643c",
     "semantic_hash": ""
   },
   "PHASE_4_1_3D_SCENE_REPORT.md": {
@@ -7885,50 +7885,50 @@
     "semantic_hash": ""
   },
   "alembic/versions/d0e1f2a3b4c5_create_meeting_subsystem_tables.py": {
-    "mtime": 1793629989.0918925,
-    "seen": 1793630217.396922,
+    "mtime": 1793634869.6646867,
+    "seen": 1793636700.368213,
     "ast_hash": "886bfe249f4ca511ef03a55808286fee",
     "semantic_hash": ""
   },
   "backend/app/agent_runtime/meeting/__init__.py": {
-    "mtime": 1793629712.5445626,
-    "seen": 1793630217.396974,
+    "mtime": 1793635448.0458498,
+    "seen": 1793636700.368354,
     "ast_hash": "9ca97f9364f656c25b2c89a4639d8afc",
     "semantic_hash": ""
   },
   "backend/app/agent_runtime/meeting/orchestrator.py": {
-    "mtime": 1793630040.8075294,
-    "seen": 1793630217.396975,
+    "mtime": 1793634869.709001,
+    "seen": 1793636700.3683572,
     "ast_hash": "d0c0510713beec5e147bda8f3e59a9ac",
     "semantic_hash": ""
   },
   "backend/app/api/v1/endpoints/meetings.py": {
-    "mtime": 1793629848.288965,
-    "seen": 1793630217.397103,
+    "mtime": 1793635448.0470963,
+    "seen": 1793636700.36869,
     "ast_hash": "5c604a91ed0ee8174293be043dbb0fd0",
     "semantic_hash": ""
   },
   "backend/app/models/meeting.py": {
-    "mtime": 1793629979.633558,
-    "seen": 1793630217.397136,
+    "mtime": 1793634869.7968082,
+    "seen": 1793636700.368785,
     "ast_hash": "5e8bea5f048add8b34b4dc5d0bfd9087",
     "semantic_hash": ""
   },
   "backend/app/schemas/meeting.py": {
-    "mtime": 1793629389.3029413,
-    "seen": 1793630217.3971572,
+    "mtime": 1793635448.0477815,
+    "seen": 1793636700.36884,
     "ast_hash": "af42d7a2ebcc1a670ccdc120d7445906",
     "semantic_hash": ""
   },
   "backend/app/services/meeting_service.py": {
-    "mtime": 1793629674.780601,
-    "seen": 1793630217.397173,
+    "mtime": 1793635448.0484045,
+    "seen": 1793636700.36888,
     "ast_hash": "39895ec56144750223896e4b5fbc2d6c",
     "semantic_hash": ""
   },
   "backend/app/tests/test_phase4_3_4_meeting_backend.py": {
-    "mtime": 1793630059.818457,
-    "seen": 1793630217.397224,
+    "mtime": 1793634869.8266852,
+    "seen": 1793636700.3689961,
     "ast_hash": "ee4b98855dbc812f1558d8da35804c21",
     "semantic_hash": ""
   },
@@ -7936,6 +7936,84 @@
     "mtime": 1793629131.395886,
     "seen": 1793630217.3975759,
     "ast_hash": "e2d968cd25e99ed50f1896e658a3563f",
+    "semantic_hash": ""
+  },
+  "frontend/components/office/MeetingDiscoveryModal.tsx": {
+    "mtime": 1793636550.9552388,
+    "seen": 1793636700.3694239,
+    "ast_hash": "b680e280655d8d14aaaa49c84873ca97",
+    "semantic_hash": ""
+  },
+  "frontend/components/office/MeetingHUD.tsx": {
+    "mtime": 1793636551.0918357,
+    "seen": 1793636700.369427,
+    "ast_hash": "4c47b78dd1b8cb688ed6d7b3213ac8be",
+    "semantic_hash": ""
+  },
+  "frontend/components/office/MeetingPresentationScreen.tsx": {
+    "mtime": 1793636551.331999,
+    "seen": 1793636700.36943,
+    "ast_hash": "0c2a9a0c5334a879e335a0a031f1384a",
+    "semantic_hash": ""
+  },
+  "frontend/components/office/MeetingRoom.tsx": {
+    "mtime": 1793636551.502337,
+    "seen": 1793636700.369432,
+    "ast_hash": "0283ee59c219544e54e957f4a634c609",
+    "semantic_hash": ""
+  },
+  "frontend/hooks/useMeetingSync.ts": {
+    "mtime": 1793636554.361252,
+    "seen": 1793636700.3695328,
+    "ast_hash": "7b39eab5b0d09a4dd955a21ce9bf3332",
+    "semantic_hash": ""
+  },
+  "frontend/lib/api/meetings.ts": {
+    "mtime": 1793636554.5671585,
+    "seen": 1793636700.369587,
+    "ast_hash": "39e38beb6d0b8723618d5850b5366e75",
+    "semantic_hash": ""
+  },
+  "frontend/lib/meeting/seatingManager.ts": {
+    "mtime": 1793636653.462884,
+    "seen": 1793636700.369612,
+    "ast_hash": "46854644ecd715d2c632aaca2e2e0cb2",
+    "semantic_hash": ""
+  },
+  "frontend/store/meetingStore.ts": {
+    "mtime": 1793637073.9350426,
+    "seen": 1793637393.747705,
+    "ast_hash": "2200375055ac14f588a9a6a33d293578",
+    "semantic_hash": ""
+  },
+  "frontend/tests/phase4_3_5_3d_meeting.test.ts": {
+    "mtime": 1793637192.27758,
+    "seen": 1793637393.7477329,
+    "ast_hash": "101a37978d6f3325107aa54e6fbf6f18",
+    "semantic_hash": ""
+  },
+  "frontend/types/meeting.ts": {
+    "mtime": 1793636653.6355162,
+    "seen": 1793636700.369717,
+    "ast_hash": "9cdede184c9bb08246b681a5a538fb24",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_4_MEETING_BACKEND_REPORT.md": {
+    "mtime": 1793635448.0443656,
+    "seen": 1793636700.370379,
+    "ast_hash": "dbf3b595cc686da979e42af6df80296d",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_5_IMPLEMENTATION_REPORT.md": {
+    "mtime": 1793637422.2885892,
+    "seen": 1793637452.9421031,
+    "ast_hash": "fe67b48eb4c8c550d85625aca2e64d41",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_5_PRE_IMPLEMENTATION_AUDIT.md": {
+    "mtime": 1793636550.6689634,
+    "seen": 1793636700.370383,
+    "ast_hash": "0699d1bd9301def17a8485651c90a494",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

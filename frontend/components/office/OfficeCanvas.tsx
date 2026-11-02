@@ -9,8 +9,10 @@ import OfficeLighting from "./OfficeLighting";
 import OfficeCamera from "./OfficeCamera";
 import DepartmentZone, { DepartmentZoneData } from "./DepartmentZone";
 import AgentAvatar, { AgentAvatarData } from "./AgentAvatar";
+import MeetingRoom from "./MeetingRoom";
 import { WorkstationData } from "./Workstation";
 import { OfficeSelection } from "@/types/office";
+import { useMeetingStore } from "@/store/meetingStore";
 
 interface OfficeCanvasProps {
   departments: Record<string, DepartmentZoneData>;
@@ -23,6 +25,9 @@ interface OfficeCanvasProps {
   onSelectWorkstation: (id: string) => void;
   onSelectDepartment: (name: string) => void;
   onPointerMissed: () => void;
+  onEnterMeetingView?: () => void;
+  onSelectMeetingChair?: (seatIndex: number, agentId?: string) => void;
+  onSelectMeetingDisplay?: () => void;
 }
 
 export default function OfficeCanvas({
@@ -36,7 +41,15 @@ export default function OfficeCanvas({
   onSelectWorkstation,
   onSelectDepartment,
   onPointerMissed,
+  onEnterMeetingView,
+  onSelectMeetingChair,
+  onSelectMeetingDisplay,
 }: OfficeCanvasProps) {
+  const activeMeeting = useMeetingStore((s) => s.activeMeeting);
+  const seatAssignments = useMeetingStore((s) => s.seatAssignments);
+  const currentSpeakerId = useMeetingStore((s) => s.currentSpeakerId);
+  const presentationMode = useMeetingStore((s) => s.presentationMode);
+
   const selectedAgentId = selection.type === "agent" ? selection.id : null;
   const selectedWorkstationId =
     selection.type === "workstation"
@@ -45,6 +58,60 @@ export default function OfficeCanvas({
       ? Object.values(workstations).find((w) => w.assigned_employee === selection.id)?.workstation_id ?? null
       : null;
   const selectedDeptName = selection.type === "department" ? selection.id : null;
+
+  // Resolve dynamic avatar state overlaying meeting participation
+  const renderedAgents = React.useMemo(() => {
+    const isMeetingActive =
+      activeMeeting &&
+      (activeMeeting.status === "IN_PROGRESS" ||
+        activeMeeting.status === "PAUSED" ||
+        activeMeeting.status === "WAITING_APPROVAL");
+
+    const result: Record<string, AgentAvatarData> = { ...agents };
+
+    if (isMeetingActive) {
+      Object.entries(seatAssignments).forEach(([agentId, seat]) => {
+        const existing = result[agentId];
+        const seatedWorldPos: [number, number, number] = [
+          seat.position[0],
+          seat.position[1] + 0.38,
+          seat.position[2] + 3.5,
+        ];
+        const mState =
+          currentSpeakerId === agentId
+            ? "SPEAKING"
+            : presentationMode === "VOTING"
+            ? "VOTING"
+            : "LISTENING";
+
+        if (existing) {
+          result[agentId] = {
+            ...existing,
+            position: seatedWorldPos,
+            headingRadians: seat.rotationY,
+            isSeated: true,
+            meetingState: mState,
+          };
+        } else {
+          // Provide visual avatar for participant not previously in world snapshot
+          const partInfo = activeMeeting.participants.find((p) => p.agent_id === agentId);
+          result[agentId] = {
+            id: agentId,
+            name: partInfo?.agent_name || agentId,
+            role: partInfo?.role || "SPECIALIST",
+            department: "Executive",
+            position: seatedWorldPos,
+            headingRadians: seat.rotationY,
+            behavioralState: "IN_PROGRESS",
+            isSeated: true,
+            meetingState: mState,
+          };
+        }
+      });
+    }
+
+    return result;
+  }, [agents, activeMeeting, seatAssignments, currentSpeakerId, presentationMode]);
 
   return (
     <div className="relative w-full h-full bg-slate-950 overflow-hidden">
@@ -91,8 +158,16 @@ export default function OfficeCanvas({
             />
           ))}
 
+          {/* 3D Glass Conference Pavilion & Meeting Room */}
+          <MeetingRoom
+            position={[0, 0, 3.5]}
+            onEnterMeetingView={onEnterMeetingView}
+            onSelectChair={onSelectMeetingChair}
+            onSelectDisplay={onSelectMeetingDisplay}
+          />
+
           {/* Stateful Autonomous AI Agents */}
-          {Object.values(agents).map((agent) => (
+          {Object.values(renderedAgents).map((agent) => (
             <AgentAvatar
               key={agent.id}
               data={agent}

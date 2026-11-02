@@ -163,7 +163,9 @@ export type OfficeSelection =
   | { type: "none" }
   | { type: "agent"; id: string }
   | { type: "workstation"; id: string }
-  | { type: "department"; id: string };
+  | { type: "department"; id: string }
+  | { type: "meeting_room" }
+  | { type: "meeting_display" };
 
 export interface OfficeCameraPreset {
   name: string;
