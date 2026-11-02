@@ -38,7 +38,12 @@ export default function OfficeCanvas({
   onPointerMissed,
 }: OfficeCanvasProps) {
   const selectedAgentId = selection.type === "agent" ? selection.id : null;
-  const selectedWorkstationId = selection.type === "workstation" ? selection.id : null;
+  const selectedWorkstationId =
+    selection.type === "workstation"
+      ? selection.id
+      : selection.type === "agent"
+      ? Object.values(workstations).find((w) => w.assigned_employee === selection.id)?.workstation_id ?? null
+      : null;
   const selectedDeptName = selection.type === "department" ? selection.id : null;
 
   return (

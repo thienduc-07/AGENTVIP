@@ -470,6 +470,76 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
             };
           });
         }
+      } else if (event_type === "task.paused") {
+        const targetId = payload?.agent_id || agent_id;
+        if (targetId) {
+          setAgents((prev) => {
+            const current = prev[targetId];
+            if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "PAUSED");
+            return {
+              ...prev,
+              [targetId]: {
+                ...current,
+                behavioralState: "PAUSED",
+                currentTaskTitle: `Tạm dừng: ${payload?.reason || current.currentTaskTitle}`,
+              },
+            };
+          });
+        }
+      } else if (event_type === "task.resumed") {
+        const targetId = payload?.agent_id || agent_id;
+        if (targetId) {
+          setAgents((prev) => {
+            const current = prev[targetId];
+            if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "IN_PROGRESS");
+            return {
+              ...prev,
+              [targetId]: {
+                ...current,
+                behavioralState: "IN_PROGRESS",
+                currentTaskTitle: payload?.title || current.currentTaskTitle,
+              },
+            };
+          });
+        }
+      } else if (event_type === "approval.created") {
+        const targetId = payload?.agent_id || agent_id;
+        if (targetId) {
+          setAgents((prev) => {
+            const current = prev[targetId];
+            if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "WAITING_APPROVAL");
+            return {
+              ...prev,
+              [targetId]: {
+                ...current,
+                behavioralState: "WAITING_APPROVAL",
+                currentTaskTitle: `Chờ duyệt: ${payload?.action_type || "Protected action"}`,
+              },
+            };
+          });
+        }
+      } else if (
+        event_type === "approval.decided" ||
+        event_type === "approval.approved"
+      ) {
+        const targetId = payload?.agent_id || agent_id;
+        if (targetId) {
+          setAgents((prev) => {
+            const current = prev[targetId];
+            if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "IN_PROGRESS");
+            return {
+              ...prev,
+              [targetId]: {
+                ...current,
+                behavioralState: "IN_PROGRESS",
+              },
+            };
+          });
+        }
       } else if (event_type === "task.failed" || event_type === "subtask.failed") {
         const targetId = payload?.agent_id || agent_id;
         if (targetId) {
@@ -495,6 +565,10 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
       if (!isMountedRef.current) return;
       if (state === "CONNECTED") {
         setConnectionStatus("connected");
+        // Re-hydrate authoritative state on reconnect
+        if (latestSequenceRef.current > 0) {
+          loadOfficeState();
+        }
       } else if (state === "RECONNECTING") {
         setConnectionStatus("reconnecting");
       } else if (state === "ERROR") {

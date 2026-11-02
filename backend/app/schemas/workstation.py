@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, ConfigDict
 
 class ZoneConfigResponse(BaseModel):
@@ -47,3 +47,20 @@ class WorkstationOverviewResponse(BaseModel):
     zones: List[ZoneConfigResponse]
     allocations: List[WorkstationAllocationResponse]
     telemetry: WorkstationTelemetrySummary
+
+
+class WorkstationInspectionResponse(BaseModel):
+    workstation_id: str
+    organization_id: str
+    department: str
+    office_zone: str
+    desk_number: Optional[int] = None
+    pos_x: float
+    pos_y: float
+    pos_z: float
+    allocation_status: str
+    is_virtual: bool
+    is_occupied: bool
+    agent: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True)

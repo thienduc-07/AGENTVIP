@@ -406,4 +406,57 @@ class WorkstationService:
             query = query.filter(WorkstationAllocationModel.department == department)
         return query.order_by(WorkstationAllocationModel.department.asc(), WorkstationAllocationModel.desk_number.asc()).all()
 
+    def get_workstation_inspection(
+        self,
+        db: Session,
+        workstation_id: str,
+        organization_id: str = "org_default_company",
+    ) -> dict:
+        from backend.app.core.errors import NotFoundError
+
+        alloc = (
+            db.query(WorkstationAllocationModel)
+            .filter(
+                (WorkstationAllocationModel.logical_workstation_id == workstation_id) |
+                (WorkstationAllocationModel.id == workstation_id),
+                WorkstationAllocationModel.organization_id == organization_id,
+            )
+            .first()
+        )
+
+        if not alloc:
+            raise NotFoundError(
+                message=f"Workstation '{workstation_id}' not found in organization '{organization_id}'",
+                code="WORKSTATION_NOT_FOUND",
+            )
+
+        agent_inspection = None
+        is_occupied = False
+        if alloc.agent_id and alloc.allocation_status in ("ASSIGNED", "OCCUPIED"):
+            try:
+                from backend.app.services.agent_service import agent_service
+                agent_inspection = agent_service.get_agent_inspection(
+                    db=db,
+                    agent_id=alloc.agent_id,
+                    organization_id=organization_id,
+                )
+                is_occupied = True
+            except NotFoundError:
+                agent_inspection = None
+
+        return {
+            "workstation_id": alloc.logical_workstation_id or alloc.id,
+            "organization_id": alloc.organization_id,
+            "department": alloc.department,
+            "office_zone": alloc.office_zone,
+            "desk_number": alloc.desk_number,
+            "pos_x": alloc.pos_x,
+            "pos_y": alloc.pos_y,
+            "pos_z": alloc.pos_z,
+            "allocation_status": alloc.allocation_status,
+            "is_virtual": alloc.is_virtual,
+            "is_occupied": is_occupied,
+            "agent": agent_inspection,
+        }
+
 workstation_service = WorkstationService()

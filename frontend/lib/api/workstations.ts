@@ -81,3 +81,16 @@ export async function getAllocations(options?: {
     organizationId: options?.organizationId,
   });
 }
+
+export async function getWorkstationInspection(
+  workstationId: string,
+  options?: {
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<any> {
+  return apiClient<any>(`/api/v1/workstations/${workstationId}/inspection`, {
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}

@@ -4,10 +4,16 @@ export type CanonicalAgentState =
   | "ASSIGNED"
   | "IN_PROGRESS"
   | "WAITING"
+  | "WAITING_APPROVAL"
+  | "THINKING"
+  | "WORKING"
+  | "PAUSED"
   | "REVIEW"
   | "COMPLETED"
   | "FAILED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "ERROR"
+  | "OFFLINE";
 
 export interface StateVisualConfig {
   label: string;
@@ -98,6 +104,58 @@ export const CANONICAL_STATE_CONFIGS: Record<CanonicalAgentState, StateVisualCon
     animationType: "idle",
     monitorColor: "#334155",
     ambientVfx: "fade",
+  },
+  WAITING_APPROVAL: {
+    label: "Chờ phê duyệt",
+    badgeColor: "#f97316",
+    beaconColor: "#fb923c",
+    emissiveIntensity: 0.8,
+    animationType: "waiting",
+    monitorColor: "#f97316",
+    ambientVfx: "alert_ring",
+  },
+  THINKING: {
+    label: "Đang phân tích",
+    badgeColor: "#a855f7",
+    beaconColor: "#c084fc",
+    emissiveIntensity: 0.75,
+    animationType: "thinking",
+    monitorColor: "#a855f7",
+    ambientVfx: "beacon",
+  },
+  WORKING: {
+    label: "Đang thực thi nhiệm vụ",
+    badgeColor: "#3b82f6",
+    beaconColor: "#60a5fa",
+    emissiveIntensity: 0.85,
+    animationType: "working",
+    monitorColor: "#3b82f6",
+    ambientVfx: "typing",
+  },
+  PAUSED: {
+    label: "Tạm dừng (Paused)",
+    badgeColor: "#f59e0b",
+    beaconColor: "#fbbf24",
+    emissiveIntensity: 0.5,
+    animationType: "idle",
+    monitorColor: "#d97706",
+  },
+  ERROR: {
+    label: "Lỗi hệ thống",
+    badgeColor: "#ef4444",
+    beaconColor: "#f87171",
+    emissiveIntensity: 0.9,
+    animationType: "error",
+    monitorColor: "#ef4444",
+    ambientVfx: "sparks_red",
+  },
+  OFFLINE: {
+    label: "Ngoại tuyến (Offline)",
+    badgeColor: "#475569",
+    beaconColor: "#64748b",
+    emissiveIntensity: 0.1,
+    animationType: "idle",
+    monitorColor: "#1e293b",
   },
 };
 

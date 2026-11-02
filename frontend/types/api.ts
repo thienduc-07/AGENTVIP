@@ -237,3 +237,72 @@ export interface AgentDefinitionItem {
   default_assigned_agent_id: string;
 }
 
+export interface ApiApproval {
+  id: string;
+  task_id: string;
+  action_type: string;
+  description: string;
+  status: "pending" | "approved" | "rejected" | "expired" | "cancelled";
+  requested_at: string;
+  resolved_at?: string | null;
+  decision_reason?: string | null;
+}
+
+export interface ApiWorkstationAllocation {
+  id: string;
+  organization_id: string;
+  agent_id: string;
+  department: string;
+  logical_workstation_id: string;
+  office_zone: string;
+  desk_number?: number | null;
+  pos_x: number;
+  pos_y: number;
+  pos_z: number;
+  allocation_status: string;
+  is_virtual: boolean;
+  agent_name?: string | null;
+  agent_role?: string | null;
+  agent_status?: string | null;
+}
+
+export interface ApiAgentInspection {
+  agent_id: string;
+  name: string;
+  role: string;
+  department: string;
+  description?: string | null;
+  station: string;
+  avatar: string;
+  color: string;
+  status: "IDLE" | "WORKING" | "THINKING" | "WAITING_APPROVAL" | "PAUSED" | "ERROR" | "OFFLINE" | string;
+  behavioral_state: string;
+  is_available: boolean;
+  pos_x: number;
+  pos_y: number;
+  pos_z: number;
+  last_seen_at?: string | null;
+  created_at: string;
+  workstation?: ApiWorkstationAllocation | null;
+  current_task?: ApiTask | null;
+  current_task_steps_count: number;
+  current_task_duration_seconds?: number | null;
+  pending_approvals: ApiApproval[];
+  recent_events: ApiEvent[];
+}
+
+export interface ApiWorkstationInspection {
+  workstation_id: string;
+  organization_id: string;
+  department: string;
+  office_zone: string;
+  desk_number?: number | null;
+  pos_x: number;
+  pos_y: number;
+  pos_z: number;
+  allocation_status: string;
+  is_virtual: boolean;
+  is_occupied: boolean;
+  agent?: ApiAgentInspection | null;
+}
+

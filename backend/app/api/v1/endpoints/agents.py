@@ -7,6 +7,7 @@ from backend.app.schemas.agent import (
     AgentUpdate,
     AgentResponse,
     AgentBehavioralStateTransitionRequest,
+    AgentInspectionResponse,
 )
 from backend.app.schemas.navigation import (
     AgentNavigateRequest,
@@ -64,6 +65,16 @@ def get_agent(
 ):
     """Retrieves agent details with tenant isolation enforcement."""
     return agent_service.get_agent_by_id(db=db, agent_id=agent_id, organization_id=tenant_org)
+
+@router.get("/{agent_id}/inspection", response_model=AgentInspectionResponse)
+def get_agent_inspection(
+    agent_id: str,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retrieves full authoritative inspection HUD data for an agent with tenant isolation."""
+    return agent_service.get_agent_inspection(db=db, agent_id=agent_id, organization_id=tenant_org)
 
 @router.post("", response_model=AgentResponse, status_code=status.HTTP_201_CREATED)
 def create_agent(

@@ -1,6 +1,10 @@
 from datetime import datetime
 from typing import Optional, List, Literal
 from pydantic import BaseModel, Field, ConfigDict
+from backend.app.schemas.workstation import WorkstationAllocationResponse
+from backend.app.schemas.task import TaskResponse
+from backend.app.schemas.approval import ApprovalResponse
+from backend.app.schemas.event import AgentEventResponse
 
 AgentStatusType = Literal["idle", "working", "waiting_approval", "error", "offline"]
 AgentBehavioralStateType = Literal[
@@ -55,5 +59,32 @@ class AgentResponse(AgentBase):
     created_at: datetime
     updated_at: datetime
     last_seen_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AgentInspectionResponse(BaseModel):
+    agent_id: str
+    name: str
+    role: str
+    department: str
+    description: Optional[str] = None
+    station: str
+    avatar: str
+    color: str
+    status: str  # IDLE, WORKING, THINKING, WAITING_APPROVAL, PAUSED, ERROR, OFFLINE
+    behavioral_state: str
+    is_available: bool
+    pos_x: float
+    pos_y: float
+    pos_z: float
+    last_seen_at: Optional[datetime] = None
+    created_at: datetime
+    workstation: Optional[WorkstationAllocationResponse] = None
+    current_task: Optional[TaskResponse] = None
+    current_task_steps_count: int = 0
+    current_task_duration_seconds: Optional[float] = None
+    pending_approvals: List[ApprovalResponse] = Field(default_factory=list)
+    recent_events: List[AgentEventResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)

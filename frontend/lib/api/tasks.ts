@@ -66,6 +66,38 @@ export async function getTaskSteps(taskId: string): Promise<ApiTaskStep[]> {
   return apiClient<ApiTaskStep[]>(`/api/v1/tasks/${taskId}/steps`);
 }
 
+export async function pauseTask(
+  taskId: string,
+  reason?: string,
+  options: RequestOptions = {}
+): Promise<{ id: string; status: string; is_paused: boolean; message?: string }> {
+  return apiClient<{ id: string; status: string; is_paused: boolean; message?: string }>(
+    `/api/v1/tasks/${taskId}/pause`,
+    {
+      method: "POST",
+      body: JSON.stringify({ reason: reason || "Paused by operator" }),
+      token: options.token,
+      organizationId: options.organizationId,
+    }
+  );
+}
+
+export async function resumeTask(
+  taskId: string,
+  guidance?: string,
+  options: RequestOptions = {}
+): Promise<{ id: string; status: string; is_resumed: boolean; message?: string }> {
+  return apiClient<{ id: string; status: string; is_resumed: boolean; message?: string }>(
+    `/api/v1/tasks/${taskId}/resume`,
+    {
+      method: "POST",
+      body: JSON.stringify({ guidance: guidance || "Resumed by operator" }),
+      token: options.token,
+      organizationId: options.organizationId,
+    }
+  );
+}
+
 export async function cancelTask(taskId: string): Promise<TaskCancelResponse> {
   return apiClient<TaskCancelResponse>(`/api/v1/tasks/${taskId}/cancel`, {
     method: "POST",

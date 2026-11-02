@@ -1,33 +1,33 @@
 # Graph Report - provipagent  (2026-11-02)
 
 ## Corpus Check
-- 1146 files · ~1,645,890 words
+- 1148 files · ~1,649,481 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 554 file(s) not represented in the graph (top: .xsd 351, .ttf 162, .xml 18)
 
 ## Summary
-- 13285 nodes · 24169 edges · 863 communities (654 shown, 209 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 2318 edges (avg confidence: 0.94)
+- 13334 nodes · 24359 edges · 906 communities (652 shown, 254 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 2380 edges (avg confidence: 0.94)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `451477c1`
+- Built from commit: `ea8583e5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- TaskDispatcher
-- test_phase3_3_3_8_hybrid_llm_routing.py
+- ValidationError
+- diagnostics.py
 - syncManager
 - LLMResponse
 - external_skills/skills/claude-api/shared/evals/report/runner-scaffold.mjs
 - agent-skills/skills/claude-api/shared/preserved-thinking-migration/prefix_diff.py
 - external_skills/skills/claude-api/shared/preserved-thinking-migration/prefix_diff.py
 - agent-skills/skills/claude-api/shared/evals/report/build-report-lite.mjs
-- get_artifact
+- argparse
 - test_phase3_3_3_10_zero_cost_deployment.py
 - tempfile
-- Session
+- external_skills/skills/claude-api/shared/preserved-thinking-migration/drop_block_probe.py
 - AutonomousCompanyEngine
 - external_skills/skills/docx/scripts/merge_runs.py
 - apiClient
@@ -36,8 +36,8 @@
 - useWorldStore
 - 3. Step-by-Step Execution Lifecycle Trace
 - agent-skills/skills/skill-creator/eval-viewer/generate_review.py
-- ExecutionLoop
-- TaskModel
+- 2. Pre-Implementation Audit Across Workstreams
+- typing
 - spatialMovement.ts
 - agent-skills/skills/docx/scripts/office/helpers/pptx_theme.py
 - PROVIPAGENT — MASTER ENGINEERING DIRECTIVE
@@ -45,20 +45,20 @@
 - Agent
 - PDF Processing Advanced Reference
 - agent-skills/skills/docx/scripts/merge_runs.py
-- DiagnosticStatus
+- ApprovalModel
 - PDF Processing Advanced Reference
 - agent-skills/skills/slack-gif-creator/core/easing.py
 - agent_runtime/skills/slack-gif-creator/core/easing.py
 - external_skills/skills/slack-gif-creator/core/easing.py
 - PROVIPAGENT — Phase 3.1 3D World Architecture Blueprint (Corrected Baseline)
 - test_multi_agent_registry_and_planner.py
-- require_platform_superadmin
-- argparse
-- os
+- 2. Regression Protection Domain Audit
+- agent-skills/skills/skill-creator/scripts/run_eval.py
+- sys
 - useOfficeSync.ts
 - external_skills/skills/xlsx/scripts/office/helpers/__init__.py
 - agent_runtime/skills/claude-api/shared/preserved-thinking-migration/drop_block_probe.py
-- TaskCreate
+- agent-skills/skills/xlsx/scripts/recalc.py
 - PDF Processing Advanced Reference
 - ProviderStepResponse
 - Hill-Climbing on an Eval
@@ -84,14 +84,14 @@
 - external_skills/skills/algorithmic-art/templates/generator_template.js
 - BaseSchemaValidator
 - GIFBuilder
-- PPTXSchemaValidator
+- TaskLifecycleEngine
 - Managed Agents - Self-Hosted Sandboxes
-- PHASE 3.3.3.9 — OPENROUTER CLOUD BOOTSTRAP & LIVE EXECUTION REPORT
+- ModelCapabilityRegistry
 - GIFBuilder
 - BaseSchemaValidator
 - Skill Creator
 - GIFBuilder
-- Tool
+- external_skills/skills/pptx/scripts/add_slide.py
 - PHASE 2.2 — SECURITY, TRANSACTION & EXECUTION INTEGRITY REMEDIATION REPORT
 - compilerOptions
 - 3. Schema Inspection & ORM Consistency
@@ -103,15 +103,15 @@
 - 2. Workstream Breakdown & Detailed Test Results
 - agent-skills/skills/pptx/scripts/clean.py
 - PROVIPAGENT — PHASE 3.2 TEST REPORT
-- .create_event
+- PROVIPAGENT — TECHNICAL DECISIONS & ARCHITECTURAL LOG
 - Skill Creator
 - Claude API - Python
 - test_sandbox.py
 - PPTXSchemaValidator
-- core/database.py
+- UserContext
 - json
-- OrganizationMemberModel
-- test_dispatcher_rejects_disabled_agent_definition
+- OrganizationModel
+- test_enterprise_runtime_identity.py
 - BaseSchemaValidator
 - CloudCostController
 - DOCXSchemaValidator
@@ -122,10 +122,10 @@
 - PPTXSchemaValidator
 - RedliningValidator
 - RedliningValidator
-- LLMBudgetExceededError
+- ExecutionLoop
 - agent-skills/skills/xlsx/scripts/office/helpers/pptx_theme.py
-- re
-- agent_runtime/skills/claude-api/shared/preserved-thinking-migration/prefix_diff.py
+- lxml_etree
+- fp
 - Claude API - Python
 - RedliningValidator
 - RedliningValidator
@@ -137,7 +137,7 @@
 - RedliningValidator
 - time
 - Hill-Climbing on an Eval
-- validate_signing_secret
+- agent_runtime/skills/skill-creator/eval-viewer/generate_review.py
 - SkillLoader
 - specialists.py
 - ToolCenterModal.tsx
@@ -152,20 +152,21 @@
 - Managed Agents - Endpoint Reference
 - BaseSchemaValidator
 - PPTXSchemaValidator
-- sanitize_for_audit
+- external_skills/skills/skill-creator/eval-viewer/generate_review.py
 - os
 - BaseSchemaValidator
-- asyncio
+- run_worker_scale_benchmark
 - Planner
 - PHASE 2.2.1 — DATABASE, CONCURRENCY & TRANSACTION INTEGRITY AUDIT
 - BaseSchemaValidator
 - PPTXSchemaValidator
-- ToolRegistry
+- external_skills/skills/pptx/scripts/clean.py
 - DOCXSchemaValidator
 - Managed Agents - Multiagent Sessions
 - Session
 - SandboxExecutor
 - Building LLM-Powered Applications with Claude
+- diff_pair
 - WorkstationService
 - BaseSchemaValidator
 - Managed Agents - Endpoint Reference
@@ -188,7 +189,7 @@
 - MCP Server Best Practices
 - Process
 - Node/TypeScript MCP Server Implementation Guide
-- agent-skills/skills/pptx/scripts/thumbnail.py
+- defusedxml_minidom
 - RedliningValidator
 - agent_runtime/skills/docx/scripts/merge_runs.py
 - PROVIPAGENT Phase 4.1 — Pre-Implementation Audit Report: 3D Office Foundation & Real-Time Integration
@@ -197,7 +198,7 @@
 - Node/TypeScript MCP Server Implementation Guide
 - Node/TypeScript MCP Server Implementation Guide
 - agent-skills/skills/claude-api/shared/evals/report/runner-scaffold.mjs
-- CancellationToken
+- TaskModel
 - PROVIPAGENT Phase 3.5 — Phase 4 Entry Contract: Real-Time 3D AI Office
 - agent_runtime/skills/claude-api/shared/evals/report/runner-scaffold.mjs
 - agent_runtime/skills/slack-gif-creator/core/frame_composer.py
@@ -247,7 +248,7 @@
 - Prompt Caching - Design & Optimization
 - AI Agent City — Grand Line Command Center: Architecture & Implementation Plan
 - Cost Optimization - Cutting Spend per Completed Task
-- ProviderHealthSnapshot
+- commit_with_retry
 - Prompt Caching - Design & Optimization
 - Cost Optimization - Cutting Spend per Completed Task
 - Prompt Caching - Design & Optimization
@@ -356,7 +357,7 @@
 - Streaming - Python
 - Anthropic CLI (`ant`)
 - Building an Eval for a Claude-Powered Application
-- WorkstationAllocationModel
+- world_service.py
 - Migrating to Claude Opus 5.5
 - Migrating to Claude Sonnet 5.5
 - Claude API - PHP
@@ -382,7 +383,7 @@
 - Claude API - Go
 - Tool Use (Beta)
 - Claude API - Ruby
-- WebSocketManager
+- .broadcast_envelope
 - Managed Agents - Common Client Patterns
 - Environments
 - external_skills/skills/slack-gif-creator/core/frame_composer.py
@@ -496,7 +497,7 @@
 - Managed Agents - Onboarding Flow
 - Managed Agents - Webhooks
 - Preserved Thinking - Causes, Fixes, and the Keep List
-- agent_runtime/skills/skill-creator/scripts/utils.py
+- PHASE 3.3.3.10 — ZERO-COST LIVE LLM AUTONOMOUS COMPANY REPORT
 - DOCXSchemaValidator
 - Message Batches API - TypeScript
 - Discernment nudge
@@ -526,14 +527,14 @@
 - agent-skills/skills/internal-comms/examples/faq-answers.md
 - Advanced MCP Features
 - Advanced FastMCP Features
-- typing
+- RecruitmentRecordModel
 - DOCXSchemaValidator
 - Claude Platform on AWS
 - Managed Agents - Outcomes
 - Managed Agents - Overview
 - Migrating to Opus 4.8
 - PHASE 3.3.4 — PRE-IMPLEMENTATION ARCHITECTURE & OPERATIONAL AUDIT
-- 1. Formal Finding Log
+- PHASE 2.2.1 — FINAL INDEPENDENT AUDIT VERDICT & REMEDIATION ROADMAP
 - agent_runtime/skills/internal-comms/examples/company-newsletter.md
 - agent_runtime/skills/internal-comms/examples/faq-answers.md
 - Advanced MCP Features
@@ -544,7 +545,7 @@
 - Managed Agents - Outcomes
 - Managed Agents - Overview
 - Migrating to Opus 4.8
-- PROVIPAGENT — PHASE 3.2 IMPLEMENTATION REPORT
+- agent-skills/skills/skill-creator/scripts/aggregate_benchmark.py
 - external_skills/skills/internal-comms/examples/company-newsletter.md
 - external_skills/skills/internal-comms/examples/faq-answers.md
 - Advanced MCP Features
@@ -603,7 +604,7 @@
 - Breaking Changes by Source Model
 - Per-SDK Syntax Reference
 - Token Counting
-- external_skills/skills/slack-gif-creator/core/validators.py
+- agent_runtime/skills/slack-gif-creator/core/validators.py
 - external_skills/skills/internal-comms/examples/3p-updates.md
 - Answer Guidelines
 - Arctic Frost
@@ -628,7 +629,7 @@
 - Field monitor
 - Sprint retro facilitator
 - external_skills/skills/skill-creator/scripts/aggregate_benchmark.py
-- get_office_navigation_topology
+- heartbeat.py
 - agent_runtime/skills/internal-comms/SKILL.md
 - Deep researcher
 - Field monitor
@@ -703,12 +704,12 @@
 - external_skills/template/SKILL.md
 - AGENTS.md
 - Managed Agents - Multiagent Sessions
-- agent_runtime/skills/xlsx/scripts/office/helpers/pptx_chart.py
+- 3. Detailed Verification of the 10 Required Scenarios
 - external_skills/skills/docx/scripts/office/helpers/__init__.py
-- agent-skills/skills/xlsx/scripts/office/helpers/pptx_chart.py
+- external_skills/skills/skill-creator/scripts/run_loop.py
 - agent-skills/skills/pptx/scripts/office/helpers/pptx_chart.py
 - backend/generated_products/product_2_llm_cost_guard/cost_guard_router.py
-- test_memory_tools_execution
+- agent-skills/skills/pptx/scripts/office/validators/docx.py
 - product_10_llm_cost_guard/cost_guard_router.py
 - generated_products/product_1_llm_cost_guard/cost_guard_router.py
 - app_exception_handler
@@ -750,8 +751,8 @@
 - product_11_llm_cost_guard/cost_guard_router.py
 - product_12_llm_cost_guard/cost_guard_router.py
 - product_13_llm_cost_guard/cost_guard_router.py
-- _load_data_file
-- navigation.py
+- agent-skills/skills/xlsx/scripts/office/validators/docx.py
+- external_skills/skills/xlsx/scripts/office/validators/docx.py
 - .find_best_specialist
 - Test Suite Execution, Next.js Production Build, and Feature Interoperability
 - .apply_sync
@@ -762,9 +763,9 @@
 - external_skills/skills/docx/scripts/office/helpers/pptx_chart.py
 - PHASE 2.2 — ATOMIC TRANSACTION & WORKSTATION CONCURRENCY VERIFICATION
 - 2. Architectural Optimization Strategies
-- agent-skills/skills/docx/scripts/office/helpers/pptx_chart.py
-- agent_runtime/skills/docx/scripts/office/helpers/pptx_chart.py
-- ArtifactCreateTool
+- agent_runtime/skills/docx/scripts/office/validators/docx.py
+- external_skills/skills/docx/scripts/office/validators/docx.py
+- Deliverable Trust Verification, Cryptographic Integrity & Lifecycle Gate Hardening
 - product_16_llm_cost_guard/README.md
 - Milestone 5 Event Streaming, Monotonic Sequencing, and Race Condition Defense
 - PHASE 3.3.3.6 — LIVE LLM PROVIDER INTEGRATION REPORT
@@ -774,7 +775,7 @@
 - End-to-End Idempotency, External Side-Effect Boundaries & Tool Semantics Audit
 - product_15_llm_cost_guard/README.md
 - Autonomous Workforce Security, Multi-Tenant Isolation & Cryptographic Integrity
-- agent_runtime/skills/pptx/scripts/office/helpers/pptx_chart.py
+- agent_runtime/skills/pptx/scripts/office/validators/docx.py
 - product_19_llm_cost_guard/cost_guard_router.py
 - product_20_llm_cost_guard/cost_guard_router.py
 - product_21_llm_cost_guard/cost_guard_router.py
@@ -786,29 +787,29 @@
 - product_20_llm_cost_guard/README.md
 - product_21_llm_cost_guard/README.md
 - 3. Detailed Security Findings
-- 2. Detailed Findings Catalog
-- RetryManager
+- diff_conversation
+- digests
 - test_3_5_7_10_high_volume_event_sequencing
 - Three.js / React Three Fiber Spatial Implementation & PBR Rendering
 - Comprehensive Test Execution, Regression Analysis, and Build Verification
 - product_25_llm_cost_guard/README.md
 - product_26_llm_cost_guard/README.md
 - User-Defined Tools
-- PHASE 2.2.2 REGRESSION PROTECTION & TEST SUITE REPORT
+- 2. Component Implementation Details
 - Phase 4.2: Agent Movement & Motion Control Report
 - Official Certification for Phase 4.1 Foundation & Phase 4.2 Entry Authorization
 - User-Defined Tools
 - Phase 4.2: Pathfinding Engine Report
 - User-Defined Tools
 - _handle_ws_stream
-- .execute
+- Authoritative Integration with FastAPI, Workstation Service, and Spatial APIs
 - citadel_armory_manifest.md
 - get_agent_skills
-- heartbeat.py
+- Phase 4.2: Pre-Implementation Audit Report
 - Workflow
 - 3. Current Architecture & Subsystem Inspection
 - 3. Defense-in-Depth Implementation
-- Autonomous Workforce Reliability, Resilience & Stress Testing Hardening
+- 2. Architectural Hardening & Implementation Changes
 - 3. Adversarial Security Findings
 - Structured Outputs
 - 3. Findings & Remediations Log
@@ -817,46 +818,87 @@
 - get_all_agents
 - Structured Outputs
 - Phase 4.2: Multi-Agent Collaboration & Coordination Report
-- external_skills/skills/skill-creator/scripts/utils.py
+- ReviewHandler
 - 10.2 Empirical Benchmarking Plan [PROPOSED]
 - Phase 4.2: Spatial Navigation Engine Report
-- agent_runtime/skills/slack-gif-creator/core/validators.py
-- get_agent_tasks
-- test_runtime_tools.py
+- test_v1_agents.py
+- fixture
+- Pytest Suite Execution, API Contracts, and Database Schema Invariants
 - test_deliverable.md
 - test_subtask_contract_serialization_and_validation
-- PHASE 3.3.3 — AUTONOMOUS AGENT BEHAVIOR & SPATIAL INTEGRATION: IMPLEMENTATION REPORT
+- canon_blocks
 - PHASE 2.2.1 — TASK EXECUTION LIFECYCLE & DISPATCH AUDIT
-- get_easing
+- Phase 4.2: Backend & Real-Time Integration Report
+- agent-skills/skills/slack-gif-creator/core/gif_builder.py
 - f6a7b8c9d0e1_core_security_and_tenant_isolation.py
 - Phase 4.2: Performance & Scalability Benchmarking Report
-- v1_llm_routing_diagnostics
-- get_easing
-- get_easing
+- v1_health
+- Phase 4.2: Final Certification & Engineering Report
+- ReviewHandler
 - Current Models (cached: 2026-10-06)
-- agent-skills/skills/skill-creator/scripts/utils.py
-- calculator.py
+- .validate_slides
+- .validate_slides
 - Current Models (cached: 2026-10-06)
 - Current Models (cached: 2026-10-06)
 - Provider Clients (Quick Reference)
 - Provider Clients (Quick Reference)
 - Provider Clients (Quick Reference)
-- update_agent
-- test_3_5_2_06_retry_after_ambiguous_timeout
-- test_skill_security_separation_does_not_modify_policy_permissions
-- test_agent_registry_permissions_and_policy
+- .validate_slides
+- .generate_waypoints
+- .validate_slides
+- ReviewHandler
+- .validate_slides
+- Phase 4.3.1: Human-in-the-Loop Task Lifecycle Foundation Report
+- 7a82b9e1c304_add_workflow_and_subtasks_to_tasks.py
+- test_workstation_service_savepoint_retry_on_desk_collision
+- Structural Decomposition, Data Flow Integrity, and Lifecycle Analysis
+- test_3_5_6_15_concurrent_access_different_organizations
+- run_migrations_offline
+- run_migrations_online
+- set_sqlite_pragma
+- root_health
+- set_sqlite_pragma
+- test_office_navigation_topology_and_workstation_destinations
+- test_ceo_heartbeat_disabled_by_default_in_dev_and_test
+- test_3_3_5_6_06_cross_tenant_event_access_isolated
+- test_3_3_5_6_08_cross_tenant_spatial_state_isolated
+- test_3_3_5_7_05_resource_cleanup_after_completion
+- test_3_3_5_7_06_execution_history_pagination
+- test_3_5_1_07_connection_pool_burst_and_exhaustion
+- test_3_5_5_10_invalid_tool_invocation_record_rejected
+- test_3_5_6_01_cross_organization_task_access
+- test_3_5_6_02_cross_organization_agent_access
+- test_3_5_6_09_unauthorized_workstation_access
+- test_3_5_6_11_privilege_escalation_denied
+- test_3_5_6_13_missing_organization_context
+- test_3_5_7_03_snapshot_and_replay_reconciliation
+- test_3_5_7_04_event_sourced_state_projection
+- test_3_5_7_09_watermark_boundary_guarantee
+- test_3_5_7_01_event_schema_adherence
+- test_invalid_approval_id_returns_404
+- test_tool_toggle_endpoint
+- test_tool_execution_audit_logging
+- test_workstation_unauthorized
+- test_01_snapshot_all_eight_corporate_employees
+- test_10_snapshot_authentication_failure
+- test_11_snapshot_unauthorized_organization_access
+- test_websocket_origin_check_allowed_and_rejected
+- test_websocket_oversized_payload_rejection
+- test_websocket_initial_snapshot
+- test_websocket_ping_pong_heartbeat
+- test_websocket_resync_command
 
 ## God Nodes (most connected - your core abstractions)
-1. `TaskModel` - 254 edges
-2. `AgentModel` - 188 edges
-3. `OrganizationModel` - 99 edges
-4. `RecruitmentRecordModel` - 86 edges
-5. `AgentEventModel` - 85 edges
-6. `CancellationToken` - 79 edges
-7. `ToolPermissionLevel` - 79 edges
+1. `TaskModel` - 266 edges
+2. `AgentModel` - 193 edges
+3. `OrganizationModel` - 101 edges
+4. `AgentEventModel` - 87 edges
+5. `RecruitmentRecordModel` - 86 edges
+6. `CancellationToken` - 83 edges
+7. `ToolPermissionLevel` - 82 edges
 8. `UserContext` - 77 edges
-9. `MultiAgentOrchestrator` - 74 edges
-10. `SpecialistDefinitionModel` - 67 edges
+9. `MultiAgentOrchestrator` - 75 edges
+10. `ToolResult` - 71 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `7.2 Memory Scopes & Hierarchy` --references--> `TaskContext`  [INFERRED]
@@ -873,23 +915,23 @@
 ## Import Cycles
 - None detected.
 
-## Communities (863 total, 209 thin omitted)
+## Communities (906 total, 254 thin omitted)
 
-### Community 0 - "TaskDispatcher"
-Cohesion: 0.03
-Nodes (48): TaskDispatcher, ExecutionResult, ApprovalModel, TaskStepModel, ApprovalService, BehavioralStateService, TaskService, TestSEC03TenantIsolationExecutionAPIs (+40 more)
+### Community 0 - "ValidationError"
+Cohesion: 0.02
+Nodes (59): CEOSupervisoryHeartbeat, _execute_inspection(), AppException, ConflictError, ValidationError, TaskCreate, AgentService, BehavioralStateService (+51 more)
 
-### Community 1 - "test_phase3_3_3_8_hybrid_llm_routing.py"
-Cohesion: 0.06
-Nodes (42): estimate_llm_cost_usd(), LLMAuthError, LLMConfigError, LLMError, LLMRateLimitError, LLMTimeoutError, _cli_main(), _extract_json_object() (+34 more)
+### Community 1 - "diagnostics.py"
+Cohesion: 0.16
+Nodes (10): _cli_main(), DiagnosticStatus, _extract_json_object(), _is_auth_error(), _is_model_unavailable_error(), LiveProviderDiagnosticReport, run_live_provider_diagnostics(), test_diagnostics_distinguishes_all_seven_states() (+2 more)
 
 ### Community 2 - "syncManager"
-Cohesion: 0.07
-Nodes (21): WorkstationOverview, EventCallback, isWsOpen(), SnapshotCallback, StateChangeCallback, syncManager, validateEventEnvelope(), validateSnapshotMessage() (+13 more)
+Cohesion: 0.06
+Nodes (30): getAllocations(), getWorkstationOverview(), getZones(), WorkstationAllocation, WorkstationOverview, WorkstationTelemetrySummary, MappedWorkstationSceneData, mapWorkstationsToScene() (+22 more)
 
 ### Community 3 - "LLMResponse"
-Cohesion: 0.08
-Nodes (19): LLMHealthCheckResult, LLMProvider, LLMResponse, LLMUsage, ToolCallRequest, DeterministicProvider, _GemmaFreeMultiTurnWorkflowProvider, _BudgetExceedingMockProvider (+11 more)
+Cohesion: 0.04
+Nodes (47): _build_result(), LLMAuthError, LLMConfigError, LLMError, LLMHealthCheckResult, LLMRateLimitError, LLMResponse, LLMTimeoutError (+39 more)
 
 ### Community 4 - "external_skills/skills/claude-api/shared/evals/report/runner-scaffold.mjs"
 Cohesion: 0.15
@@ -900,76 +942,76 @@ Cohesion: 0.06
 Nodes (41): digests(), attribute(), _block_diffs(), block_type(), canon_messages(), canon_system(), canon_tools(), walk() (+33 more)
 
 ### Community 6 - "external_skills/skills/claude-api/shared/preserved-thinking-migration/prefix_diff.py"
-Cohesion: 0.05
-Nodes (46): digests(), validate(), attribute(), _block_diffs(), block_type(), canon_blocks(), canon_messages(), canon_system() (+38 more)
+Cohesion: 0.06
+Nodes (37): digests(), attribute(), _block_diffs(), block_type(), canon_blocks(), canon_messages(), canon_system(), canon_tool_entry() (+29 more)
 
 ### Community 7 - "agent-skills/skills/claude-api/shared/evals/report/build-report-lite.mjs"
 Cohesion: 0.19
 Nodes (23): assertContained(), build(), coerceScores(), countErrors(), CSS, discoverVariants(), eprint(), esc() (+15 more)
 
-### Community 8 - "get_artifact"
-Cohesion: 0.32
-Nodes (3): get_artifact(), get_artifact_content(), list_artifacts()
+### Community 8 - "argparse"
+Cohesion: 0.06
+Nodes (20): generate_html(), main(), build_slide_list(), convert_to_images(), create_grid(), create_grids(), create_hidden_placeholder(), get_slide_info() (+12 more)
 
 ### Community 9 - "test_phase3_3_3_10_zero_cost_deployment.py"
-Cohesion: 0.07
-Nodes (21): LLMUnsupportedCapabilityError, LLMZeroCostPolicyError, CapabilityRequirement, ModelCapabilities, ModelCapabilityRegistry, TaskComplexityAnalyzer, TaskComplexityAssessment, TaskComplexityLevel (+13 more)
+Cohesion: 0.05
+Nodes (34): LLMProvider, LLMUnsupportedCapabilityError, LLMZeroCostPolicyError, CapabilityRequirement, TaskComplexityAnalyzer, TaskComplexityAssessment, TaskComplexityLevel, create_hybrid_llm_router() (+26 more)
 
 ### Community 10 - "tempfile"
-Cohesion: 0.04
-Nodes (48): accept_changes(), _setup_libreoffice_macro(), _ensure_shim(), get_soffice_env(), _needs_shim(), run_soffice(), _ensure_shim(), get_soffice_env() (+40 more)
+Cohesion: 0.05
+Nodes (44): _ensure_shim(), get_soffice_env(), _needs_shim(), run_soffice(), _ensure_shim(), get_soffice_env(), _needs_shim(), run_soffice() (+36 more)
 
-### Community 11 - "Session"
-Cohesion: 0.18
-Nodes (7): complete_agent_movement(), create_agent(), get_agent(), interrupt_agent_movement(), navigate_agent(), transition_agent_behavioral_state(), update_agent_movement_progress()
+### Community 11 - "external_skills/skills/claude-api/shared/preserved-thinking-migration/drop_block_probe.py"
+Cohesion: 0.08
+Nodes (24): block_key(), count_thinking(), estimate_input_tokens(), is_conversation_check_400(), iter_lines(), load_capture(), main(), flush() (+16 more)
 
 ### Community 12 - "AutonomousCompanyEngine"
 Cohesion: 0.10
 Nodes (17): AutonomousCompanyEngine, BusinessOpportunity, FinancialLedgerEntry, GovernanceAuditLog, ManufacturedProduct, MarketingCampaign, OrganizationalRecommendation, SalesLeadCRM (+9 more)
 
 ### Community 13 - "external_skills/skills/docx/scripts/merge_runs.py"
-Cohesion: 0.15
-Nodes (24): _can_merge(), _consolidate_text(), _consolidate_text_elements(), _element_text(), _find_elements(), traverse(), _find_runs(), _first_child_run() (+16 more)
+Cohesion: 0.16
+Nodes (23): _can_merge(), _consolidate_text(), _consolidate_text_elements(), _element_text(), _find_elements(), traverse(), _find_runs(), _first_child_run() (+15 more)
 
 ### Community 14 - "apiClient"
 Cohesion: 0.05
-Nodes (69): QUICK_PROMPTS, SubmissionState, MemoryCenterModal(), TaskCreateModalProps, getAgentById(), getAgentTasks(), apiClient(), ApiClientError (+61 more)
+Nodes (69): InteractiveMissionTerminal(), QUICK_PROMPTS, SubmissionState, MemoryCenterModal(), TaskCreateModal(), TaskCreateModalProps, getAgentById(), getAgentTasks() (+61 more)
 
 ### Community 15 - "2. Evaluation of the 15 Production Readiness Domains"
-Cohesion: 0.09
-Nodes (19): 1. Executive Summary, 2. Evaluation of the 15 Production Readiness Domains, 3. Comprehensive Test Suite Results, 4. Final Verdict & Phase 4 Gate Sign-Off, Domain 10: Snapshot & Replay Consistency, Domain 11: Transactional Outbox Pattern, Domain 12: Memory & Context Isolation, Domain 13: RBAC & Dynamic Session Authorization (+11 more)
+Cohesion: 0.06
+Nodes (30): 1. Executive Summary, 2.1 Envelope Fields, 2. Standardized Event Envelope Specification, 4.1 Connection & Handover Protocol, 4.2 State Reconstruction Verification, 4. Snapshot, Replay & Gap Detection Architecture, 5. Transactional Outbox Pattern & Durability, 6. Monotonic Sequence Allocation Under Concurrency (+22 more)
 
 ### Community 16 - "package.json"
 Cohesion: 0.05
-Nodes (51): metadata, nextConfig, dependencies, canvas-confetti@^1.9.4, gsap@^3.15.0, lucide-react@^1.63.0, next@16.4.3, postprocessing@^6.39.5 (+43 more)
+Nodes (49): metadata, nextConfig, dependencies, canvas-confetti@^1.9.4, gsap@^3.15.0, lucide-react@^1.63.0, next@16.4.3, postprocessing@^6.39.5 (+41 more)
 
 ### Community 17 - "useWorldStore"
-Cohesion: 0.08
-Nodes (41): 4. Security Sandbox & Captain's Approval Workflow, CorporateHQ3DWorldPage(), CaptainApprovalModal(), CaptainApprovalModalProps, InteractiveMissionTerminal(), MissionControl(), MissionControlProps, MANAGERS (+33 more)
+Cohesion: 0.09
+Nodes (32): 4. Security Sandbox & Captain's Approval Workflow, CorporateHQ3DWorldPage(), CaptainApprovalModal(), CaptainApprovalModalProps, MissionControl(), MissionControlProps, MANAGERS, SpecialistRecruitmentModal() (+24 more)
 
 ### Community 18 - "3. Step-by-Step Execution Lifecycle Trace"
 Cohesion: 0.14
 Nodes (13): 1. Executive Summary, 2. End-to-End System Architecture, 3. Step-by-Step Execution Lifecycle Trace, 5. Phased Implementation Roadmap, PROVIPAGENT — ARCHITECTURAL INTEGRATION PLAN, Step 1: Customer Directive Ingestion, Step 2: Capability Matching & Team Resolution, Step 3: DAG Workflow Generation (+5 more)
 
 ### Community 19 - "agent-skills/skills/skill-creator/eval-viewer/generate_review.py"
-Cohesion: 0.05
-Nodes (30): build_run(), embed_file(), find_runs(), _find_runs_recursive(), generate_html(), get_mime_type(), _kill_port(), load_previous_iteration() (+22 more)
+Cohesion: 0.18
+Nodes (9): build_run(), embed_file(), find_runs(), _find_runs_recursive(), generate_html(), get_mime_type(), _kill_port(), load_previous_iteration() (+1 more)
 
-### Community 20 - "ExecutionLoop"
-Cohesion: 0.04
-Nodes (45): ExecutionLoop, AgentDefinition, PolicyEngine, AgentPolicy, ResultVerifier, SpecialistWorkloadManager, ArtifactService, test_cost_duration_and_infinite_loop_guards() (+37 more)
+### Community 20 - "2. Pre-Implementation Audit Across Workstreams"
+Cohesion: 0.17
+Nodes (11): 1. Executive Context & Scope, 2.1 Workstream 3.3.5.1: Concurrent Execution, 2.3 Workstream 3.3.5.3: Idempotency & Duplicate Execution Prevention, 2.4 Workstream 3.3.5.4: Task Dependency Failure Propagation, 2.5 Workstream 3.3.5.5: Deliverable Integrity Verification, 2.7 Workstream 3.3.5.7: Long-Running Workflows, 2.8 Workstream 3.3.5.8: Architecture Audit & Observability, 2. Pre-Implementation Audit Across Workstreams (+3 more)
 
-### Community 21 - "TaskModel"
-Cohesion: 0.01
-Nodes (179): StructuredDeliverable, detect_and_reclaim_stale_leases(), recover_abandoned_tasks(), DeliverableNotVerifiedError, InvalidTaskTransitionError, normalize_task_status(), TaskLifecycleEngine, TaskStatus (+171 more)
+### Community 21 - "typing"
+Cohesion: 0.03
+Nodes (104): upgrade(), upgrade(), upgrade(), upgrade(), downgrade(), upgrade(), upgrade(), downgrade() (+96 more)
 
 ### Community 22 - "spatialMovement.ts"
 Cohesion: 0.08
-Nodes (58): AgentCharacter(), AgentCharacterProps, AgentStatusIndicator(), AgentStatusIndicatorProps, CorporateAgentAvatar(), CorporateAgentAvatarProps, ISLAND_AREAS, DEMO_AGENTS (+50 more)
+Nodes (54): TopNav(), TopNavProps, ISLAND_AREAS, DEMO_AGENTS, getWorldSnapshot(), OFFICE_TOPOLOGY_EDGES, OFFICE_TOPOLOGY_NODES, officeNavEngine (+46 more)
 
 ### Community 23 - "agent-skills/skills/docx/scripts/office/helpers/pptx_theme.py"
-Cohesion: 0.29
-Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_master_themes(), _masters(), _notes_master_share_is_inert(), _rels_path(), _resolve() (+3 more)
+Cohesion: 0.15
+Nodes (19): part_text(), _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst() (+11 more)
 
 ### Community 24 - "PROVIPAGENT — MASTER ENGINEERING DIRECTIVE"
 Cohesion: 0.33
@@ -980,8 +1022,8 @@ Cohesion: 0.15
 Nodes (7): AgentDefinition, AgentRegistry, create_default_agent_registry(), test_registry_disabled_definition_behavior(), test_registry_duplicate_employee_id_cannot_silently_overwrite(), test_registry_dynamically_recruited_specialist(), test_agent_registry_defaults_and_filtering()
 
 ### Community 26 - "Agent"
-Cohesion: 0.08
-Nodes (34): AgentTelemetry, FinancialSummary, AgentAvatar(), AgentAvatarProps, CameraController(), CameraControllerProps, CityCanvas(), CityCanvasProps (+26 more)
+Cohesion: 0.07
+Nodes (44): AgentTelemetry, FinancialSummary, AgentAvatar(), AgentAvatarProps, CameraController(), CameraControllerProps, CityCanvas(), CityCanvasProps (+36 more)
 
 ### Community 27 - "PDF Processing Advanced Reference"
 Cohesion: 0.04
@@ -991,45 +1033,49 @@ Nodes (46): 1. For Large PDFs, 2. For Text Extraction, 3. For Image Extraction, 
 Cohesion: 0.16
 Nodes (23): _can_merge(), _consolidate_text(), _consolidate_text_elements(), _element_text(), _find_elements(), traverse(), _find_runs(), _first_child_run() (+15 more)
 
+### Community 29 - "ApprovalModel"
+Cohesion: 0.07
+Nodes (16): ApprovalModel, ApprovalService, test_approval_rejection_releases_waiting_agent_to_idle(), test_ceo_heartbeat_concurrency_timeout_and_budget_enforcement(), test_ceo_heartbeat_detects_stalled_overdue_health_and_respects_approval_policy(), test_approval_after_task_cancellation_rejected(), test_approval_after_task_completion_rejected(), test_approval_rejected_fails_task_and_releases_agent() (+8 more)
+
 ### Community 30 - "PDF Processing Advanced Reference"
 Cohesion: 0.04
 Nodes (46): 1. For Large PDFs, 2. For Text Extraction, 3. For Image Extraction, 4. For Form Filling, 5. Memory Management, Advanced Command-Line Operations, Advanced Encryption, Advanced Image Conversion (+38 more)
 
 ### Community 31 - "agent-skills/skills/slack-gif-creator/core/easing.py"
-Cohesion: 0.08
-Nodes (13): apply_squash_stretch(), calculate_arc_motion(), ease_back_in(), ease_back_in_out(), ease_back_out(), ease_in_bounce(), ease_in_cubic(), ease_in_out_bounce() (+5 more)
+Cohesion: 0.07
+Nodes (16): apply_squash_stretch(), calculate_arc_motion(), ease_back_in(), ease_back_in_out(), ease_back_out(), ease_in_bounce(), ease_in_cubic(), ease_in_out_bounce() (+8 more)
 
 ### Community 32 - "agent_runtime/skills/slack-gif-creator/core/easing.py"
-Cohesion: 0.08
-Nodes (13): apply_squash_stretch(), calculate_arc_motion(), ease_back_in(), ease_back_in_out(), ease_back_out(), ease_in_bounce(), ease_in_cubic(), ease_in_out_bounce() (+5 more)
+Cohesion: 0.07
+Nodes (16): apply_squash_stretch(), calculate_arc_motion(), ease_back_in(), ease_back_in_out(), ease_back_out(), ease_in_bounce(), ease_in_cubic(), ease_in_out_bounce() (+8 more)
 
 ### Community 33 - "external_skills/skills/slack-gif-creator/core/easing.py"
-Cohesion: 0.08
-Nodes (13): apply_squash_stretch(), calculate_arc_motion(), ease_back_in(), ease_back_in_out(), ease_back_out(), ease_in_bounce(), ease_in_cubic(), ease_in_out_bounce() (+5 more)
+Cohesion: 0.07
+Nodes (16): apply_squash_stretch(), calculate_arc_motion(), ease_back_in(), ease_back_in_out(), ease_back_out(), ease_in_bounce(), ease_in_cubic(), ease_in_out_bounce() (+8 more)
 
 ### Community 34 - "PROVIPAGENT — Phase 3.1 3D World Architecture Blueprint (Corrected Baseline)"
-Cohesion: 0.08
-Nodes (25): 11.2 `executeMissionPipeline` Removal / Isolation Plan [PROPOSED], 11. Critical Correction I — Existing Frontend Architecture & `executeCorporateMission` Isolation Plan, 12.1 Interaction Rules [MANDATORY RULE], 12. Critical Correction J — Physical Interactions & Authorized Workflows, 13. System Architecture Readiness Matrix, 1. Executive Summary & Authoritative System Philosophy, 2.2 Frontend Infrastructure & Rendering Stack [VERIFIED], 2. Evidence-Based Codebase Ground Truth Audit (+17 more)
+Cohesion: 0.07
+Nodes (28): 11.2 `executeMissionPipeline` Removal / Isolation Plan [PROPOSED], 11. Critical Correction I — Existing Frontend Architecture & `executeCorporateMission` Isolation Plan, 12.1 Interaction Rules [MANDATORY RULE], 12. Critical Correction J — Physical Interactions & Authorized Workflows, 13. System Architecture Readiness Matrix, 1. Executive Summary & Authoritative System Philosophy, 2.2 Frontend Infrastructure & Rendering Stack [VERIFIED], 2. Evidence-Based Codebase Ground Truth Audit (+20 more)
 
 ### Community 35 - "test_multi_agent_registry_and_planner.py"
-Cohesion: 0.17
-Nodes (10): DAGValidationError, MultiAgentPlanner, SubtaskPlanItem, WorkflowPlan, test_planner_creates_valid_dag_topological_sort(), test_planner_detects_dependency_cycle(), test_planner_detects_missing_dependency(), test_planner_detects_self_dependency() (+2 more)
+Cohesion: 0.15
+Nodes (11): DAGValidationError, MultiAgentPlanner, SubtaskPlanItem, WorkflowPlan, test_agent_registry_permissions_and_policy(), test_planner_creates_valid_dag_topological_sort(), test_planner_detects_dependency_cycle(), test_planner_detects_missing_dependency() (+3 more)
 
-### Community 36 - "require_platform_superadmin"
-Cohesion: 0.20
-Nodes (9): 1. Scope and Objective, 2.1 Cryptographic Identity Model, 2.2 Role-Based Access Control (RBAC) Matrix, 2. Authentication Infrastructure, 3.1 Trusted Tenant Resolution (`get_current_tenant_org`), 3.2 Endpoint Protection Mapping, 3. Server-Side Tenant Resolution & Endpoint Hardening, 5. Security Conclusions (+1 more)
-
-### Community 37 - "argparse"
-Cohesion: 0.04
-Nodes (25): aggregate_results(), calculate_stats(), generate_benchmark(), generate_markdown(), load_run_results(), main(), generate_html(), main() (+17 more)
-
-### Community 38 - "os"
+### Community 36 - "2. Regression Protection Domain Audit"
 Cohesion: 0.05
-Nodes (31): main(), package_skill(), should_exclude(), external_links_at_risk(), has_gtimeout(), main(), recalc(), _recalc_with_profile() (+23 more)
+Nodes (31): test_cross_tenant_isolation(), test_forged_organization_id_in_request_body_ignored(), test_global_catalog_sync_admin_protection(), test_role_based_permissions(), test_unauthenticated_requests_rejected(), test_multi_organization_independent_recruitment(), 1. Executive Summary, 2.1 Domain 1: Workstation Partial Unique Index & Savepoint Retry (+23 more)
+
+### Community 37 - "agent-skills/skills/skill-creator/scripts/run_eval.py"
+Cohesion: 0.09
+Nodes (12): find_project_root(), main(), run_eval(), run_single_query(), find_project_root(), main(), run_eval(), run_single_query() (+4 more)
+
+### Community 38 - "sys"
+Cohesion: 0.03
+Nodes (30): main(), _merge_or_die(), fill_pdf_fields(), monkeypatch_pydpf_method(), validation_error_for_field_value(), _call_claude(), improve_description(), main() (+22 more)
 
 ### Community 39 - "useOfficeSync.ts"
 Cohesion: 0.07
-Nodes (52): AgentAvatar(), AgentAvatarData, AgentAvatarProps, DEPARTMENT_COLORS, DepartmentZone(), DepartmentZoneData, DepartmentZoneProps, EmptyOfficeState() (+44 more)
+Nodes (56): AgentAvatar(), AgentAvatarData, AgentAvatarProps, DEPARTMENT_COLORS, DepartmentZone(), DepartmentZoneData, DepartmentZoneProps, EmptyOfficeState() (+48 more)
 
 ### Community 40 - "external_skills/skills/xlsx/scripts/office/helpers/__init__.py"
 Cohesion: 0.29
@@ -1039,9 +1085,9 @@ Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_m
 Cohesion: 0.08
 Nodes (24): block_key(), count_thinking(), estimate_input_tokens(), is_conversation_check_400(), iter_lines(), load_capture(), main(), flush() (+16 more)
 
-### Community 42 - "TaskCreate"
-Cohesion: 0.04
-Nodes (50): cancel_task(), create_task(), get_task(), get_task_deliverable(), get_task_events(), get_task_steps(), get_workforce_workload(), list_tasks() (+42 more)
+### Community 42 - "agent-skills/skills/xlsx/scripts/recalc.py"
+Cohesion: 0.14
+Nodes (14): external_links_at_risk(), has_gtimeout(), main(), recalc(), _recalc_with_profile(), setup_libreoffice_macro(), _stamp(), external_links_at_risk() (+6 more)
 
 ### Community 43 - "PDF Processing Advanced Reference"
 Cohesion: 0.04
@@ -1052,16 +1098,16 @@ Cohesion: 0.16
 Nodes (8): BaseModelProvider, ProviderStepResponse, ToolCallRequest, DeterministicProvider, GeminiProvider, get_provider(), OpenAIProvider, Settings
 
 ### Community 45 - "Hill-Climbing on an Eval"
-Cohesion: 0.09
-Nodes (20): Failure modes to avoid, Get the plan approved, Hill-Climbing on an Eval, Step 0.5: Prove the eval can be climbed, Step 0: Confirm there's a runnable eval, Step 1: Agree on the goal, what to change, and how it's wired in, Step 2: Agree on a stopping condition (and a budget, if cost matters), Step 3: Set up state, split the data, and take a baseline (+12 more)
+Cohesion: 0.17
+Nodes (11): Failure modes to avoid, Get the plan approved, Hill-Climbing on an Eval, Step 0.5: Prove the eval can be climbed, Step 0: Confirm there's a runnable eval, Step 1: Agree on the goal, what to change, and how it's wired in, Step 2: Agree on a stopping condition (and a budget, if cost matters), Step 3: Set up state, split the data, and take a baseline (+3 more)
 
 ### Community 46 - "agent-skills/skills/mcp-builder/scripts/connections.py"
 Cohesion: 0.11
 Nodes (5): create_connection(), MCPConnection, MCPConnectionHTTP, MCPConnectionSSE, MCPConnectionStdio
 
 ### Community 47 - "argparse"
-Cohesion: 0.06
-Nodes (39): add_comment(), _append_xml(), _encode_smart_quotes(), _ensure_comment_content_types(), _ensure_comment_relationships(), _find_para_id(), _generate_hex_id(), _get_next_rid() (+31 more)
+Cohesion: 0.07
+Nodes (40): accept_changes(), _setup_libreoffice_macro(), add_comment(), _append_xml(), _encode_smart_quotes(), _ensure_comment_content_types(), _ensure_comment_relationships(), _find_para_id() (+32 more)
 
 ### Community 48 - "SpatialHashGrid"
 Cohesion: 0.10
@@ -1072,7 +1118,7 @@ Cohesion: 0.28
 Nodes (16): add_slide(), add_slide_to_package(), _add_to_content_types(), _add_to_presentation_rels(), create_slide_from_layout(), _die(), duplicate_slide(), _find_slide_relationship() (+8 more)
 
 ### Community 50 - "PPTXSchemaValidator"
-Cohesion: 0.21
+Cohesion: 0.17
 Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
 
 ### Community 51 - "AgencyAgentImporter"
@@ -1080,8 +1126,8 @@ Cohesion: 0.16
 Nodes (5): AgencyAgentImporter, test_importer_database_persistence_and_versioning(), test_parse_real_specialist_file(), test_validation_invalid_specialist(), test_validation_malicious_instruction()
 
 ### Community 53 - "ToolPermissionLevel"
-Cohesion: 0.25
-Nodes (25): ApiCallTool, ArtifactGetTool, ArtifactListTool, ArtifactVerifyTool, SideEffectLevel, ToolCategory, ToolExecutionSemantics, ToolExecutionStatus (+17 more)
+Cohesion: 0.04
+Nodes (69): 8.3 Security, SSRF & Audit Trail, ApiCallTool, ArtifactCreateTool, ArtifactGetTool, ArtifactListTool, ArtifactVerifyTool, sanitize_for_audit(), SideEffectLevel (+61 more)
 
 ### Community 54 - "agent_runtime/skills/mcp-builder/scripts/connections.py"
 Cohesion: 0.14
@@ -1101,7 +1147,7 @@ Nodes (11): 1. Executive Summary, 2.1 Schema Enhancement, 2.2 Captured Snapshot 
 
 ### Community 59 - "pathlib"
 Cohesion: 0.03
-Nodes (27): _fail(), _has_tracked_changes(), main(), _fail(), _has_tracked_changes(), main(), _fail(), _has_tracked_changes() (+19 more)
+Nodes (37): _fail(), _has_tracked_changes(), main(), _fail(), _has_tracked_changes(), main(), parse_skill_md(), _fail() (+29 more)
 
 ### Community 60 - "test_tools.py"
 Cohesion: 0.14
@@ -1127,25 +1173,25 @@ Nodes (34): Advanced: Blind comparison, Anatomy of a Skill, Capture Intent, Clau
 Cohesion: 0.11
 Nodes (5): Entity, initializeSeed(), params, regenerate(), setup()
 
-### Community 68 - "PPTXSchemaValidator"
-Cohesion: 0.21
-Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
+### Community 68 - "TaskLifecycleEngine"
+Cohesion: 0.10
+Nodes (14): InvalidTaskTransitionError, normalize_task_status(), TaskLifecycleEngine, 1. Executive Summary, 1. `POST /api/v1/tasks/{task_id}/pause`, 2.1 State Machine Invariants (`TaskLifecycleEngine` & `TaskStatus`), 2.3 REST Endpoints & Schemas, 2.4 Dispatcher & Crash Recovery Integration (+6 more)
 
 ### Community 69 - "Managed Agents - Self-Hosted Sandboxes"
 Cohesion: 0.15
 Nodes (12): Container orchestration (mid-level), Create the environment, Credentials, Flow, Managed Agents - Self-Hosted Sandboxes, Memory stores, Monitoring & control, Run a worker - `ant` CLI (fixed tools) (+4 more)
 
-### Community 70 - "PHASE 3.3.3.9 — OPENROUTER CLOUD BOOTSTRAP & LIVE EXECUTION REPORT"
-Cohesion: 0.22
-Nodes (8): 1. TASK 1 — OpenRouter Configuration Verification, 3. TASK 3 — Safe Configuration & How to Configure `OPENROUTER_API_KEY`, 4. TASK 4 — Live Diagnostics Output, 5. TASK 5 — Autonomous Execution Validation, 6. TASK 6 — Cost Control Verification, 7. TASK 7 — Full Regression Verification, How the User Can Configure OpenRouter for Live Execution, PHASE 3.3.3.9 — OPENROUTER CLOUD BOOTSTRAP & LIVE EXECUTION REPORT
+### Community 70 - "ModelCapabilityRegistry"
+Cohesion: 0.15
+Nodes (7): ModelCapabilities, ModelCapabilityRegistry, test_3_gemma_4_31b_free_capability_validation(), test_task2_openrouter_model_capability_verification(), 2. TASK 2 — OpenRouter Model Capability Verification, Free-Model Safety Audit, Recommended OpenRouter Models & Current Live Availability
 
 ### Community 73 - "Skill Creator"
 Cohesion: 0.06
 Nodes (34): Advanced: Blind comparison, Anatomy of a Skill, Capture Intent, Claude.ai-specific instructions, Communicating with the user, Cowork-Specific Instructions, Creating a skill, Description Optimization (+26 more)
 
-### Community 75 - "Tool"
-Cohesion: 0.13
-Nodes (13): Tool, PathSecurityError, safe_resolve_path(), FileSearchTool, WorkspaceListTool, test_file_read_tool_blocks_env(), test_file_read_tool_blocks_path_traversal(), test_reject_absolute_path_outside_workspace() (+5 more)
+### Community 75 - "external_skills/skills/pptx/scripts/add_slide.py"
+Cohesion: 0.28
+Nodes (16): add_slide(), add_slide_to_package(), _add_to_content_types(), _add_to_presentation_rels(), create_slide_from_layout(), _die(), duplicate_slide(), _find_slide_relationship() (+8 more)
 
 ### Community 76 - "PHASE 2.2 — SECURITY, TRANSACTION & EXECUTION INTEGRITY REMEDIATION REPORT"
 Cohesion: 0.29
@@ -1187,9 +1233,9 @@ Nodes (11): clean_unused_files(), get_referenced_files(), get_slides_in_sldidlst
 Cohesion: 0.11
 Nodes (18): 1. Executive Test Summary & Milestone Status, 2. Test Execution Commands & Verified Outputs, 3. Milestone-by-Milestone Test Breakdown, 4. Performance & Telemetry Measurements, 5. Security & Invariant Verification Checklist, 6. Git Integrity Status, 7. Final Verdict, A. Backend Pytest Regression Suite (+10 more)
 
-### Community 87 - ".create_event"
-Cohesion: 0.09
-Nodes (16): 3.2 Event Envelope Structure & Delivery Semantics [VERIFIED], 3. Critical Correction A — Backend Event Contract, Delivery Semantics Evaluation [VERIFIED]:, 1. Executive Summary, 2.1 Envelope Fields, 2. Standardized Event Envelope Specification, 3. Distributed Correlation & Causation DAG Tracing, 4.1 Connection & Handover Protocol (+8 more)
+### Community 87 - "PROVIPAGENT — TECHNICAL DECISIONS & ARCHITECTURAL LOG"
+Cohesion: 0.10
+Nodes (15): test_multi_agent_orchestrator_end_to_end_execution(), test_workflow_cancellation_propagation(), Decision 10: Database Partial Unique Index with Savepoint Retry for Desks (Phase 2.2), Decision 14: Platform Superadmin Catalog Protection & Audit Logging (Phase 2.2), Decision 15: Fail-Secure Signing Secret & Server-Side Privilege Authority (Phase 2.2.2 — SEC-01), Decision 16: Dynamic User Authorization & Instant Session Revocation (Phase 2.2.2 — SEC-02), Decision 17: Non-Leaking Execution API Tenant Scoping (Phase 2.2.2 — SEC-03), Decision 1: Declarative React Three Fiber (R3F) vs Imperative Vanilla Three.js (+7 more)
 
 ### Community 88 - "Skill Creator"
 Cohesion: 0.06
@@ -1204,32 +1250,32 @@ Cohesion: 0.60
 Nodes (3): test_python_sandbox_error_capture(), test_python_sandbox_execution(), test_shell_command_whitelist_security()
 
 ### Community 91 - "PPTXSchemaValidator"
-Cohesion: 0.21
+Cohesion: 0.16
 Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
 
-### Community 92 - "core/database.py"
-Cohesion: 0.03
-Nodes (78): get_agent_registry_definition(), decide_approval(), get_approval(), list_approvals(), get_current_user_profile(), login(), LoginRequest, LoginResponse (+70 more)
+### Community 92 - "UserContext"
+Cohesion: 0.02
+Nodes (100): complete_agent_movement(), create_agent(), get_agent(), get_agent_registry_definition(), get_agent_tasks(), interrupt_agent_movement(), list_agent_registry_definitions(), list_agents() (+92 more)
 
 ### Community 93 - "json"
+Cohesion: 0.05
+Nodes (42): get_bounding_box_messages(), RectAndField, get_field_info(), get_full_annotation_field_id(), make_field_dict(), write_field_info(), extract_form_structure(), main() (+34 more)
+
+### Community 94 - "OrganizationModel"
 Cohesion: 0.02
-Nodes (79): main(), _merge_or_die(), get_bounding_box_messages(), RectAndField, create_validation_image(), get_field_info(), get_full_annotation_field_id(), make_field_dict() (+71 more)
+Nodes (95): get_current_user_profile(), login(), LoginRequest, LoginResponse, _b64decode(), _b64encode(), create_access_token(), create_jwt_token() (+87 more)
 
-### Community 94 - "OrganizationMemberModel"
-Cohesion: 0.01
-Nodes (130): create_access_token(), create_jwt_token(), hash_password(), revoke_user_tokens(), configure_sqlite_wal(), lifespan(), root_health(), AgentModel (+122 more)
-
-### Community 95 - "test_dispatcher_rejects_disabled_agent_definition"
-Cohesion: 0.29
-Nodes (3): test_dispatcher_executes_corporate_research_scientist_with_correct_policy(), test_dispatcher_rejects_disabled_agent_definition(), test_dispatcher_rejects_unresolvable_agent_identity_no_silent_fallback()
+### Community 95 - "test_enterprise_runtime_identity.py"
+Cohesion: 0.07
+Nodes (14): test_api_v1_agents_registry_endpoint(), test_api_v1_agents_skills_endpoint(), test_corporate_employee_role_based_skill_assignment(), test_dispatcher_executes_corporate_research_scientist_with_correct_policy(), test_dispatcher_rejects_disabled_agent_definition(), test_dispatcher_rejects_unresolvable_agent_identity_no_silent_fallback(), test_legacy_router_deprecation_isolation(), test_registry_resolves_all_eight_corporate_employees_by_id() (+6 more)
 
 ### Community 97 - "CloudCostController"
-Cohesion: 0.07
-Nodes (21): AgentUsageLedger, CloudCostController, OrganizationCloudLedger, TaskCloudLedger, _extract_retry_after(), test_1_zero_cost_model_configuration_and_require_parameters(), test_5_nonzero_cost_emergency_halt_circuit_breaker(), test_6_rate_limit_retry_after_bounded_backoff_and_daily_quota() (+13 more)
+Cohesion: 0.06
+Nodes (24): estimate_llm_cost_usd(), AgentUsageLedger, CloudCostController, OrganizationCloudLedger, TaskCloudLedger, _extract_retry_after(), 1. Executive Summary & Deployment Metrics, 2. Model Configuration & Secret Hygiene (Section 2) (+16 more)
 
 ### Community 99 - "agent_runtime/skills/pptx/scripts/add_slide.py"
-Cohesion: 0.13
-Nodes (19): validate_skill(), add_slide(), add_slide_to_package(), _add_to_content_types(), _add_to_presentation_rels(), create_slide_from_layout(), _die(), duplicate_slide() (+11 more)
+Cohesion: 0.26
+Nodes (16): add_slide(), add_slide_to_package(), _add_to_content_types(), _add_to_presentation_rels(), create_slide_from_layout(), _die(), duplicate_slide(), _find_slide_relationship() (+8 more)
 
 ### Community 100 - "PROVIPAGENT — Phase 2.2.2 Final Review & Release Checkpoint"
 Cohesion: 0.13
@@ -1243,10 +1289,6 @@ Nodes (10): 1. Executive Summary, 2. Execution Path Investigation & Root Cause, 
 Cohesion: 0.29
 Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_master_themes(), _masters(), _notes_master_share_is_inert(), _rels_path(), _resolve() (+3 more)
 
-### Community 103 - "PPTXSchemaValidator"
-Cohesion: 0.21
-Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
-
 ### Community 104 - "RedliningValidator"
 Cohesion: 0.25
 Nodes (3): RedliningValidator, group(), text_of()
@@ -1255,21 +1297,17 @@ Nodes (3): RedliningValidator, group(), text_of()
 Cohesion: 0.25
 Nodes (3): RedliningValidator, group(), text_of()
 
-### Community 106 - "LLMBudgetExceededError"
-Cohesion: 0.07
-Nodes (21): TaskContext, _build_result(), LLMBudgetExceededError, redact_secrets(), PolicyDecision, test_secret_redaction_scrubs_api_keys_and_bearer_tokens(), test_ollama_normalizes_openai_tool_call_arguments_to_dict(), test_3_5_2_07_duplicate_tool_invocation_deduplication() (+13 more)
+### Community 106 - "ExecutionLoop"
+Cohesion: 0.05
+Nodes (40): TaskContext, ExecutionLoop, AgentDefinition, LLMBudgetExceededError, PolicyDecision, PolicyEngine, AgentPolicy, ResultVerifier (+32 more)
 
 ### Community 107 - "agent-skills/skills/xlsx/scripts/office/helpers/pptx_theme.py"
-Cohesion: 0.29
-Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_master_themes(), _masters(), _notes_master_share_is_inert(), _rels_path(), _resolve() (+3 more)
+Cohesion: 0.15
+Nodes (19): part_text(), _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst() (+11 more)
 
-### Community 108 - "re"
-Cohesion: 0.04
-Nodes (16): add_slide(), add_slide_to_package(), _add_to_content_types(), _add_to_presentation_rels(), create_slide_from_layout(), _die(), duplicate_slide(), _find_slide_relationship() (+8 more)
-
-### Community 109 - "agent_runtime/skills/claude-api/shared/preserved-thinking-migration/prefix_diff.py"
-Cohesion: 0.06
-Nodes (37): digests(), attribute(), _block_diffs(), block_type(), canon_blocks(), canon_messages(), canon_system(), canon_tool_entry() (+29 more)
+### Community 109 - "fp"
+Cohesion: 0.15
+Nodes (13): attribute(), _block_diffs(), block_type(), _classify_in_place(), _classify_runs(), diff_compaction_request(), diff_messages(), diff_system() (+5 more)
 
 ### Community 110 - "Claude API - Python"
 Cohesion: 0.06
@@ -1284,8 +1322,8 @@ Cohesion: 0.25
 Nodes (3): RedliningValidator, group(), text_of()
 
 ### Community 113 - "agent_runtime/skills/xlsx/scripts/office/helpers/__init__.py"
-Cohesion: 0.29
-Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_master_themes(), _masters(), _notes_master_share_is_inert(), _rels_path(), _resolve() (+3 more)
+Cohesion: 0.15
+Nodes (19): part_text(), _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst() (+11 more)
 
 ### Community 114 - "external_skills/skills/claude-api/shared/tool-use-concepts.md"
 Cohesion: 0.12
@@ -1296,8 +1334,8 @@ Cohesion: 0.25
 Nodes (3): RedliningValidator, group(), text_of()
 
 ### Community 116 - "Phase 4.3: Pre-Implementation Architecture Audit Report"
-Cohesion: 0.08
-Nodes (24): 10. Performance Risks & Mitigation, 11. Testing Strategy, 13. Acceptance Criteria for Every Subphase, 14. Pre-Implementation Audit Conclusion, 1.1 Git Status & Commit Baseline, 1.2 Automated Test Baselines, 1. Baseline Verification, 2.1 Existing Inspection & Workstation Components (+16 more)
+Cohesion: 0.09
+Nodes (22): 10. Performance Risks & Mitigation, 11. Testing Strategy, 13. Acceptance Criteria for Every Subphase, 14. Pre-Implementation Audit Conclusion, 1.1 Git Status & Commit Baseline, 1.2 Automated Test Baselines, 1. Baseline Verification, 2.1 Existing Inspection & Workstation Components (+14 more)
 
 ### Community 117 - "app/schemas.py"
 Cohesion: 0.28
@@ -1315,9 +1353,9 @@ Nodes (30): agent_loop(), evaluate_single_task(), extract_xml_content(), main(),
 Cohesion: 0.17
 Nodes (11): Failure modes to avoid, Get the plan approved, Hill-Climbing on an Eval, Step 0.5: Prove the eval can be climbed, Step 0: Confirm there's a runnable eval, Step 1: Agree on the goal, what to change, and how it's wired in, Step 2: Agree on a stopping condition (and a budget, if cost matters), Step 3: Set up state, split the data, and take a baseline (+3 more)
 
-### Community 121 - "validate_signing_secret"
-Cohesion: 0.21
-Nodes (7): _b64encode(), validate_signing_secret(), TestSEC01SigningSecretSecurity, Phase 2.2.2 Remediations & Independent Verification Results, Phase Status Summary, PROVIPAGENT — IMPLEMENTATION PROGRESS, 3.1 P0 — SEC-01: JWT Signing Secret Security
+### Community 121 - "agent_runtime/skills/skill-creator/eval-viewer/generate_review.py"
+Cohesion: 0.18
+Nodes (8): build_run(), embed_file(), find_runs(), _find_runs_recursive(), get_mime_type(), _kill_port(), load_previous_iteration(), main()
 
 ### Community 123 - "specialists.py"
 Cohesion: 0.11
@@ -1335,13 +1373,9 @@ Nodes (20): LLMResponseError, reset_global_routing_decisions(), _make_router(), 
 Cohesion: 0.21
 Nodes (5): create_blank_frame(), create_gradient_background(), draw_circle(), draw_star(), draw_text()
 
-### Community 127 - "PPTXSchemaValidator"
-Cohesion: 0.21
-Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
-
 ### Community 128 - "2. Detailed Phase Specifications"
-Cohesion: 0.12
-Nodes (16): 1. Roadmap Reordering Rationale & Dependency Analysis, 2. Detailed Phase Specifications, 3. Strict Verification & Gate Review Rules, Corrected Execution Sequence:, Milestone 3.2.1: Demo Simulation Isolation & Task Submission API Wiring, Milestone 3.2.2: Real-Time Event Sync Engine & Monotonic Watermark Replay, Milestone 3.2.3: Decoupled Spatial Scene Store & Headless State Bridge, Milestone 3.2.4: Data-Driven Workstation Allocation Ingestion & Telemetry (+8 more)
+Cohesion: 0.11
+Nodes (17): 1. Roadmap Reordering Rationale & Dependency Analysis, 2. Detailed Phase Specifications, 3. Strict Verification & Gate Review Rules, Corrected Execution Sequence:, Milestone 3.2.1: Demo Simulation Isolation & Task Submission API Wiring, Milestone 3.2.2: Real-Time Event Sync Engine & Monotonic Watermark Replay, Milestone 3.2.3: Decoupled Spatial Scene Store & Headless State Bridge, Milestone 3.2.4: Data-Driven Workstation Allocation Ingestion & Telemetry (+9 more)
 
 ### Community 130 - "RedliningValidator"
 Cohesion: 0.25
@@ -1359,49 +1393,57 @@ Nodes (33): 1. Use Prompt Caching for Repeated Context, 2. Choose the Right Mode
 Cohesion: 0.07
 Nodes (29): Agents, Beta Headers, CreateAgent Request Body, CreateDeployment Request Body, CreateEnvironment Request Body, CreateSession Request Body, Credentials, Define Outcome Event (+21 more)
 
+### Community 134 - "BaseSchemaValidator"
+Cohesion: 0.09
+Nodes (4): fatal_slide_errors(), is_schema_verdict(), BaseSchemaValidator, PPTXSchemaValidator
+
 ### Community 135 - "PPTXSchemaValidator"
 Cohesion: 0.21
 Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
 
-### Community 136 - "sanitize_for_audit"
-Cohesion: 0.13
-Nodes (4): 8.3 Security, SSRF & Audit Trail, sanitize_for_audit(), validate_ssrf_safety(), test_ssrf_and_api_security()
+### Community 136 - "external_skills/skills/skill-creator/eval-viewer/generate_review.py"
+Cohesion: 0.19
+Nodes (9): build_run(), embed_file(), find_runs(), _find_runs_recursive(), generate_html(), get_mime_type(), _kill_port(), load_previous_iteration() (+1 more)
 
 ### Community 137 - "os"
 Cohesion: 0.04
-Nodes (55): opc_target(), rels_source_part(), rezip(), safe_extract(), opc_target(), rels_source_part(), rezip(), safe_extract() (+47 more)
+Nodes (41): opc_target(), rels_source_part(), rezip(), safe_extract(), opc_target(), rels_source_part(), rezip(), safe_extract() (+33 more)
 
-### Community 139 - "asyncio"
-Cohesion: 0.22
-Nodes (7): run_task_in_background(), test_full_e2e_flow(), main(), test_live_multiagent_flow(), test_live_memory_lifecycle(), run_live_verification(), verify_milestone9()
+### Community 139 - "run_worker_scale_benchmark"
+Cohesion: 0.15
+Nodes (8): run_worker_scale_benchmark(), test_3_5_3_01_worker_scale_1_worker(), test_3_5_3_02_worker_scale_4_workers(), test_3_5_3_03_worker_scale_8_workers(), test_3_5_3_04_worker_scale_16_workers(), test_3_5_3_05_worker_scale_32_workers(), test_3_5_3_06_worker_scale_50_workers(), test_3_5_3_07_worker_scale_100_workers()
 
 ### Community 140 - "Planner"
-Cohesion: 0.18
+Cohesion: 0.16
 Nodes (10): Planner, AgentPlan, PlanStep, test_planner_creates_structured_plan(), test_planner_fallback_plan(), 6.2. Tool Registry & Filesystem Security, 6.3. Policy Engine & Quyền Hạn, 6.4. Planner & Execution Loop (+2 more)
 
 ### Community 141 - "PHASE 2.2.1 — DATABASE, CONCURRENCY & TRANSACTION INTEGRITY AUDIT"
 Cohesion: 0.14
 Nodes (13): 1. Executive Summary, 2. Partial Unique Index Schema Verification, 3. Real Multi-Threaded Concurrency Testing, 4. Transaction Ownership & Failure Rollback, 5. Audit Findings, 6. Verification Verdict, Architecture Review:, Concurrency Audit Observations: (+5 more)
 
-### Community 143 - "PPTXSchemaValidator"
-Cohesion: 0.21
-Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
+### Community 144 - "external_skills/skills/pptx/scripts/clean.py"
+Cohesion: 0.26
+Nodes (11): clean_unused_files(), get_referenced_files(), get_slides_in_sldidlst(), _referenced_by(), RefusedToClean, remove_orphaned_files(), remove_orphaned_rels_files(), remove_orphaned_slides() (+3 more)
 
 ### Community 146 - "Managed Agents - Multiagent Sessions"
 Cohesion: 0.18
 Nodes (10): Advisor, Declare the roster on the coordinator, Interrupting and archiving threads, Managed Agents - Multiagent Sessions, Multiagent events (on the session stream), Pitfalls, Previewing a subagent's text, Threads (+2 more)
 
 ### Community 147 - "Session"
-Cohesion: 0.12
-Nodes (7): sync_db(), test_03_workstation_allocation_and_reassignment_persistence(), test_04_task_creation_and_assignment_persistence(), test_05_global_sequence_monotonicity_and_multi_tenant_gaps(), test_06_replay_after_reconnect(), test_07_organization_isolation_in_replay(), test_08_concurrent_event_creation_safety()
+Cohesion: 0.14
+Nodes (6): sync_db(), test_04_task_creation_and_assignment_persistence(), test_05_global_sequence_monotonicity_and_multi_tenant_gaps(), test_06_replay_after_reconnect(), test_07_organization_isolation_in_replay(), test_08_concurrent_event_creation_safety()
 
 ### Community 149 - "Building LLM-Powered Applications with Claude"
 Cohesion: 0.07
 Nodes (29): Architecture, Authentication (Quick Reference), Before You Start, Building an Agent: Four Approaches, Building LLM-Powered Applications with Claude, Common Pitfalls, Compaction (Quick Reference), Context Editing (Quick Reference) (+21 more)
 
+### Community 150 - "diff_pair"
+Cohesion: 0.13
+Nodes (9): canon_messages(), _carries_tool_changes(), diff_pair(), _has_signed_block(), _kept_alignment(), _pick_compaction_request(), _signed_block_alone(), _signed_blocks() (+1 more)
+
 ### Community 151 - "WorkstationService"
-Cohesion: 0.12
-Nodes (14): 2. Detailed Concurrency Findings, Finding CONC-01 (HIGH): Race Condition in Dynamic Physical Desk Assignment, Finding CONC-02 (HIGH): Premature Sub-Transaction Commit in Workstation Allocator, Finding CONC-03 (MEDIUM): Application-Level Duplicate Recruitment Race Condition, Finding CONC-04 (INFORMATIONAL): Verification of Virtual Overflow & Retirement Deallocation, PROVIPAGENT PHASE 2.1 — CONCURRENCY & WORKSTATION ALLOCATION AUDIT, Finding SEC-04 (HIGH): Cross-Tenant Workstation Reassignment and Corruption, 4. Workstation & Resource Release on Retirement (+6 more)
+Cohesion: 0.14
+Nodes (14): WorkstationService, 1. Executive Summary, 2. Detailed Concurrency Findings, Concurrency Audit Summary Matrix, Finding CONC-01 (HIGH): Race Condition in Dynamic Physical Desk Assignment, Finding CONC-02 (HIGH): Premature Sub-Transaction Commit in Workstation Allocator, Finding CONC-03 (MEDIUM): Application-Level Duplicate Recruitment Race Condition, Finding CONC-04 (INFORMATIONAL): Verification of Virtual Overflow & Retirement Deallocation (+6 more)
 
 ### Community 154 - "Managed Agents - Endpoint Reference"
 Cohesion: 0.07
@@ -1455,16 +1497,12 @@ Nodes (28): Authentication and Authorization, DNS Rebinding Protection, Document
 Cohesion: 0.07
 Nodes (27): Analyzing Benchmark Results, Categories for Suggestions, Guidelines, Guidelines, Inputs, Inputs, Output Format, Post-hoc Analyzer Agent (+19 more)
 
-### Community 168 - "NavigationService"
-Cohesion: 0.05
-Nodes (31): _build_static_topology(), _euclidean_distance_3d(), NavigationService, 1. Executive Summary, 2. Free Model Discovery & Live Catalog Metadata, 3.1 Architecture & Fail-Closed Guardrails, 3.2 Tool Schema Normalization & OpenAI Function Calling Compliance, 3.3 Token Bounds Calibration for 1M-Context Models (+23 more)
-
 ### Community 169 - "Stage 3: Reader Testing"
 Cohesion: 0.07
 Nodes (27): Doc Co-Authoring Workflow, Exit Condition (Both Approaches), Final Review, Info Dumping, Initial Questions, Near Completion, Quality Checking, Stage 1: Context Gathering (+19 more)
 
 ### Community 170 - ".connect"
-Cohesion: 0.11
+Cohesion: 0.14
 Nodes (11): test_snapshot_watermark_consistency(), test_websocket_subprotocol_bearer_authentication(), test_workstation_telemetry_invariants_and_reserved_unoccupied(), 1. Executive Summary of Remediations, 2. Detailed Remediation Details, 3. Regression Test Execution Summary, Finding 1: Out-of-Order Event Discard Bug (FINDING-325-01), Finding 2 & 7: Workstation Telemetry Contradiction & Test Fix (FINDING-325-02, FINDING-325-07) (+3 more)
 
 ### Community 171 - "MCP Server Best Practices"
@@ -1479,8 +1517,8 @@ Nodes (27): Analyzing Benchmark Results, Categories for Suggestions, Guidelines,
 Cohesion: 0.07
 Nodes (27): Async/Await Best Practices, Building and Running, Character Limits and Truncation, Code Best Practices, Code Composability and Reusability, Complete Example, Error Handling, Key Imports (+19 more)
 
-### Community 174 - "agent-skills/skills/pptx/scripts/thumbnail.py"
-Cohesion: 0.12
+### Community 174 - "defusedxml_minidom"
+Cohesion: 0.09
 Nodes (16): build_slide_list(), convert_to_images(), create_grid(), create_grids(), create_hidden_placeholder(), get_slide_info(), _is_hidden(), main() (+8 more)
 
 ### Community 175 - "RedliningValidator"
@@ -1488,20 +1526,16 @@ Cohesion: 0.25
 Nodes (3): RedliningValidator, group(), text_of()
 
 ### Community 176 - "agent_runtime/skills/docx/scripts/merge_runs.py"
-Cohesion: 0.15
-Nodes (24): _can_merge(), _consolidate_text(), _consolidate_text_elements(), _element_text(), _find_elements(), traverse(), _find_runs(), _first_child_run() (+16 more)
+Cohesion: 0.16
+Nodes (23): _can_merge(), _consolidate_text(), _consolidate_text_elements(), _element_text(), _find_elements(), traverse(), _find_runs(), _first_child_run() (+15 more)
 
 ### Community 177 - "PROVIPAGENT Phase 4.1 — Pre-Implementation Audit Report: 3D Office Foundation & Real-Time Integration"
-Cohesion: 0.12
-Nodes (16): 1. Executive Summary, 2.1 Technology Stack, 2.2 Existing Routing & Pages, 2.4 State Management (`frontend/store/worldStore.ts`), 2. Existing Frontend Architecture, 3.1 World Snapshot Endpoint (`GET /api/v1/world/snapshot`), 3.2 Office Topology Endpoint (`GET /api/v1/world/topology`), 3.3 Workstation Management Endpoints (`/api/v1/workstations/*`) (+8 more)
+Cohesion: 0.11
+Nodes (17): WorldHUD(), 1. Executive Summary, 2.1 Technology Stack, 2.2 Existing Routing & Pages, 2.4 State Management (`frontend/store/worldStore.ts`), 2. Existing Frontend Architecture, 3.1 World Snapshot Endpoint (`GET /api/v1/world/snapshot`), 3.2 Office Topology Endpoint (`GET /api/v1/world/topology`) (+9 more)
 
 ### Community 178 - "agent_runtime/skills/pptx/scripts/office/helpers/pptx_theme.py"
-Cohesion: 0.29
-Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_master_themes(), _masters(), _notes_master_share_is_inert(), _rels_path(), _resolve() (+3 more)
-
-### Community 179 - "PPTXSchemaValidator"
-Cohesion: 0.21
-Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
+Cohesion: 0.15
+Nodes (19): part_text(), _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst() (+11 more)
 
 ### Community 180 - "Node/TypeScript MCP Server Implementation Guide"
 Cohesion: 0.07
@@ -1515,9 +1549,9 @@ Nodes (27): Async/Await Best Practices, Building and Running, Character Limits a
 Cohesion: 0.19
 Nodes (25): appendFileNoFollow(), assertInFlow(), checkHarness(), eprint(), gradeCase(), isSymlink(), lexists(), loadCases() (+17 more)
 
-### Community 183 - "CancellationToken"
-Cohesion: 0.03
-Nodes (58): ResultAggregator, CancellationToken, TaskCancelledException, TaskPausedException, SubtaskResultContract, MultiAgentOrchestrator, test_result_aggregator_detects_failed_subtask(), test_result_aggregator_synthesizes_report_and_verifies_completeness() (+50 more)
+### Community 183 - "TaskModel"
+Cohesion: 0.01
+Nodes (124): ResultAggregationError, ResultAggregator, CancellationToken, TaskCancelledException, TaskPausedException, SubtaskResultContract, detect_and_reclaim_stale_leases(), recover_abandoned_tasks() (+116 more)
 
 ### Community 184 - "PROVIPAGENT Phase 3.5 — Phase 4 Entry Contract: Real-Time 3D AI Office"
 Cohesion: 0.11
@@ -1679,9 +1713,9 @@ Nodes (18): 1. Executive Summary, 2. System Architecture, 3. Station & Agent Ros
 Cohesion: 0.10
 Nodes (19): 2.1 Prompt caching - first, and it stays on, 2.2 Input tokens - progressive disclosure, 2.3 Agent-loop hygiene - keep long loops from compounding, 2.4 Output tokens, 2.5 Batch processing, 2.6 Effort and budgets - the first tradeoffs, 2.7 Model selection - last, deliberately, Ask for the app's own usage logs first (+11 more)
 
-### Community 258 - "ProviderHealthSnapshot"
-Cohesion: 0.19
-Nodes (3): ProviderHealthMonitor, ProviderHealthSnapshot, ProviderHealthState
+### Community 258 - "commit_with_retry"
+Cohesion: 0.15
+Nodes (8): commit_with_retry(), transaction_scope(), test_3_5_1_02_concurrent_writes_serialization(), writer_worker(), test_3_5_1_03_read_write_contention_wal_mode(), slow_writer(), test_3_5_1_05_transaction_retry_on_lock(), test_3_5_1_08_long_running_transaction_interference()
 
 ### Community 259 - "Prompt Caching - Design & Optimization"
 Cohesion: 0.10
@@ -1965,7 +1999,7 @@ Nodes (14): Blind Comparator Agent, Field Descriptions, Guidelines, Inputs, Outp
 
 ### Community 330 - "NotFoundError"
 Cohesion: 0.04
-Nodes (28): Exception class names by language, MemoryContextBuilder, MemoryExtractor, Exception class names by language, NotFoundError, PermissionDeniedError, MemoryCitationModel, MemoryModel (+20 more)
+Nodes (30): Exception class names by language, MemoryContextBuilder, MemoryExtractor, Exception class names by language, NotFoundError, PermissionDeniedError, MemoryCitationModel, MemoryModel (+22 more)
 
 ### Community 331 - "Claude API - Java"
 Cohesion: 0.13
@@ -2059,10 +2093,6 @@ Nodes (12): Anthropic Brand Styling, Brand Guidelines, Color Application, Colors
 Cohesion: 0.15
 Nodes (12): Delete a File, Download a File, Files API - Python, Full End-to-End Example, Get File Metadata, Image, Key Facts, List Files (+4 more)
 
-### Community 354 - "PPTXSchemaValidator"
-Cohesion: 0.21
-Nodes (3): fatal_slide_errors(), is_schema_verdict(), PPTXSchemaValidator
-
 ### Community 355 - "external_skills/skills/mcp-builder/SKILL.md"
 Cohesion: 0.17
 Nodes (8): Core MCP Documentation (Load First), 📚 Documentation Library, Evaluation Guide (Load During Phase 4), Language-Specific Implementation Guides (Load During Phase 2), MCP Server Development Guide, Overview, Reference Files, SDK Documentation (Load During Phase 1/2)
@@ -2111,9 +2141,9 @@ Nodes (11): Anthropic CLI (`ant`), Attach a terminal to a session (`ant beta:ses
 Cohesion: 0.17
 Nodes (11): Before the first paid call, Building an Eval for a Claude-Powered Application, Failure modes to avoid, Get the grading method approved, Get the inputs approved, Make it durable, Step 0: Understand what's being evaluated, Step 1: Find or build the input set (+3 more)
 
-### Community 367 - "WorkstationAllocationModel"
-Cohesion: 0.05
-Nodes (33): CEOSupervisoryHeartbeat, _execute_inspection(), WorkstationAllocationModel, ActiveTaskSummary, ActivitySnapshotItem, AgentSnapshotItem, OrganizationSummary, SpatialCoordinates (+25 more)
+### Community 367 - "world_service.py"
+Cohesion: 0.22
+Nodes (11): ActiveTaskSummary, ActivitySnapshotItem, AgentSnapshotItem, OrganizationSummary, SpatialCoordinates, WorkstationSnapshotItem, WorldSnapshotResponse, WorldService (+3 more)
 
 ### Community 368 - "Migrating to Claude Opus 5.5"
 Cohesion: 0.17
@@ -2140,7 +2170,7 @@ Cohesion: 0.17
 Nodes (11): Before the first paid call, Building an Eval for a Claude-Powered Application, Failure modes to avoid, Get the grading method approved, Get the inputs approved, Make it durable, Step 0: Understand what's being evaluated, Step 1: Find or build the input set (+3 more)
 
 ### Community 374 - "platform"
-Cohesion: 0.53
+Cohesion: 0.48
 Nodes (3): get_system_status(), get_tools(), health_check()
 
 ### Community 375 - "Migrating to Claude Opus 5.5"
@@ -2215,9 +2245,9 @@ Nodes (10): Anthropic-Defined Tools, Beta namespace (MCP, compaction), Building 
 Cohesion: 0.18
 Nodes (10): Basic Message Request, Beta Features, Claude API - Ruby, Client Initialization, Error Type, Extended Thinking, Installation, Prompt Caching (+2 more)
 
-### Community 393 - "WebSocketManager"
-Cohesion: 0.15
-Nodes (3): WebSocketManager, 4.1 Grounded Audit of Assumptions, 6. Security & Reliability Audit
+### Community 393 - ".broadcast_envelope"
+Cohesion: 0.20
+Nodes (3): 4.1 Existing WebSocket Infrastructure (`websocket_manager.py`), 4.2 Gaps for Phase 4.3 Real-Time Interactivity, 4. Real-Time Communication Architecture
 
 ### Community 394 - "Managed Agents - Common Client Patterns"
 Cohesion: 0.18
@@ -2244,8 +2274,8 @@ Cohesion: 0.18
 Nodes (11): Behavioral shifts (prompt-tunable), Breaking change 1: forced tool use is rejected, Breaking change 2: thinking blocks are preserved only for the model that produced them, or a newer one, Breaking change 3: thinking blocks are preserved only in the conversation that produced them, Capability improvements versus Claude Fable 5, Claude Fable 5.1 from Claude Fable 5 Migration Checklist, Claude Mythos 5.1, Coming from Claude Opus 5 (+3 more)
 
 ### Community 400 - "Decision Record Summary Index"
-Cohesion: 0.17
-Nodes (11): DEC-3D-01: 3D Rendering Framework Selection, DEC-3D-02: Decoupled Spatial Scene Store Architecture, DEC-3D-05: Real-Time Event Replay & Snapshot Synchronization Protocol, DEC-3D-06: World Coordinate Convention and Unit Scale, DEC-3D-07: Tactical Camera Director & Viewport Modes, DEC-3D-08: Instanced Batching and Avatar Level-of-Detail (LOD), DEC-3D-09: Deterministic Agent Visual State Resolver, DEC-3D-10: Zero-Trust Spatial Interaction Security (+3 more)
+Cohesion: 0.15
+Nodes (12): DEC-3D-01: 3D Rendering Framework Selection, DEC-3D-02: Decoupled Spatial Scene Store Architecture, DEC-3D-04: Backend Workstation Allocation Ownership, DEC-3D-05: Real-Time Event Replay & Snapshot Synchronization Protocol, DEC-3D-06: World Coordinate Convention and Unit Scale, DEC-3D-07: Tactical Camera Director & Viewport Modes, DEC-3D-08: Instanced Batching and Avatar Level-of-Detail (LOD), DEC-3D-09: Deterministic Agent Visual State Resolver (+4 more)
 
 ### Community 401 - "external_skills/README.md"
 Cohesion: 0.18
@@ -2464,8 +2494,8 @@ Cohesion: 0.22
 Nodes (9): Behavioral shifts (prompt-tunable), Breaking changes (will 400 on Opus 4.7), Capability improvements, Choosing an effort level on Opus 4.7, Fast Mode: Claude Opus 5.5 / Claude Opus 5 / Opus 4.8 only, Migrating to Opus 4.7, New feature: Task Budgets (beta), Real-time cybersecurity safeguards (+1 more)
 
 ### Community 460 - "PHASE 3.3.3.8 — HYBRID LLM INTELLIGENCE & DYNAMIC PROVIDER ROUTING REPORT"
-Cohesion: 0.12
-Nodes (15): 10. Remaining Blockers & Exact Setup Instructions, 11. Final Verdict, 1. Architecture Changes, 2.2 Tier Routing Policy, 2. Intelligent Task Routing Logic (`complexity.py` & `router.py`), 3. Model Capability Registry (`capabilities.py`), 4. Cloud Cost Governance (`cost_controller.py`), 5. Failover Behavior & Provider Health Monitor (`health_monitor.py` & `router.py`) (+7 more)
+Cohesion: 0.14
+Nodes (13): 10. Remaining Blockers & Exact Setup Instructions, 11. Final Verdict, 1. Architecture Changes, 3. Model Capability Registry (`capabilities.py`), 4. Cloud Cost Governance (`cost_controller.py`), 5. Failover Behavior & Provider Health Monitor (`health_monitor.py` & `router.py`), 6. Security & Observability Assessment, 7. Machine Hardware Inspection Results (Task 10) (+5 more)
 
 ### Community 462 - "Admin API (Organization Management)"
 Cohesion: 0.22
@@ -2481,7 +2511,7 @@ Nodes (9): Behavioral shifts (prompt-tunable), Breaking changes (will 400 on Opu
 
 ### Community 465 - "stateBridge.ts"
 Cohesion: 0.06
-Nodes (39): WorkstationAllocation, WorkstationTelemetrySummary, ZoneConfig, MappedWorkstationSceneData, mapWorkstationsToScene(), resolveAgentVisualState(), stateBridge, AgentVisualNode (+31 more)
+Nodes (32): resolveAgentVisualState(), stateBridge, zustand@^5.0.16, AgentVisualNode, AgentVisualPresentationState, DEFAULT_CAMERA_POSITION, DEFAULT_CAMERA_TARGET, SceneState (+24 more)
 
 ### Community 466 - "PROVIPAGENT — PHASE 3.2.5 FINAL AUDIT & RELEASE GATE REPORT"
 Cohesion: 0.17
@@ -2528,8 +2558,8 @@ Cohesion: 0.22
 Nodes (8): Anthropic-Defined Tools, Converting response content to the follow-up assistant message, Defining a tool, Structured Output, Tool Runner (Beta), Tool Use, Tool Use - C#, When to offer Managed Agents
 
 ### Community 477 - "diff_conversation"
-Cohesion: 0.20
-Nodes (8): diff_conversation(), header_line(), is_compaction_request(), load_requests(), main(), print_pair(), run_diff(), run_scan()
+Cohesion: 0.15
+Nodes (12): diff_conversation(), first_diff_char(), header_line(), is_compaction_request(), _item_count(), load_requests(), main(), _model_key() (+4 more)
 
 ### Community 478 - "Migrating to Claude Opus 5"
 Cohesion: 0.25
@@ -2651,6 +2681,10 @@ Nodes (6): Delivery behavior & pitfalls, Managed Agents - Webhooks, Payload enve
 Cohesion: 0.29
 Nodes (6): Append-only forms under newer betas, Cause -> detection -> fix, Failure modes to avoid, Keep list - what never to flag, Preserved Thinking - Causes, Fixes, and the Keep List, Switching models mid-conversation
 
+### Community 510 - "PHASE 3.3.3.10 — ZERO-COST LIVE LLM AUTONOMOUS COMPANY REPORT"
+Cohesion: 0.12
+Nodes (15): 1. Executive Summary, 2. Free Model Discovery & Live Catalog Metadata, 3.1 Architecture & Fail-Closed Guardrails, 3.2 Tool Schema Normalization & OpenAI Function Calling Compliance, 3.3 Token Bounds Calibration for 1M-Context Models, 3. Safe Free-Only Model Failover Chain, 4.1 Controlled Business Task, 4.2 Autonomous Execution Flow (+7 more)
+
 ### Community 512 - "Message Batches API - TypeScript"
 Cohesion: 0.29
 Nodes (6): Cancel a Batch, Create a Batch, Key Facts, Message Batches API - TypeScript, Poll for Completion, Retrieve Results
@@ -2689,7 +2723,7 @@ Nodes (6): Append-only forms under newer betas, Cause -> detection -> fix, Failu
 
 ### Community 521 - "_run_subtask_isolated"
 Cohesion: 0.11
-Nodes (16): _run_subtask_isolated(), 2.1 Pillar 1: Concurrency & Thread Safety, 2.4 Pillar 4: Security & Multi-Tenant Isolation, 2.5 Pillar 5: Scalability & Performance, 2.6 Pillar 6: Code Quality & Architecture Hygiene, 2. Comprehensive Architectural Pillar Evaluation, 3. Vulnerability Remediation Matrix, 4. Architectural Readiness for Phase 4 (+8 more)
+Nodes (16): _run_subtask_isolated(), Defect 2: Duplicate Subtask Creation and SQLite Connection Isolation, 2.1 Pillar 1: Concurrency & Thread Safety, 2.4 Pillar 4: Security & Multi-Tenant Isolation, 2.5 Pillar 5: Scalability & Performance, 2.6 Pillar 6: Code Quality & Architecture Hygiene, 2. Comprehensive Architectural Pillar Evaluation, 3. Vulnerability Remediation Matrix (+8 more)
 
 ### Community 522 - "Message Batches API - TypeScript"
 Cohesion: 0.29
@@ -2759,9 +2793,9 @@ Nodes (6): Advanced MCP Features, Notification Support, Resource Registration, s
 Cohesion: 0.33
 Nodes (6): Advanced FastMCP Features, Context Parameter Injection, Lifespan Management, Resource Registration, Structured Output Types, Transport Options
 
-### Community 540 - "typing"
-Cohesion: 0.03
-Nodes (89): run_migrations_offline(), run_migrations_online(), upgrade(), upgrade(), upgrade(), upgrade(), upgrade(), downgrade() (+81 more)
+### Community 540 - "RecruitmentRecordModel"
+Cohesion: 0.02
+Nodes (87): TaskDispatcher, activate_agent(), audit_legacy_employees(), compare_candidates(), CompareCandidatesRequest, get_agent_performance(), get_hierarchy(), get_organization_workforce() (+79 more)
 
 ### Community 542 - "Claude Platform on AWS"
 Cohesion: 0.33
@@ -2780,12 +2814,12 @@ Cohesion: 0.33
 Nodes (6): Behavioral shifts (prompt-tunable), Capability improvements, Migrating to Opus 4.8, New API feature: mid-session system prompts, No new API breaking changes (inherited from 4.7), Opus 4.8 Migration Checklist
 
 ### Community 546 - "PHASE 3.3.4 — PRE-IMPLEMENTATION ARCHITECTURE & OPERATIONAL AUDIT"
-Cohesion: 0.17
-Nodes (11): 1. Executive Context & Scope, 2.1 Database Schema & Storage, 2. Existing Repository Capabilities, 3.1 Task Lifecycle Engine Gaps, 3.2 Workforce Orchestration Gaps, 3.3 Failure Recovery & Crash Resilience Gaps, 3.4 Deliverable & Event Integrity Gaps, 3. Identified Architectural Gaps & Limitations (+3 more)
+Cohesion: 0.15
+Nodes (12): 1. Executive Context & Scope, 2.1 Database Schema & Storage, 2.3 LLM Intelligence & Cost Governance, 2. Existing Repository Capabilities, 3.1 Task Lifecycle Engine Gaps, 3.2 Workforce Orchestration Gaps, 3.3 Failure Recovery & Crash Resilience Gaps, 3.4 Deliverable & Event Integrity Gaps (+4 more)
 
-### Community 547 - "1. Formal Finding Log"
-Cohesion: 0.17
-Nodes (11): 1. Formal Finding Log, 2. Verification Scorecard, 3. Final Verdict, 5. Stop Condition, **AUTHORITATIVE VERDICT: FAIL**, FINDING-2.2.1-CONC-01, FINDING-2.2.1-SEC-01, FINDING-2.2.1-SEC-04 (+3 more)
+### Community 547 - "PHASE 2.2.1 — FINAL INDEPENDENT AUDIT VERDICT & REMEDIATION ROADMAP"
+Cohesion: 0.33
+Nodes (5): 2. Verification Scorecard, 3. Final Verdict, 5. Stop Condition, **AUTHORITATIVE VERDICT: FAIL**, PHASE 2.2.1 — FINAL INDEPENDENT AUDIT VERDICT & REMEDIATION ROADMAP
 
 ### Community 548 - "agent_runtime/skills/internal-comms/examples/company-newsletter.md"
 Cohesion: 0.33
@@ -2823,9 +2857,9 @@ Nodes (5): Beta Headers, Common Pitfalls, Managed Agents - Overview, Reading Gui
 Cohesion: 0.33
 Nodes (6): Behavioral shifts (prompt-tunable), Capability improvements, Migrating to Opus 4.8, New API feature: mid-session system prompts, No new API breaking changes (inherited from 4.7), Opus 4.8 Migration Checklist
 
-### Community 558 - "PROVIPAGENT — PHASE 3.2 IMPLEMENTATION REPORT"
-Cohesion: 0.17
-Nodes (11): 1. Executive Summary & Milestone Status, 3. Backend & Frontend Contracts, 4. Synchronization Guarantees & Lifecycle, 5. Workstation Integrity & Telemetry, 6. Performance Measurements, 7. Remaining Risks & Phase Boundary, A. Task Creation (`POST /api/v1/tasks`), B. Workstations Overview (`GET /api/v1/workstations/overview`) (+3 more)
+### Community 558 - "agent-skills/skills/skill-creator/scripts/aggregate_benchmark.py"
+Cohesion: 0.21
+Nodes (6): aggregate_results(), calculate_stats(), generate_benchmark(), generate_markdown(), load_run_results(), main()
 
 ### Community 560 - "external_skills/skills/internal-comms/examples/company-newsletter.md"
 Cohesion: 0.33
@@ -3039,6 +3073,10 @@ Nodes (5): Per-SDK Syntax Reference, Prefill replacement - structured outputs vi
 Cohesion: 0.40
 Nodes (4): CLI, Count a file or string, Diffing a file across two versions, Token Counting
 
+### Community 618 - "agent_runtime/skills/slack-gif-creator/core/validators.py"
+Cohesion: 0.18
+Nodes (4): is_slack_ready(), validate_gif(), is_slack_ready(), validate_gif()
+
 ### Community 619 - "external_skills/skills/internal-comms/examples/3p-updates.md"
 Cohesion: 0.40
 Nodes (4): Formatting, Instructions, Tools Available, Workflow
@@ -3131,9 +3169,9 @@ Nodes (3): agent.md, deployment-sprint-retro-prep.yaml, Sprint retro facilitator
 Cohesion: 0.21
 Nodes (6): aggregate_results(), calculate_stats(), generate_benchmark(), generate_markdown(), load_run_results(), main()
 
-### Community 643 - "get_office_navigation_topology"
-Cohesion: 0.20
-Nodes (4): get_ceo_heartbeat_status(), get_office_navigation_topology(), get_world_snapshot(), trigger_ceo_heartbeat()
+### Community 643 - "heartbeat.py"
+Cohesion: 0.10
+Nodes (17): get_ceo_heartbeat_status(), get_office_navigation_topology(), get_world_snapshot(), trigger_ceo_heartbeat(), CEOHeartbeatStatusResponse, CEOOperationalReportResponse, DepartmentHealthItem, HeartbeatBudgetTelemetry (+9 more)
 
 ### Community 644 - "agent_runtime/skills/internal-comms/SKILL.md"
 Cohesion: 0.50
@@ -3168,24 +3206,24 @@ Cohesion: 0.50
 Nodes (3): Deploy on Vercel, Getting Started, Learn More
 
 ### Community 669 - "2. Major Architectural Achievements by Workstream"
-Cohesion: 0.15
-Nodes (12): 1. Executive Summary, 2.1 Concurrency & Connection Pool Hardening (3.3.5.1), 2.3 Idempotency & Duplicate Execution Prevention (3.3.5.3), 2.6 Multi-Tenant Isolation & Anti-Enumeration (3.3.5.6), 2.7 Long-Running Workflows & Sustained Load Benchmarking (3.3.5.7), 2. Major Architectural Achievements by Workstream, 3. Verification & Benchmark Scorecard, 4. Phase 3.3.5 Deliverables Index (+4 more)
+Cohesion: 0.14
+Nodes (13): 1. Executive Summary, 2.1 Concurrency & Connection Pool Hardening (3.3.5.1), 2.3 Idempotency & Duplicate Execution Prevention (3.3.5.3), 2.5 Deliverable Integrity & Cryptographic Hashing (3.3.5.5), 2.6 Multi-Tenant Isolation & Anti-Enumeration (3.3.5.6), 2.7 Long-Running Workflows & Sustained Load Benchmarking (3.3.5.7), 2. Major Architectural Achievements by Workstream, 3. Verification & Benchmark Scorecard (+5 more)
 
 ### Community 717 - "Managed Agents - Multiagent Sessions"
 Cohesion: 0.18
 Nodes (10): Advisor, Declare the roster on the coordinator, Interrupting and archiving threads, Managed Agents - Multiagent Sessions, Multiagent events (on the session stream), Pitfalls, Previewing a subagent's text, Threads (+2 more)
 
-### Community 718 - "agent_runtime/skills/xlsx/scripts/office/helpers/pptx_chart.py"
-Cohesion: 0.31
-Nodes (8): _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst(), _undeclared_axes()
+### Community 718 - "3. Detailed Verification of the 10 Required Scenarios"
+Cohesion: 0.14
+Nodes (9): test_3_5_2_02_same_idempotency_key_different_organizations(), test_3_5_2_08_duplicate_artifact_creation(), test_3_5_2_09_duplicate_event_publication(), test_3_5_2_10_repeated_task_completion_requests(), 3. Detailed Verification of the 10 Required Scenarios, Scenario 10: Repeated Task Completion Requests, Scenario 2: Same Idempotency Key Across Different Organizations, Scenario 8: Duplicate Artifact Creation (+1 more)
 
 ### Community 719 - "external_skills/skills/docx/scripts/office/helpers/__init__.py"
 Cohesion: 0.29
 Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_master_themes(), _masters(), _notes_master_share_is_inert(), _rels_path(), _resolve() (+3 more)
 
-### Community 720 - "agent-skills/skills/xlsx/scripts/office/helpers/pptx_chart.py"
-Cohesion: 0.31
-Nodes (8): _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst(), _undeclared_axes()
+### Community 720 - "external_skills/skills/skill-creator/scripts/run_loop.py"
+Cohesion: 0.18
+Nodes (3): main(), run_loop(), split_eval_set()
 
 ### Community 721 - "agent-skills/skills/pptx/scripts/office/helpers/pptx_chart.py"
 Cohesion: 0.31
@@ -3196,8 +3234,8 @@ Cohesion: 0.35
 Nodes (6): app_exception_handler(), format_error_response(), generic_exception_handler(), http_exception_handler(), setup_exception_handlers(), validation_exception_handler()
 
 ### Community 733 - "agent_runtime/skills/docx/scripts/office/helpers/pptx_theme.py"
-Cohesion: 0.29
-Nodes (11): part_text(), find_shared_master_themes(), _is_inert(), live_shared_master_themes(), _masters(), _notes_master_share_is_inert(), _rels_path(), _resolve() (+3 more)
+Cohesion: 0.15
+Nodes (19): part_text(), _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst() (+11 more)
 
 ### Community 736 - "2. Detailed Technical Dissections"
 Cohesion: 0.20
@@ -3212,16 +3250,16 @@ Cohesion: 0.12
 Nodes (15): 10.2 How to Unblock Live Provider Execution, 10.3 Final Verdict, 10. Failures, Limitations & Final Verdict, 3. Actual Provider Information, 5.1 `workstation_allocations` Record, 5.2 `tasks` Record (`task-e2e-market-analysis-001`), 5.3 `agents` Record (`agent-research-ai` Post-Failure Recovery), 5. Database Evidence (+7 more)
 
 ### Community 748 - "PHASE 3.3.4 — COMPREHENSIVE TEST REPORT: AUTONOMOUS WORKFORCE OPERATIONALIZATION"
-Cohesion: 0.17
-Nodes (11): 1. Executive Summary, 3. Full Backend Regression Test Suite, 4. Full Frontend Regression Test Suite, 5. Knowledge Graph Synchronization, 6. Defect Analysis & Remediations Applied During Verification, 7. Final Quality Certification, Defect 2: Duplicate Subtask Creation and SQLite Connection Isolation, PHASE 3.3.4 — COMPREHENSIVE TEST REPORT: AUTONOMOUS WORKFORCE OPERATIONALIZATION (+3 more)
+Cohesion: 0.18
+Nodes (10): 1. Executive Summary, 3. Full Backend Regression Test Suite, 4. Full Frontend Regression Test Suite, 5. Knowledge Graph Synchronization, 6. Defect Analysis & Remediations Applied During Verification, 7. Final Quality Certification, PHASE 3.3.4 — COMPREHENSIVE TEST REPORT: AUTONOMOUS WORKFORCE OPERATIONALIZATION, Test Module Breakdown: (+2 more)
 
 ### Community 753 - "Three.js / WebGL Spatial Environment, Geometry, and Avatar Articulation"
 Cohesion: 0.20
 Nodes (9): 1.1 Office Floorplate & Corridors (`OfficeFloor.tsx`), 1.2 Glass Curtain Walls & Metropolitan Skyline (`OfficeEnvironment.tsx`), 1.3 Department Zones (`DepartmentZone.tsx`), 1. Scene Construction & Architectural Geometry, 2. Workstation Geometry & Display Rig (`Workstation.tsx`), 3. Agent Avatar Articulation & 9-State Posture Rig (`AgentAvatar.tsx`), 4. Camera Presets & Interaction Controls (`OfficeCamera.tsx`), PROVIPAGENT — Phase 4.1: Visual and Structural Audit Report (+1 more)
 
 ### Community 755 - "AgentRuntime"
-Cohesion: 0.12
-Nodes (10): AgentRuntime, 1. Objective and Problem Statement, 2.1 Database Schema Additions, 2.2 Version Resolution at Recruitment, 2.3 Runtime Prompt Construction from Pinned Version, 2.4 Server Startup Workforce Restoration, 2. Architecture and Data Model, 3. Legacy Records and Backfill Strategy (+2 more)
+Cohesion: 0.22
+Nodes (8): 1. Objective and Problem Statement, 2.1 Database Schema Additions, 2.2 Version Resolution at Recruitment, 2.3 Runtime Prompt Construction from Pinned Version, 2. Architecture and Data Model, 3. Legacy Records and Backfill Strategy, 4. Verification Test Results, PHASE 2.2 — SPECIALIST VERSIONING & RUNTIME INTEGRITY VERIFICATION
 
 ### Community 757 - "Process Interruption, Stale Lease Invalidation & Fencing Token Durability Audit"
 Cohesion: 0.25
@@ -3239,17 +3277,13 @@ Nodes (8): 1.1 REST Endpoint Authorization, 1.2 Database Query Scoping, 1.3 WebS
 Cohesion: 0.22
 Nodes (8): 1. Executive Summary, 2. Security Architecture & Threat Model, 3.2 Role Hierarchy & Clearances, 3.3 Anti-Enumeration Defense, 3. RBAC & Dynamic Authorization Verification, 4. Verification Test Results, 5. Security Certification Verdict, PROVIPAGENT Phase 3.5.6 — Multi-Tenant Security & Authorization Audit Report
 
-### Community 767 - "navigation.py"
-Cohesion: 0.36
-Nodes (8): AgentMovementCompleteRequest, AgentMovementInterruptRequest, AgentMovementPlanResponse, AgentMovementProgressRequest, AgentNavigateRequest, OfficeTopologyResponse, TopologyNodeSchema, WaypointSchema
-
 ### Community 769 - "Test Suite Execution, Next.js Production Build, and Feature Interoperability"
 Cohesion: 0.25
 Nodes (7): 1. Test Suite Results & Regression Matrix, 2. Next.js Production Build & TypeScript Verification, 3. Non-Regression & Existing Features Verification, 4. Audit Verdict, Detailed Test Breakdown:, PROVIPAGENT — Phase 4.1: Frontend Quality and Regression Audit Report, Test Suite Execution, Next.js Production Build, and Feature Interoperability
 
 ### Community 770 - ".apply_sync"
-Cohesion: 0.20
-Nodes (6): 3.1 Non-Negotiable Preservation Rules Evaluation: **PASSED (100%)**, 3.2 Tenant Isolation Security Audit: **FAIL** (See [`PHASE_2_1_SECURITY_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_SECURITY_AUDIT.md)), 3.3 Database Migration Audit: **CONDITIONAL PASS** (See [`PHASE_2_1_MIGRATION_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_MIGRATION_AUDIT.md)), 3.4 Specialist Version Integrity: **CONDITIONAL PASS** (See [`PHASE_2_1_DATA_INTEGRITY_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_DATA_INTEGRITY_AUDIT.md)), 3.5 Concurrency & Workstations: **CONDITIONAL PASS** (See [`PHASE_2_1_CONCURRENCY_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_CONCURRENCY_AUDIT.md)), 3. Detailed Domain Evaluations
+Cohesion: 0.18
+Nodes (7): 3.1 Non-Negotiable Preservation Rules Evaluation: **PASSED (100%)**, 3.2 Tenant Isolation Security Audit: **FAIL** (See [`PHASE_2_1_SECURITY_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_SECURITY_AUDIT.md)), 3.3 Database Migration Audit: **CONDITIONAL PASS** (See [`PHASE_2_1_MIGRATION_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_MIGRATION_AUDIT.md)), 3.4 Specialist Version Integrity: **CONDITIONAL PASS** (See [`PHASE_2_1_DATA_INTEGRITY_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_DATA_INTEGRITY_AUDIT.md)), 3.5 Concurrency & Workstations: **CONDITIONAL PASS** (See [`PHASE_2_1_CONCURRENCY_AUDIT.md`](file:///Users/thienduc/Desktop/Code/provipagent/PHASE_2_1_CONCURRENCY_AUDIT.md)), 3.6 Recruitment Lifecycle Audit: **CONDITIONAL PASS**, 3. Detailed Domain Evaluations
 
 ### Community 774 - "Phase 4.2: Automated Testing & Verification Report"
 Cohesion: 0.17
@@ -3260,24 +3294,16 @@ Cohesion: 0.31
 Nodes (8): _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst(), _undeclared_axes()
 
 ### Community 776 - "PHASE 2.2 — ATOMIC TRANSACTION & WORKSTATION CONCURRENCY VERIFICATION"
-Cohesion: 0.20
-Nodes (9): 1. Scope and Objective, 3.1 Partial Unique Index, 3.2 Key Characteristics, 3.3 Concurrency & Collision Handling, 3. Database-Enforced Physical Desk Uniqueness (REMED-02), 4.1 Physical Desk Uniqueness Tests (`test_physical_desk_database_uniqueness`), 4.3 Atomic Rollback Under Deliberate Failure (`test_transaction_rollback_integrity_on_recruitment_failure`), 4. Verification Test Results (+1 more)
+Cohesion: 0.18
+Nodes (10): 1. Scope and Objective, 3.1 Partial Unique Index, 3.2 Key Characteristics, 3.3 Concurrency & Collision Handling, 3. Database-Enforced Physical Desk Uniqueness (REMED-02), 4.1 Physical Desk Uniqueness Tests (`test_physical_desk_database_uniqueness`), 4.2 Savepoint Concurrency Retry (`test_workstation_service_savepoint_retry_on_desk_collision`), 4.3 Atomic Rollback Under Deliberate Failure (`test_transaction_rollback_integrity_on_recruitment_failure`) (+2 more)
 
 ### Community 777 - "2. Architectural Optimization Strategies"
 Cohesion: 0.20
 Nodes (9): 1. Performance Target & Budget Metrics, 2.2 Material Pooling & Constant Shaders, 2.3 Shadow Map Budgeting, 2.4 Raycasting & Pointer Event Delegation, 2. Architectural Optimization Strategies, 3. Memory Lifecycle & Leak Prevention, 3D WebGL Rendering Optimization, Frame Rates, and Resource Efficiency, 4. Zero-Cost Performance Profile Summary (+1 more)
 
-### Community 778 - "agent-skills/skills/docx/scripts/office/helpers/pptx_chart.py"
-Cohesion: 0.31
-Nodes (8): _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst(), _undeclared_axes()
-
-### Community 779 - "agent_runtime/skills/docx/scripts/office/helpers/pptx_chart.py"
-Cohesion: 0.31
-Nodes (8): _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst(), _undeclared_axes()
-
-### Community 780 - "ArtifactCreateTool"
-Cohesion: 0.06
-Nodes (24): ArtifactCreateTool, FileReadTool, WorkspaceWriteTool, test_3_3_5_2_07_crash_during_deliverable_persistence(), test_3_3_5_5_01_deliverable_file_exists_and_sha256_matches(), test_3_3_5_5_02_deliverable_file_tampered_hash_mismatch_fails(), test_3_5_5_07_atomic_file_write_rollback(), test_policy_engine_clearance_and_approval_gate() (+16 more)
+### Community 780 - "Deliverable Trust Verification, Cryptographic Integrity & Lifecycle Gate Hardening"
+Cohesion: 0.25
+Nodes (7): 2.1 Remediation of Heuristic Bypasses, 2.2 Tamper Detection via SHA-256 Re-Hashing, 2. Four-Stage Deliverable Verification Pipeline, 3. Empirical Test Scenarios & Results, 4. Phase 3.5.5 Verdict, Deliverable Trust Verification, Cryptographic Integrity & Lifecycle Gate Hardening, PROVIPAGENT — Phase 3.5 Artifact Integrity Report
 
 ### Community 782 - "Milestone 5 Event Streaming, Monotonic Sequencing, and Race Condition Defense"
 Cohesion: 0.22
@@ -3303,25 +3329,25 @@ Nodes (6): 1. Executive Summary, 2. Tool Execution Semantics Classification, 4. 
 Cohesion: 0.13
 Nodes (14): 1. Executive Summary, 2. Multi-Tenant Attack Scenarios & Validation Matrix, 3. Vulnerability Findings & Remediations, 4. Cryptographic Deliverable Integrity, 5. OWASP Top 10 for LLM Applications Compliance, 6. Anti-Enumeration Defense Verification, 7. Residual Risks & Roadmap to Phase 4, 8. Security Audit Verdict (+6 more)
 
-### Community 790 - "agent_runtime/skills/pptx/scripts/office/helpers/pptx_chart.py"
-Cohesion: 0.31
-Nodes (8): _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst(), _undeclared_axes()
-
 ### Community 795 - "external_skills/skills/xlsx/scripts/office/helpers/pptx_chart.py"
 Cohesion: 0.31
 Nodes (8): _canonical_ids(), _check_chart_axis_references(), _check_stacked_label_positions(), _declared_axes(), _ext_lst_spans(), find_chart_problems(), _strip_ext_lst(), _undeclared_axes()
 
 ### Community 797 - "PROVIPAGENT PHASE 2.1 — MASTER AUDIT REVIEW & STAGE-GATE DECISION"
 Cohesion: 0.20
-Nodes (9): 1. Executive Summary & Audit Context, 4.1 Tests Executed & Passed (131 Total Backend Tests), 4.2 Tests Missing (Identified Gaps), 4. Test Suite Audit Report, 5. Stage-Gate Decision: CONDITIONAL PASS, 6. Mandatory Remediation Checklist (Pre-Phase 3 Gate), 7. Next Actions, PROVIPAGENT PHASE 2.1 — MASTER AUDIT REVIEW & STAGE-GATE DECISION (+1 more)
+Nodes (9): 1. Executive Summary & Audit Context, 4.1 Tests Executed & Passed (131 Total Backend Tests), 4.2 Tests Missing (Identified Gaps), 4. Test Suite Audit Report, 5. Stage-Gate Decision: CONDITIONAL PASS, 7. Next Actions, Justification, PROVIPAGENT PHASE 2.1 — MASTER AUDIT REVIEW & STAGE-GATE DECISION (+1 more)
 
 ### Community 801 - "3. Detailed Security Findings"
-Cohesion: 0.18
-Nodes (10): 1. Executive Summary, 2. API Endpoint Security Matrix, 3. Detailed Security Findings, Core Audit Questions & Findings, Finding SEC-01 (CRITICAL): Absence of Server-Side Tenant Context Resolution, Finding SEC-02 (CRITICAL): Cross-Tenant Hostile Lifecycle Mutation (IDOR), Finding SEC-03 (HIGH): Multi-Tenant Information Disclosure via Roster Dumps, Finding SEC-05 (MEDIUM): Shared Organizational Hierarchy Endpoint (+2 more)
+Cohesion: 0.17
+Nodes (11): 1. Executive Summary, 2. API Endpoint Security Matrix, 3. Detailed Security Findings, Core Audit Questions & Findings, Finding SEC-01 (CRITICAL): Absence of Server-Side Tenant Context Resolution, Finding SEC-02 (CRITICAL): Cross-Tenant Hostile Lifecycle Mutation (IDOR), Finding SEC-03 (HIGH): Multi-Tenant Information Disclosure via Roster Dumps, Finding SEC-04 (HIGH): Cross-Tenant Workstation Reassignment and Corruption (+3 more)
 
-### Community 802 - "2. Detailed Findings Catalog"
+### Community 802 - "diff_conversation"
 Cohesion: 0.20
-Nodes (9): 1. Executive Summary of Audit Findings, 2. Detailed Findings Catalog, 3. Remediation Strategy, FINDING-325-01: Monotonic Sequence Discard Bug Drops Valid Out-of-Order Events, FINDING-325-02: Workstation Telemetry Arithmetic Contradiction Violates Physical Desk Invariants, FINDING-325-03: Snapshot Watermark Race Condition Can Cause Skipped Events on Replay, FINDING-325-06: WebSocket Authentication Token Exposed in URL Query Parameter, FINDING-325-07: Test Assertions Hardcode False Telemetry Arithmetic (+1 more)
+Nodes (8): diff_conversation(), header_line(), is_compaction_request(), load_requests(), main(), print_pair(), run_diff(), run_scan()
+
+### Community 803 - "digests"
+Cohesion: 0.20
+Nodes (7): digests(), canon_system(), canon_tools(), walk(), compaction_start(), from_compaction(), _toolset_key()
 
 ### Community 805 - "Three.js / React Three Fiber Spatial Implementation & PBR Rendering"
 Cohesion: 0.20
@@ -3335,9 +3361,9 @@ Nodes (7): 1. Test Summary Overview, 2. Phase 4.1 Dedicated Test Suite (`phase4_
 Cohesion: 0.33
 Nodes (6): Eager input streaming (default for streaming requests with client tools), Handling Tool Results, Tool Choice Options, Tool Definition Structure, Tool Runner vs Manual Loop, User-Defined Tools
 
-### Community 810 - "PHASE 2.2.2 REGRESSION PROTECTION & TEST SUITE REPORT"
-Cohesion: 0.33
-Nodes (5): 1. Executive Summary, 3. Test Suite Breakdown, 4. Frontend Compilation Status, 5. Conclusion, PHASE 2.2.2 REGRESSION PROTECTION & TEST SUITE REPORT
+### Community 810 - "2. Component Implementation Details"
+Cohesion: 0.18
+Nodes (10): 1. Executive Summary & Architectural Overview, 2.1 Structured Deliverable Contract (`backend/app/agent_runtime/contracts/deliverable_contract.py`), 2.2 Deterministic Task Lifecycle State Machine (`backend/app/agent_runtime/lifecycle/task_lifecycle.py`), 2.3 Specialist Workload Manager (`backend/app/agent_runtime/workforce/workload_manager.py`), 2.4 Bounded Exponential Retry Manager (`backend/app/agent_runtime/lifecycle/retry_manager.py`), 2.5 Resilient Crash Recovery & Stale Lease Reclamation (`backend/app/agent_runtime/dispatcher/crash_recovery.py`), 2.6 True Concurrent Multi-Agent DAG Execution (`backend/app/agent_runtime/orchestrator/multi_agent_orchestrator.py`), 2.7 CEO Supervisory Review & Deliverable Auditing (`multi_agent_orchestrator.py`) (+2 more)
 
 ### Community 811 - "Phase 4.2: Agent Movement & Motion Control Report"
 Cohesion: 0.20
@@ -3363,29 +3389,33 @@ Nodes (6): Eager input streaming (default for streaming requests with client too
 Cohesion: 0.47
 Nodes (3): _handle_ws_stream(), websocket_legacy_endpoint(), websocket_v1_events()
 
+### Community 817 - "Authoritative Integration with FastAPI, Workstation Service, and Spatial APIs"
+Cohesion: 0.20
+Nodes (9): 1.1 Non-Negotiable Integration Rules, 1. Integration Scope & Principles, 2.1 World Snapshot (`GET /api/v1/world/snapshot`), 2.2 Workstation Overview (`GET /api/v1/workstations/overview`), 2. Hydration Endpoints & Contract Validation, 3. Client Hydration Pipeline (`frontend/hooks/useOfficeSync.ts`), 4. Integration Verification & Error Resilience, Authoritative Integration with FastAPI, Workstation Service, and Spatial APIs (+1 more)
+
 ### Community 819 - "get_agent_skills"
 Cohesion: 0.25
 Nodes (4): get_agent_skills(), get_skill(), list_skills(), SkillSummary
 
-### Community 820 - "heartbeat.py"
-Cohesion: 0.39
-Nodes (7): CEOHeartbeatStatusResponse, CEOOperationalReportResponse, DepartmentHealthItem, HeartbeatBudgetTelemetry, OverdueWorkItem, ReassignmentRecommendationItem, StalledTaskItem
+### Community 820 - "Phase 4.2: Pre-Implementation Audit Report"
+Cohesion: 0.20
+Nodes (9): 1. Executive Summary, 2. Baseline Verification, 3.1 Backend Authoritative Navigation (`backend/app/services/navigation_service.py`), 3. Existing Architecture & Topology Analysis, 4. Gap Analysis & Requirements for Phase 4.2, 5.1 Modular Component Architecture, 5. Architectural Blueprint for Phase 4.2, 6. Audit Conclusion & Readiness Verdict (+1 more)
 
 ### Community 821 - "Workflow"
 Cohesion: 0.29
 Nodes (7): Dynamic workflows - for work too big to hand out one task at a time, Managed Agents (Beta), Dynamic workflows - for work too big to hand out one task at a time, Managed Agents (Beta), Dynamic workflows - for work too big to hand out one task at a time, Managed Agents (Beta), Workflow
 
 ### Community 822 - "3. Current Architecture & Subsystem Inspection"
-Cohesion: 0.11
-Nodes (15): apply_schema_upgrades(), 2.1 Database & Concurrency Safety (`core/database.py`, `core/config.py`), 1. Executive Summary, 2. Git State & Checkpoint Verification, 3.1 Database Configuration (`core/database.py`, `core/config.py`), 3.2 Task Lifecycle & State Machine (`agent_runtime/lifecycle/task_lifecycle.py`), 3.4 Concurrency & Worker Architecture, 3.7 Artifact Integrity & File Storage (`verifier.py`, `workspace_write.py`, `artifact_tools.py`) (+7 more)
+Cohesion: 0.15
+Nodes (12): 1. Executive Summary, 2. Git State & Checkpoint Verification, 3.2 Task Lifecycle & State Machine (`agent_runtime/lifecycle/task_lifecycle.py`), 3.4 Concurrency & Worker Architecture, 3.7 Artifact Integrity & File Storage (`verifier.py`, `workspace_write.py`, `artifact_tools.py`), 3.9 Event Architecture (`services/event_service.py`, `websocket_manager.py`), 3. Current Architecture & Subsystem Inspection, 4. Baseline Test Results (+4 more)
 
 ### Community 823 - "3. Defense-in-Depth Implementation"
-Cohesion: 0.15
-Nodes (11): 2. Authoritative Lifecycle Policy, 3.1 Layer 1: Task Assignment Guard (`TaskService.create_task`), 3.2 Layer 2: Dispatcher Claim Guard (`TaskDispatcher._claim_next_task`), 3.3 Layer 3: Immediate Pre-Execution Guard (`TaskDispatcher._process_task`), 3.4 Queued Task Handling on Suspension or Retirement, 3. Defense-in-Depth Implementation, 4. Verification Test Results, PHASE 2.2 — RECRUITMENT LIFECYCLE & EXECUTION INTEGRITY VERIFICATION (+3 more)
+Cohesion: 0.10
+Nodes (12): AgentRuntime, 1. Scope and Objective, 2. Authoritative Lifecycle Policy, 3.1 Layer 1: Task Assignment Guard (`TaskService.create_task`), 3.2 Layer 2: Dispatcher Claim Guard (`TaskDispatcher._claim_next_task`), 3.3 Layer 3: Immediate Pre-Execution Guard (`TaskDispatcher._process_task`), 3.4 Queued Task Handling on Suspension or Retirement, 3. Defense-in-Depth Implementation (+4 more)
 
-### Community 824 - "Autonomous Workforce Reliability, Resilience & Stress Testing Hardening"
-Cohesion: 0.33
-Nodes (5): 1. Executive Summary, 3. Implementation Verification Matrix, 4. Regression & Verification Results, Autonomous Workforce Reliability, Resilience & Stress Testing Hardening, PROVIPAGENT — Phase 3.3.5 Implementation Report
+### Community 824 - "2. Architectural Hardening & Implementation Changes"
+Cohesion: 0.14
+Nodes (11): apply_schema_upgrades(), 1. Executive Summary, 2.1 Database & Concurrency Safety (`core/database.py`, `core/config.py`), 2.3 DAG Cycle Detection & Pre-Flight Validation (`agent_runtime/orchestrator/multi_agent_orchestrator.py`), 2.5 Deliverable Integrity & Cryptographic Hashing (`agent_runtime/verifier.py`, `contracts/deliverable_contract.py`), 2. Architectural Hardening & Implementation Changes, 3. Implementation Verification Matrix, 4. Regression & Verification Results (+3 more)
 
 ### Community 825 - "3. Adversarial Security Findings"
 Cohesion: 0.25
@@ -3427,25 +3457,25 @@ Nodes (6): 10.1 Audit of Previous Claims, 10.2 Empirical Benchmarking Plan [PROP
 Cohesion: 0.22
 Nodes (8): 1. Architectural Overview, 2.1 Department Zone Hubs (8 Functional Areas), 2.2 Corridor Spine & Wing Junctions (7 Safe Transit Nodes), 2. Office Topology Graph Specifications, 3. Workstation Chair Docking Geometry, 4. Boundary Enforcement, 5. Verification & Compliance Verdict, Phase 4.2: Spatial Navigation Engine Report
 
-### Community 838 - "get_agent_tasks"
-Cohesion: 0.29
-Nodes (3): get_agent_tasks(), list_agent_registry_definitions(), list_agents()
+### Community 838 - "fixture"
+Cohesion: 0.25
+Nodes (5): client(), db_session(), isolate_live_llm_keys_in_tests(), seed_test_agent(), setup_test_db()
 
-### Community 839 - "test_runtime_tools.py"
-Cohesion: 0.48
-Nodes (5): test_file_search_execution(), test_permission_level_enforcement(), test_unknown_tool_rejection(), test_workspace_list_execution(), test_workspace_write_and_verification_lifecycle()
+### Community 839 - "Pytest Suite Execution, API Contracts, and Database Schema Invariants"
+Cohesion: 0.25
+Nodes (7): 1. Test Suite Execution & Regression Summary, 2. Backend API Contracts & Schema Compliance, 3. Database Schema & Migration Invariants, 4. Audit Verdict, PROVIPAGENT — Phase 4.1: Backend Quality and Regression Audit Report, Pytest Suite Execution, API Contracts, and Database Schema Invariants, Test Module Coverage Overview:
 
-### Community 842 - "PHASE 3.3.3 — AUTONOMOUS AGENT BEHAVIOR & SPATIAL INTEGRATION: IMPLEMENTATION REPORT"
-Cohesion: 0.29
-Nodes (6): 2. Database Migrations, 3. Event Contracts, 4. API Changes, 7. Test Results, 9. Final Verdict, PHASE 3.3.3 — AUTONOMOUS AGENT BEHAVIOR & SPATIAL INTEGRATION: IMPLEMENTATION REPORT
+### Community 842 - "canon_blocks"
+Cohesion: 0.33
+Nodes (4): canon_blocks(), canon_tool_entry(), clean(), _text_block()
 
 ### Community 843 - "PHASE 2.2.1 — TASK EXECUTION LIFECYCLE & DISPATCH AUDIT"
-Cohesion: 0.33
-Nodes (5): 1. Executive Summary, 2. Complete Task Lifecycle Trace, 5. Verification Verdict, Key Audit Conclusions:, PHASE 2.2.1 — TASK EXECUTION LIFECYCLE & DISPATCH AUDIT
+Cohesion: 0.29
+Nodes (6): 1. Executive Summary, 2. Complete Task Lifecycle Trace, 4. Workstation & Resource Release on Retirement, 5. Verification Verdict, Key Audit Conclusions:, PHASE 2.2.1 — TASK EXECUTION LIFECYCLE & DISPATCH AUDIT
 
-### Community 844 - "get_easing"
-Cohesion: 0.33
-Nodes (3): get_easing(), interpolate(), linear()
+### Community 844 - "Phase 4.2: Backend & Real-Time Integration Report"
+Cohesion: 0.29
+Nodes (6): 1. Authoritative Backend Single Source of Truth, 2. API Contract & Endpoint Verification, 3. Real-Time Event Ingestion in `useOfficeSync.ts`, 4. Tenant Isolation & Security, 5. Verification Verdict, Phase 4.2: Backend & Real-Time Integration Report
 
 ### Community 846 - "f6a7b8c9d0e1_core_security_and_tenant_isolation.py"
 Cohesion: 0.40
@@ -3455,17 +3485,9 @@ Nodes (3): downgrade(), _extract_metadata_from_raw(), upgrade()
 Cohesion: 0.29
 Nodes (6): 1. Executive Summary, 2. Multi-Scale Simulation Benchmarks, 3. Spatial Partitioning Optimization Impact, 4. WebGL Draw Call & Memory Profile, 5. Verification Verdict, Phase 4.2: Performance & Scalability Benchmarking Report
 
-### Community 848 - "v1_llm_routing_diagnostics"
-Cohesion: 0.33
-Nodes (3): get_global_routing_decisions(), v1_health(), v1_llm_routing_diagnostics()
-
-### Community 849 - "get_easing"
-Cohesion: 0.33
-Nodes (3): get_easing(), interpolate(), linear()
-
-### Community 850 - "get_easing"
-Cohesion: 0.33
-Nodes (3): get_easing(), interpolate(), linear()
+### Community 849 - "Phase 4.2: Final Certification & Engineering Report"
+Cohesion: 0.29
+Nodes (6): 1. Executive Summary, 2. Master Directive Deliverable Checklist, 3. Comprehensive Metric Summary, 4. Certification Gates Evaluation, 5. Certification Sign-Off, Phase 4.2: Final Certification & Engineering Report
 
 ### Community 851 - "Current Models (cached: 2026-10-06)"
 Cohesion: 0.40
@@ -3491,23 +3513,35 @@ Nodes (4): Amazon Bedrock, Google Cloud Vertex AI, Microsoft Foundry, Provider C
 Cohesion: 0.50
 Nodes (4): Amazon Bedrock, Google Cloud Vertex AI, Microsoft Foundry, Provider Clients (Quick Reference)
 
+### Community 864 - "Phase 4.3.1: Human-in-the-Loop Task Lifecycle Foundation Report"
+Cohesion: 0.33
+Nodes (5): 1. Executive Summary & Verdict, 4. Modified & Added Files, 5. Certification Verdict, Key Metrics & Validation, Phase 4.3.1: Human-in-the-Loop Task Lifecycle Foundation Report
+
+### Community 868 - "test_workstation_service_savepoint_retry_on_desk_collision"
+Cohesion: 0.40
+Nodes (4): test_workstation_service_savepoint_retry_on_desk_collision(), 2. Detailed Remediation Breakdowns, REMED-02 — Database-Enforced Physical Desk Uniqueness, REMED-04 — Atomic Transaction Boundaries
+
+### Community 869 - "Structural Decomposition, Data Flow Integrity, and Lifecycle Analysis"
+Cohesion: 0.40
+Nodes (4): 1. Architectural Architecture & Data Ownership, 3. Architecture Audit Verdict, PROVIPAGENT — Phase 4.1: Architecture Audit Report, Structural Decomposition, Data Flow Integrity, and Lifecycle Analysis
+
 ## Knowledge Gaps
-- **209 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **254 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `1. Test Architecture` connect `NavigationService` to `TaskDispatcher`, `test_phase3_3_3_8_hybrid_llm_routing.py`, `PHASE 3.3.3 — END-TO-END AUTONOMOUS COMPANY SIMULATION & VALIDATION REPORT`, `WorkstationAllocationModel`, `spatialMovement.ts`, `WorkstationService`, `OrganizationMemberModel`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **Are the 109 inferred relationships involving `TaskModel` (e.g. with `ResultAggregator` and `detect_and_reclaim_stale_leases()`) actually correct?**
-  _`TaskModel` has 109 INFERRED edges - model-reasoned connections that need verification._
-- **Should `TaskDispatcher` be split into smaller, more focused modules?**
-  _Cohesion score 0.03400093153237075 - nodes in this community are weakly interconnected._
-- **Why does `TaskModel` connect `TaskModel` to `TaskDispatcher`, `CloudCostController`, `RetryManager`, `test_multi_agent_registry_and_planner.py`, `.recruit_specialist`, `test_phase3_3_3_10_zero_cost_deployment.py`, `NotFoundError`, `TaskCreate`, `WorkstationAllocationModel`, `AgentOrchestrator`, `test_memory_tools_execution`, `ExecutionLoop`, `tool_service.py`, `CancellationToken`, `typing`, `OrganizationMemberModel`, `test_dispatcher_rejects_disabled_agent_definition`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
-- **Are the 80 inferred relationships involving `AgentModel` (e.g. with `detect_and_reclaim_stale_leases()` and `recover_abandoned_tasks()`) actually correct?**
-  _`AgentModel` has 80 INFERRED edges - model-reasoned connections that need verification._
-- **Should `test_phase3_3_3_8_hybrid_llm_routing.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.05642633228840126 - nodes in this community are weakly interconnected._
-- **Why does `Tool` connect `Tool` to `Tool Use - TypeScript`, `Tool Use - C#`, `Claude API - Java`, `sanitize_for_audit`, `LLMBudgetExceededError`, `Claude API - Java`, `Claude API - Java`, `ToolRegistry`, `Tool Use - C#`, `ExecutionLoop`, `ToolPermissionLevel`, `calculator.py`, `Tool Use - TypeScript`, `Tool Use - C#`, `typing`, `Tool Use - TypeScript`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+- **Why does `1. Test Architecture` connect `spatialMovement.ts` to `ValidationError`, `LLMResponse`, `NavigationService`, `PHASE 3.3.3 — END-TO-END AUTONOMOUS COMPANY SIMULATION & VALIDATION REPORT`, `WorkstationService`, `RecruitmentRecordModel`, `OrganizationModel`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Are the 111 inferred relationships involving `TaskModel` (e.g. with `ResultAggregator` and `detect_and_reclaim_stale_leases()`) actually correct?**
+  _`TaskModel` has 111 INFERRED edges - model-reasoned connections that need verification._
+- **Should `ValidationError` be split into smaller, more focused modules?**
+  _Cohesion score 0.021203155818540435 - nodes in this community are weakly interconnected._
+- **Why does `TaskModel` connect `TaskModel` to `ValidationError`, `commit_with_retry`, `LLMResponse`, `test_phase3_3_3_10_zero_cost_deployment.py`, `run_worker_scale_benchmark`, `typing`, `RecruitmentRecordModel`, `ApprovalModel`, `test_multi_agent_registry_and_planner.py`, `tool_service.py`, `ToolPermissionLevel`, `TaskLifecycleEngine`, `NotFoundError`, `3. Detailed Verification of the 10 Required Scenarios`, `AgentOrchestrator`, `PROVIPAGENT — TECHNICAL DECISIONS & ARCHITECTURAL LOG`, `UserContext`, `OrganizationModel`, `test_enterprise_runtime_identity.py`, `.recruit_specialist`, `ExecutionLoop`, `world_service.py`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+- **Are the 82 inferred relationships involving `AgentModel` (e.g. with `detect_and_reclaim_stale_leases()` and `recover_abandoned_tasks()`) actually correct?**
+  _`AgentModel` has 82 INFERRED edges - model-reasoned connections that need verification._
+- **Should `syncManager` be split into smaller, more focused modules?**
+  _Cohesion score 0.06277436347673397 - nodes in this community are weakly interconnected._
+- **Why does `Tool` connect `ToolPermissionLevel` to `Tool Use - TypeScript`, `Tool Use - C#`, `Claude API - Java`, `ExecutionLoop`, `Claude API - Java`, `Claude API - Java`, `Tool Use - C#`, `typing`, `Tool Use - TypeScript`, `Tool Use - C#`, `Tool Use - TypeScript`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._

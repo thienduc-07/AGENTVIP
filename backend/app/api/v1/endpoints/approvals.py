@@ -35,6 +35,7 @@ def get_approval(
     return approval_service.get_approval_by_id(db=db, approval_id=approval_id, organization_id=tenant_org)
 
 @router.post("/{approval_id}/decision", response_model=ApprovalResponse)
+@router.post("/{approval_id}/decide", response_model=ApprovalResponse)
 def decide_approval(
     approval_id: str,
     req: ApprovalDecisionRequest,

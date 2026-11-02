@@ -16,6 +16,7 @@ from backend.app.schemas.workstation import (
     ZoneConfigResponse,
     WorkstationAllocationResponse,
     WorkstationTelemetrySummary,
+    WorkstationInspectionResponse,
 )
 
 router = APIRouter(prefix="/workstations", tags=["Workstations"])
@@ -188,3 +189,17 @@ def list_allocations(
             )
         )
     return result
+
+@router.get("/{workstation_id}/inspection", response_model=WorkstationInspectionResponse)
+def get_workstation_inspection(
+    workstation_id: str,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Retrieves authoritative workstation inspection data with tenant isolation."""
+    return workstation_service.get_workstation_inspection(
+        db=db,
+        workstation_id=workstation_id,
+        organization_id=tenant_org,
+    )

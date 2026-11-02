@@ -193,16 +193,56 @@ export default function Workstation({
 
       {/* 7. Floating Workstation Label / Status Badge (when hovered or selected) */}
       {(isHovered || isSelected) && (
-        <Html position={[0, 1.45, 0]} center distanceFactor={14}>
-          <div className="pointer-events-none px-2 py-1 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-lg backdrop-blur-sm text-xs text-slate-200 whitespace-nowrap flex flex-col items-center">
-            <span className="font-semibold text-sky-400">
-              {data.label || data.workstation_id}
-            </span>
-            <span className="text-[10px] text-slate-400">
-              {data.assigned_employee_name
-                ? `${data.assigned_employee_name} • ${stateConfig.label}`
-                : "Chỗ trống (Vacant)"}
-            </span>
+        <Html position={[0, 1.55, 0]} center distanceFactor={14}>
+          <div
+            tabIndex={0}
+            role="button"
+            aria-label={`Bàn làm việc ${data.label || data.workstation_id}: ${data.assigned_employee_name || "Trống"}`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleClick(e);
+              }
+            }}
+            className={`px-2.5 py-1.5 rounded-lg border shadow-xl backdrop-blur-md text-xs transition-all pointer-events-auto cursor-pointer flex items-center gap-2 ${
+              isSelected
+                ? "bg-slate-900/95 border-sky-400 text-sky-200 ring-2 ring-sky-500/40"
+                : "bg-slate-900/90 border-slate-700/80 text-slate-200 hover:border-slate-500"
+            }`}
+          >
+            {isOccupied && data.assigned_employee_name ? (
+              <>
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 text-white"
+                  style={{ backgroundColor: stateConfig.beaconColor }}
+                >
+                  {data.assigned_employee_name.charAt(0)}
+                </div>
+                <div className="flex flex-col text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-slate-100 text-[11px] leading-tight">
+                      {data.assigned_employee_name}
+                    </span>
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse"
+                      style={{ backgroundColor: stateConfig.beaconColor }}
+                    />
+                  </div>
+                  <span className="text-[9px] text-slate-400 leading-tight">
+                    {data.label || data.workstation_id} • {stateConfig.label}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col text-center">
+                <span className="font-semibold text-slate-300 text-[11px] leading-tight">
+                  {data.label || data.workstation_id}
+                </span>
+                <span className="text-[9px] text-slate-500 leading-tight">
+                  Bàn làm việc trống (Vacant)
+                </span>
+              </div>
+            )}
           </div>
         </Html>
       )}

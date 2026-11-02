@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import OfficeCanvas from "./OfficeCanvas";
 import OfficeHUD from "./OfficeHUD";
 import OfficeInspector from "./OfficeInspector";
+import AgentInspectionHUD from "./AgentInspectionHUD";
 import EmptyOfficeState from "./EmptyOfficeState";
 import { useOfficeSync } from "@/hooks/useOfficeSync";
 import { OfficeSelection } from "@/types/office";
@@ -61,7 +62,25 @@ export default function OfficeScene({
       const ws = workstations[workstationId];
       if (!ws) return;
 
-      setSelection({ type: "workstation", id: workstationId });
+      if (ws.assigned_employee) {
+        // Occupied workstation: select corresponding agent to open the Agent Inspection HUD
+        setSelection({ type: "agent", id: ws.assigned_employee });
+        setCameraTarget([ws.pos_x, 0.8, ws.pos_z]);
+        setCameraPosition([ws.pos_x + 3.8, 3.2, ws.pos_z + 4.8]);
+      } else {
+        // Unoccupied workstation: view workstation without fabricating an agent
+        setSelection({ type: "workstation", id: workstationId });
+        setCameraTarget([ws.pos_x, 0.8, ws.pos_z]);
+        setCameraPosition([ws.pos_x + 3.8, 3.2, ws.pos_z + 4.8]);
+      }
+    },
+    [workstations]
+  );
+
+  const handleFocusWorkstation = useCallback(
+    (workstationId: string) => {
+      const ws = workstations[workstationId];
+      if (!ws) return;
       setCameraTarget([ws.pos_x, 0.8, ws.pos_z]);
       setCameraPosition([ws.pos_x + 3.8, 3.2, ws.pos_z + 4.8]);
     },
@@ -133,16 +152,28 @@ export default function OfficeScene({
         onPointerMissed={handleResetCamera}
       />
 
-      {/* Inspector Slide-Out Drawer */}
-      <OfficeInspector
-        selection={selection}
-        agents={agents}
-        workstations={workstations}
-        departments={departments}
-        onClose={() => setSelection({ type: "none" })}
-        onFocusAgent={handleSelectAgent}
-        onFocusDepartment={handleSelectDepartment}
-      />
+      {/* Agent Inspection HUD (when an agent is selected) */}
+      {selection.type === "agent" && (
+        <AgentInspectionHUD
+          agentId={selection.id}
+          onClose={() => setSelection({ type: "none" })}
+          onFocusWorkstation={handleFocusWorkstation}
+          onFocusAgent={handleSelectAgent}
+        />
+      )}
+
+      {/* Office Inspector Drawer (when workstation or department is selected) */}
+      {selection.type !== "none" && selection.type !== "agent" && (
+        <OfficeInspector
+          selection={selection}
+          agents={agents}
+          workstations={workstations}
+          departments={departments}
+          onClose={() => setSelection({ type: "none" })}
+          onFocusAgent={handleSelectAgent}
+          onFocusDepartment={handleSelectDepartment}
+        />
+      )}
 
       {/* Empty Organization State Overlay */}
       {isEmptyOrg && (
