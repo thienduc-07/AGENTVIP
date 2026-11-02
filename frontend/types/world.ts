@@ -25,6 +25,8 @@ export interface AgentSnapshotItem {
     | string;
   assigned_workstation: string | null;
   current_active_task: ActiveTaskSummary | null;
+  position?: SpatialCoordinates | null;
+  target_position?: SpatialCoordinates | null;
   spatial_coordinates?: SpatialCoordinates | null;
   target_coordinates?: SpatialCoordinates | null;
   target_destination?: string | null;

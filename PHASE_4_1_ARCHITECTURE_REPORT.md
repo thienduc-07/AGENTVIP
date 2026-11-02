@@ -119,3 +119,4 @@ The synchronization lifecycle operates in two coordinated stages:
 1. **Zero-Fabrication Principle**: The 3D scene never creates synthetic placeholder agents or fake workstation metrics. If the backend returns 0 records for an organization, `EmptyOfficeState` is rendered.
 2. **Authority Principle**: All entity positions, assignments, and states are driven by the backend database and event broker. The frontend performs interpolation and rendering only.
 3. **Resilience Principle**: Out-of-order WebSocket envelopes are reconciled using sequence IDs, and network disconnections trigger automatic reconnection state indicators without corrupting existing world state.
+

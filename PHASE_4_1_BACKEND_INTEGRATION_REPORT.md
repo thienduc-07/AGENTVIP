@@ -93,3 +93,4 @@ Returns the topological department layout and individual workstation bindings:
 1. **Backend Offline Resilience**: If the backend is unreachable during startup, `useOfficeSync` transitions to `connectionStatus = "error"`, displays an informative non-blocking toast, and allows the operator to click "Thử lại" (Retry) without crashing the 3D viewport.
 2. **Graceful Degraded States**: If `snapshotRes` succeeds but `workstationRes` encounters a temporary network timeout, the system populates agents and falls back to snapshot-defined workstation positions without unmounting.
 3. **TypeScript Safety**: Fully typed with strict Pydantic-to-TypeScript interfaces matching `backend/app/schemas/world.py` and `backend/app/schemas/workstation.py`.
+

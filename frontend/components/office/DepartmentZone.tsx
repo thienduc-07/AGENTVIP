@@ -118,11 +118,15 @@ export default function DepartmentZone({
         </div>
       </Html>
 
-      {/* 4. Child Workstation Array within this Department Zone */}
+      {/* 4. Child Workstation Array within this Department Zone (relative to zone base) */}
       {data.workstations.map((ws) => (
         <Workstation
           key={ws.workstation_id}
-          data={ws}
+          data={{
+            ...ws,
+            pos_x: ws.pos_x - data.base_x,
+            pos_z: ws.pos_z - data.base_z,
+          }}
           isSelected={selectedWorkstationId === ws.workstation_id}
           onSelect={onSelectWorkstation}
         />
@@ -130,3 +134,4 @@ export default function DepartmentZone({
     </group>
   );
 }
+

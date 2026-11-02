@@ -72,3 +72,4 @@ Agent Focus: [agent.x + 4.5, agent.y + 2.8, agent.z + 5.5] -> Target: [agent.x, 
 
 - **Smooth Interpolation**: All transitions use exponential damping (`lerp(current, target, delta * 4.5)`) ensuring silky 60 FPS camera motion without jarring cuts.
 - **Boundary Clamping**: Strict polar angle clamping (`maxPolarAngle = π/2 - 0.05`) prevents the camera from ever clipping underneath the floor. Minimum distance is set to $4.0\text{m}$ and maximum to $75.0\text{m}$.
+

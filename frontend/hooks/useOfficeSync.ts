@@ -48,6 +48,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isMountedRef = useRef(true);
+  const latestSequenceRef = useRef<number>(0);
 
   // 1. Initial Authoritative Hydration from REST APIs
   const loadOfficeState = useCallback(async () => {
@@ -69,12 +70,23 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
       const loadedDepartments: Record<string, DepartmentZoneData> = {};
 
       let currentSeq = 0;
+      let isStaleSnapshot = false;
 
       // Process World Snapshot
       if (snapshotRes.status === "fulfilled" && snapshotRes.value) {
         const snap = snapshotRes.value;
         currentSeq = snap.sequence_id || 0;
-        setSequenceId(currentSeq);
+        
+        // Protect against race condition: never roll back sequence watermark if newer events arrived
+        if (currentSeq < latestSequenceRef.current && latestSequenceRef.current > 0) {
+          isStaleSnapshot = true;
+          console.warn(
+            `[useOfficeSync] Snapshot sequence ${currentSeq} is older than current watermark ${latestSequenceRef.current}; merging without rolling back watermark`
+          );
+        } else {
+          latestSequenceRef.current = currentSeq;
+          setSequenceId(currentSeq);
+        }
 
         // Map agents
         (snap.agents || []).forEach((item) => {
@@ -83,8 +95,8 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
             item.operational_status as any
           ) as CanonicalAgentState) || "IDLE";
 
-          const coords = item.spatial_coordinates;
-          const targetCoords = item.target_coordinates;
+          const coords = (item as any).position || item.spatial_coordinates;
+          const targetCoords = (item as any).target_position || item.target_coordinates;
 
           loadedAgents[item.employee_id] = {
             id: item.employee_id,
@@ -179,7 +191,14 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
         });
       }
 
-      setAgents(loadedAgents);
+      if (!isStaleSnapshot) {
+        setAgents(loadedAgents);
+      } else {
+        setAgents((prev) => ({
+          ...loadedAgents,
+          ...prev,
+        }));
+      }
       setWorkstations(loadedWorkstations);
       setDepartments(loadedDepartments);
       setConnectionStatus("connected");
@@ -196,7 +215,23 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
   // 2. Real-Time WebSocket Synchronization & Event Ingestion
   useEffect(() => {
     isMountedRef.current = true;
+    syncManager.connect();
     loadOfficeState();
+
+    // Helper to reactively update workstation screen glow on occupant state change
+    const syncWorkstationOccupantState = (agentId: string, nextState: CanonicalAgentState) => {
+      setWorkstations((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const wsId in next) {
+          if (next[wsId].assigned_employee === agentId && next[wsId].occupant_state !== nextState) {
+            next[wsId] = { ...next[wsId], occupant_state: nextState };
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    };
 
     // Subscribe to SyncManager real-time events
     const unsubEvent = syncManager.onEvent((envelope: EventEnvelope) => {
@@ -206,7 +241,8 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
 
       // Update monotonic sequence watermark
       if (evSeq && evSeq > 0) {
-        setSequenceId((prev) => Math.max(prev, evSeq));
+        latestSequenceRef.current = Math.max(latestSequenceRef.current, evSeq);
+        setSequenceId(latestSequenceRef.current);
       }
 
       // Handle Agent Behavioral State and Operational Changes
@@ -223,6 +259,8 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
               payload?.behavioral_state,
               payload?.operational_status
             ) as CanonicalAgentState) || current.behavioralState;
+
+            syncWorkstationOccupantState(targetId, nextBehavioral);
 
             return {
               ...prev,
@@ -248,6 +286,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
           setAgents((prev) => {
             const current = prev[targetId];
             if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "ASSIGNED");
             return {
               ...prev,
               [targetId]: {
@@ -266,6 +305,8 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
           setAgents((prev) => {
             const current = prev[targetId];
             if (!current) return prev;
+            const finalState = (payload?.behavioral_state as CanonicalAgentState) || "IDLE";
+            syncWorkstationOccupantState(targetId, finalState);
             return {
               ...prev,
               [targetId]: {
@@ -273,7 +314,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
                 position: finalPos ? [finalPos[0], finalPos[1], finalPos[2]] : current.position,
                 targetPosition: null,
                 isMoving: false,
-                behavioralState: (payload?.behavioral_state as CanonicalAgentState) || "IDLE",
+                behavioralState: finalState,
               },
             };
           });
@@ -287,6 +328,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
           setAgents((prev) => {
             const current = prev[targetId];
             if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "IN_PROGRESS");
             return {
               ...prev,
               [targetId]: {
@@ -303,6 +345,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
           setAgents((prev) => {
             const current = prev[targetId];
             if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "COMPLETED");
             return {
               ...prev,
               [targetId]: {
@@ -319,6 +362,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
           setAgents((prev) => {
             const current = prev[targetId];
             if (!current) return prev;
+            syncWorkstationOccupantState(targetId, "FAILED");
             return {
               ...prev,
               [targetId]: {

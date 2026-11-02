@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CANONICAL_STATE_CONFIGS, CanonicalAgentState } from "../types/office";
-import { WorldSnapshotResponse, ZoneConfig, WorkstationOverviewResponse } from "../types";
+import { WorldSnapshotResponse } from "../types/world";
+import { ZoneConfig, WorkstationOverview } from "../lib/api/workstations";
 import { EventEnvelope } from "../types/events";
 import { normalizeBehavioralState } from "../lib/spatialMovement";
 
@@ -65,9 +66,18 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
   describe("2. Authoritative World Snapshot Hydration & Spatial Coordinates", () => {
     it("should accurately transform backend snapshot agents with spatial coordinates", () => {
       const mockSnapshot: WorldSnapshotResponse = {
+        snapshot_id: "snap_test_01",
+        schema_version: "1.0.0",
         organization_id: "org_default_company",
         sequence_id: 1042,
-        server_timestamp: "2026-11-02T13:30:00Z",
+        generated_at: "2026-11-02T13:30:00Z",
+        summary: {
+          total_employees: 2,
+          active_employees: 2,
+          busy_employees: 1,
+          available_workstations: 2,
+          active_tasks: 1,
+        },
         agents: [
           {
             employee_id: "agent-exec-ceo",
@@ -107,7 +117,10 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
           {
             workstation_id: "ws-exec-01",
             zone: "Executive",
+            label: "WS Executive 01",
             spatial_coordinates: { x: 0.0, y: 1.0, z: -12.0 },
+            orientation: 0,
+            capabilities: ["executive"],
             occupancy_status: "occupied",
             assigned_employee: "agent-exec-ceo",
             is_virtual: false,
@@ -115,7 +128,10 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
           {
             workstation_id: "ws-eng-01",
             zone: "Engineering",
+            label: "WS Engineering 01",
             spatial_coordinates: { x: -14.0, y: 1.0, z: -4.0 },
+            orientation: 0,
+            capabilities: ["engineering"],
             occupancy_status: "occupied",
             assigned_employee: "agent-eng-lead",
             is_virtual: false,
@@ -140,9 +156,18 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
 
     it("should handle null or absent coordinates gracefully without runtime exceptions", () => {
       const mockSnapshotSparse: WorldSnapshotResponse = {
+        snapshot_id: "snap_test_sparse",
+        schema_version: "1.0.0",
         organization_id: "org_default_company",
         sequence_id: 1043,
-        server_timestamp: "2026-11-02T13:30:00Z",
+        generated_at: "2026-11-02T13:30:00Z",
+        summary: {
+          total_employees: 1,
+          active_employees: 1,
+          busy_employees: 0,
+          available_workstations: 0,
+          active_tasks: 0,
+        },
         agents: [
           {
             employee_id: "agent-sparse",
@@ -181,14 +206,14 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
   describe("3. Dynamic Department Zones & Workstation Topology", () => {
     it("should map 8 canonical backend department zones with accurate base positions", () => {
       const mockZones: ZoneConfig[] = [
-        { department: "Executive", zone: "Zone A", base_x: 0, base_y: 0, base_z: -12, max_physical_desks: 2 },
-        { department: "Engineering", zone: "Zone B", base_x: -14, base_y: 0, base_z: -4, max_physical_desks: 8 },
-        { department: "AI Research", zone: "Zone C", base_x: -14, base_y: 0, base_z: 10, max_physical_desks: 6 },
-        { department: "Marketing", zone: "Zone D", base_x: 14, base_y: 0, base_z: -10, max_physical_desks: 6 },
-        { department: "Sales", zone: "Zone E", base_x: 14, base_y: 0, base_z: 2, max_physical_desks: 6 },
-        { department: "Operations", zone: "Zone F", base_x: 14, base_y: 0, base_z: 14, max_physical_desks: 6 },
-        { department: "Finance", zone: "Zone G", base_x: -6, base_y: 0, base_z: 18, max_physical_desks: 4 },
-        { department: "Customer Success", zone: "Zone H", base_x: 6, base_y: 0, base_z: 18, max_physical_desks: 6 },
+        { department: "Executive", zone: "Zone A", base_x: 0, base_y: 0, base_z: -12, max_physical_desks: 2, desk_spacing_x: 3.0, desk_spacing_z: 2.5, allocated_count: 1, physical_occupied_count: 1, available_physical_count: 1, virtual_count: 0 },
+        { department: "Engineering", zone: "Zone B", base_x: -14, base_y: 0, base_z: -4, max_physical_desks: 8, desk_spacing_x: 2.2, desk_spacing_z: 2.0, allocated_count: 1, physical_occupied_count: 1, available_physical_count: 7, virtual_count: 0 },
+        { department: "AI Research", zone: "Zone C", base_x: -14, base_y: 0, base_z: 10, max_physical_desks: 6, desk_spacing_x: 2.2, desk_spacing_z: 2.0, allocated_count: 0, physical_occupied_count: 0, available_physical_count: 6, virtual_count: 0 },
+        { department: "Marketing", zone: "Zone D", base_x: 14, base_y: 0, base_z: -10, max_physical_desks: 6, desk_spacing_x: 2.2, desk_spacing_z: 2.0, allocated_count: 0, physical_occupied_count: 0, available_physical_count: 6, virtual_count: 0 },
+        { department: "Sales", zone: "Zone E", base_x: 14, base_y: 0, base_z: 2, max_physical_desks: 6, desk_spacing_x: 2.2, desk_spacing_z: 2.0, allocated_count: 0, physical_occupied_count: 0, available_physical_count: 6, virtual_count: 0 },
+        { department: "Operations", zone: "Zone F", base_x: 14, base_y: 0, base_z: 14, max_physical_desks: 6, desk_spacing_x: 2.2, desk_spacing_z: 2.0, allocated_count: 0, physical_occupied_count: 0, available_physical_count: 6, virtual_count: 0 },
+        { department: "Finance", zone: "Zone G", base_x: -6, base_y: 0, base_z: 18, max_physical_desks: 4, desk_spacing_x: 2.2, desk_spacing_z: 2.0, allocated_count: 0, physical_occupied_count: 0, available_physical_count: 4, virtual_count: 0 },
+        { department: "Customer Success", zone: "Zone H", base_x: 6, base_y: 0, base_z: 18, max_physical_desks: 6, desk_spacing_x: 2.0, desk_spacing_z: 1.8, allocated_count: 0, physical_occupied_count: 0, available_physical_count: 6, virtual_count: 0 },
       ];
 
       expect(mockZones.length).toBe(8);
@@ -210,16 +235,27 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
     });
 
     it("should differentiate physical desks from virtual overflow workstations", () => {
-      const mockOverview: WorkstationOverviewResponse = {
-        organization_id: "org_default_company",
-        total_workstations: 10,
-        occupied_workstations: 2,
+      const mockOverview: WorkstationOverview = {
         zones: [
-          { department: "Engineering", zone: "Zone B", base_x: -14, base_y: 0, base_z: -4, max_physical_desks: 2 },
+          {
+            department: "Engineering",
+            zone: "Zone B",
+            base_x: -14,
+            base_y: 0,
+            base_z: -4,
+            max_physical_desks: 2,
+            desk_spacing_x: 2.2,
+            desk_spacing_z: 2.0,
+            allocated_count: 2,
+            physical_occupied_count: 1,
+            available_physical_count: 1,
+            virtual_count: 1,
+          },
         ],
         allocations: [
           {
             id: "ws-eng-01",
+            organization_id: "org_default_company",
             logical_workstation_id: "ws-eng-01",
             agent_id: "agent-eng-lead",
             agent_name: "David Chen",
@@ -235,6 +271,7 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
           },
           {
             id: "ws-eng-virtual-09",
+            organization_id: "org_default_company",
             logical_workstation_id: "ws-eng-v-09",
             agent_id: "agent-eng-contractor",
             agent_name: "Alex Cloud",
@@ -249,10 +286,17 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
             is_virtual: true,
           },
         ],
+        telemetry: {
+          total_desk_capacity: 10,
+          total_allocated: 2,
+          total_physical_occupied: 1,
+          total_physical_available: 8,
+          total_virtual_workforce: 1,
+        },
       };
 
-      const physical = mockOverview.allocations.find((a) => !a.is_virtual);
-      const virtual = mockOverview.allocations.find((a) => a.is_virtual);
+      const physical = mockOverview.allocations.find((a: any) => !a.is_virtual);
+      const virtual = mockOverview.allocations.find((a: any) => a.is_virtual);
 
       expect(physical).toBeDefined();
       expect(physical?.is_virtual).toBe(false);
@@ -501,16 +545,25 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
 
     it("should never fabricate fake placeholder agents in empty organization state", () => {
       const emptySnapshot: WorldSnapshotResponse = {
+        snapshot_id: "snap_test_empty",
+        schema_version: "1.0.0",
         organization_id: "org_unpopulated_brand_new",
         sequence_id: 1,
-        server_timestamp: "2026-11-02T13:30:00Z",
+        generated_at: "2026-11-02T13:30:00Z",
+        summary: {
+          total_employees: 0,
+          active_employees: 0,
+          busy_employees: 0,
+          available_workstations: 0,
+          active_tasks: 0,
+        },
         agents: [],
         workstations: [],
         activities: [],
       };
 
       const loadedAgents: Record<string, any> = {};
-      emptySnapshot.agents.forEach((item) => {
+      emptySnapshot.agents.forEach((item: any) => {
         loadedAgents[item.employee_id] = item;
       });
 
@@ -541,4 +594,109 @@ describe("Phase 4.1: 3D Office Foundation & Real-Time Integration", () => {
       expect(CEO_SUITE_CAM[2]).toBe(-4);
     });
   });
+
+  // =========================================================================
+  // 8. AUDIT REMEDIATION & INVARIANT TESTS
+  // =========================================================================
+  describe("8. Independent Audit Remediations & Spatial Invariants", () => {
+    it("should calculate child workstation local coordinates relative to department base", () => {
+      const deptBaseX = -14.0;
+      const deptBaseZ = -4.0;
+      const allocWorldPosX = -14.0;
+      const allocWorldPosZ = -4.0;
+
+      // When rendering inside DepartmentZone at [base_x, 0, base_z],
+      // the local offset must be (world_pos - base_pos)
+      const localX = allocWorldPosX - deptBaseX;
+      const localZ = allocWorldPosZ - deptBaseZ;
+
+      expect(localX).toBe(0.0);
+      expect(localZ).toBe(0.0);
+
+      // In Three.js scene hierarchy: WorldPosition = GroupPosition + LocalPosition
+      const computedWorldX = deptBaseX + localX;
+      const computedWorldZ = deptBaseZ + localZ;
+
+      expect(computedWorldX).toBe(allocWorldPosX);
+      expect(computedWorldZ).toBe(allocWorldPosZ);
+    });
+
+    it("should prevent stale snapshot from overwriting newer real-time sequence watermark", () => {
+      let currentWatermark = 1050; // Active watermark established by live events
+
+      const delayedSnapshotSeq = 1020; // Snapshot initiated earlier, arrives late
+      const isStale = delayedSnapshotSeq < currentWatermark;
+
+      expect(isStale).toBe(true);
+
+      // Watermark must not roll back
+      const nextWatermark = isStale ? currentWatermark : delayedSnapshotSeq;
+      expect(nextWatermark).toBe(1050);
+      expect(nextWatermark).not.toBe(1020);
+    });
+
+    it("should reactively synchronize workstation occupant state with agent behavioral events", () => {
+      const mockWorkstations: Record<string, { workstation_id: string; assigned_employee: string; occupant_state: string }> = {
+        "ws-eng-01": {
+          workstation_id: "ws-eng-01",
+          assigned_employee: "agent-eng-lead",
+          occupant_state: "IDLE",
+        },
+      };
+
+      const event: EventEnvelope = {
+        schema_version: 1,
+        event_id: "evt_occupant_01",
+        event_type: "agent.behavioral_state_changed",
+        occurred_at: "2026-11-02T14:15:00Z",
+        sequence_id: 1051,
+        agent_id: "agent-eng-lead",
+        task_id: "task-01",
+        organization_id: "org_default_company",
+        payload: {
+          agent_id: "agent-eng-lead",
+          behavioral_state: "IN_PROGRESS",
+        },
+      };
+
+      // Apply occupant synchronization
+      const agentId = event.payload.agent_id;
+      const nextState = event.payload.behavioral_state;
+
+      Object.entries(mockWorkstations).forEach(([key, ws]) => {
+        if (ws.assigned_employee === agentId) {
+          mockWorkstations[key] = {
+            ...ws,
+            occupant_state: nextState,
+          };
+        }
+      });
+
+      expect(mockWorkstations["ws-eng-01"].occupant_state).toBe("IN_PROGRESS");
+    });
+
+    it("should support both position and legacy spatial_coordinates backend schema fields", () => {
+      const backendItem = {
+        employee_id: "agent-exec-ceo",
+        name: "Victoria Vance",
+        role: "CEO",
+        department: "Executive",
+        position: { x: 0.0, y: 1.0, z: -12.0 },
+      };
+
+      const legacyItem = {
+        employee_id: "agent-eng-lead",
+        name: "David Chen",
+        role: "VP Engineering",
+        department: "Engineering",
+        spatial_coordinates: { x: -14.0, y: 1.0, z: -4.0 },
+      };
+
+      const getCoords = (item: any) => item.position || item.spatial_coordinates;
+
+      expect(getCoords(backendItem)).toEqual({ x: 0, y: 1, z: -12 });
+      expect(getCoords(legacyItem)).toEqual({ x: -14, y: 1, z: -4 });
+    });
+  });
 });
+

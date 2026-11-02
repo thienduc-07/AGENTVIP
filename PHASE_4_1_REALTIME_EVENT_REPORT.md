@@ -113,3 +113,4 @@ The WebSocket connection (`syncManager.ts`) implements an exponential-backoff re
 - **`CONNECTED`**: Renders glowing green `LIVE SYNC` badge with sequence counter.
 - **`CONNECTING`** / **`RECONNECTING`**: Displays pulsing amber indicator; existing 3D scene remains interactive and does not flicker or unmount.
 - **`ERROR`**: Non-blocking toast with retry button.
+
