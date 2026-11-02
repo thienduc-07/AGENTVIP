@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import confetti from "canvas-confetti";
+import OfficeScene from "@/components/office/OfficeScene";
 import WorldCanvas from "@/components/world/WorldCanvas";
 import WorldHUD from "@/components/interface/WorldHUD";
 import AgentInfoPanel from "@/components/interface/AgentInfoPanel";
@@ -47,6 +48,7 @@ export default function CorporateHQ3DWorldPage() {
   const [isDecidingApproval, setIsDecidingApproval] = useState<boolean>(false);
   const [isLoadingTask, setIsLoadingTask] = useState<boolean>(false);
   const [isFetchingAgents, setIsFetchingAgents] = useState<boolean>(true);
+  const [viewMode, setViewMode] = useState<"office" | "legacy">("office");
 
   // 1. Initial Data Fetch from FastAPI backend
   useEffect(() => {
@@ -271,58 +273,87 @@ export default function CorporateHQ3DWorldPage() {
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#070b14]">
-      {/* Top Glassmorphic Navigation HUD */}
-      <WorldHUD
-        onToggleMissionDrawer={() => setIsMissionDrawerOpen((prev) => !prev)}
-        isMissionDrawerOpen={isMissionDrawerOpen}
-        onOpenTaskModal={() => setIsTaskCreateOpen(true)}
-      />
-
-      {/* Backend Offline / Error Toast Banner */}
-      {backendConnection === "error" && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-xl bg-rose-950/90 border border-rose-500/50 text-rose-200 text-xs shadow-xl flex items-center gap-3 backdrop-blur-md">
-          <span className="font-semibold text-rose-300">⚠️ Không kết nối được Backend FastAPI (Port 8000)</span>
-          <button
-            onClick={fetchAgents}
-            disabled={isFetchingAgents}
-            className="px-2.5 py-1 rounded bg-rose-500/20 hover:bg-rose-500/40 text-rose-200 text-[11px] font-bold uppercase transition-colors"
-          >
-            {isFetchingAgents ? "Đang kết nối..." : "Thử lại"}
-          </button>
-          <button
-            onClick={handleEnableDemoMode}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition-colors"
-          >
-            Chế độ Demo
-          </button>
-        </div>
-      )}
-
-      {/* Demo Mode Notice */}
-      {backendConnection === "demo_fallback" && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-[11px] shadow-lg flex items-center gap-2 backdrop-blur-md">
-          <span>⚡ Chế độ xem trước Demo (Dữ liệu cục bộ)</span>
-          <button
-            onClick={fetchAgents}
-            className="underline text-amber-400 hover:text-amber-200 font-semibold"
-          >
-            Thử kết nối lại
-          </button>
-        </div>
-      )}
-
-      {/* 3D World Scene */}
-      <WorldCanvas />
-
-      {/* Dynamic Right Side Panels */}
-      {activeInfoPanel === "agent" && (
-        <AgentInfoPanel
-          onOpenMissionDispatcher={() => setIsMissionDrawerOpen(true)}
+      {/* 3D Office Foundation (Phase 4.1) vs Legacy Viewport */}
+      {viewMode === "office" ? (
+        <OfficeScene
+          onToggleMissionDrawer={() => setIsMissionDrawerOpen((prev) => !prev)}
+          isMissionDrawerOpen={isMissionDrawerOpen}
           onOpenTaskModal={() => setIsTaskCreateOpen(true)}
+          onOpenRecruitmentModal={() => useWorldStore.getState().setIsSpecialistRecruitmentOpen(true)}
         />
+      ) : (
+        <>
+          {/* Top Glassmorphic Navigation HUD */}
+          <WorldHUD
+            onToggleMissionDrawer={() => setIsMissionDrawerOpen((prev) => !prev)}
+            isMissionDrawerOpen={isMissionDrawerOpen}
+            onOpenTaskModal={() => setIsTaskCreateOpen(true)}
+          />
+
+          {/* Backend Offline / Error Toast Banner */}
+          {backendConnection === "error" && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-xl bg-rose-950/90 border border-rose-500/50 text-rose-200 text-xs shadow-xl flex items-center gap-3 backdrop-blur-md">
+              <span className="font-semibold text-rose-300">⚠️ Không kết nối được Backend FastAPI (Port 8000)</span>
+              <button
+                onClick={fetchAgents}
+                disabled={isFetchingAgents}
+                className="px-2.5 py-1 rounded bg-rose-500/20 hover:bg-rose-500/40 text-rose-200 text-[11px] font-bold uppercase transition-colors"
+              >
+                {isFetchingAgents ? "Đang kết nối..." : "Thử lại"}
+              </button>
+              <button
+                onClick={handleEnableDemoMode}
+                className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] transition-colors"
+              >
+                Chế độ Demo
+              </button>
+            </div>
+          )}
+
+          {/* Demo Mode Notice */}
+          {backendConnection === "demo_fallback" && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 px-3 py-1 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-300 text-[11px] shadow-lg flex items-center gap-2 backdrop-blur-md">
+              <span>⚡ Chế độ xem trước Demo (Dữ liệu cục bộ)</span>
+              <button
+                onClick={fetchAgents}
+                className="underline text-amber-400 hover:text-amber-200 font-semibold"
+              >
+                Thử kết nối lại
+              </button>
+            </div>
+          )}
+
+          {/* 3D World Scene */}
+          <WorldCanvas />
+
+          {/* Dynamic Right Side Panels */}
+          {activeInfoPanel === "agent" && (
+            <AgentInfoPanel
+              onOpenMissionDispatcher={() => setIsMissionDrawerOpen(true)}
+              onOpenTaskModal={() => setIsTaskCreateOpen(true)}
+            />
+          )}
+
+          {activeInfoPanel === "area" && <AreaInfoPanel />}
+
+          {/* Minimalist 3D Controls Help at Bottom Left */}
+          <WorldControlsHelp />
+
+          {/* Corporate Leadership Quick Switcher Dock */}
+          <CorporateAgentDock />
+        </>
       )}
 
-      {activeInfoPanel === "area" && <AreaInfoPanel />}
+      {/* Viewport Switcher Pill */}
+      <div className="fixed bottom-4 right-4 z-40 pointer-events-auto">
+        <button
+          onClick={() => setViewMode((m) => (m === "office" ? "legacy" : "office"))}
+          className="px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white text-[11px] font-mono border border-slate-700/60 shadow-xl backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <span className={`w-2 h-2 rounded-full ${viewMode === "office" ? "bg-sky-400" : "bg-amber-400"}`} />
+          <span>{viewMode === "office" ? "Giao diện: 3D Office (v4.1)" : "Giao diện: Legacy Island"}</span>
+        </button>
+      </div>
 
       {/* Collapsible Mission Control Terminal Drawer */}
       {isMissionDrawerOpen && (
@@ -338,12 +369,6 @@ export default function CorporateHQ3DWorldPage() {
 
       {/* Realtime 3D Mission Terminal with Anthropic Skills, Chat & Artifacts */}
       <InteractiveMissionTerminal />
-
-      {/* Minimalist 3D Controls Help at Bottom Left */}
-      <WorldControlsHelp />
-
-      {/* Corporate Leadership Quick Switcher Dock */}
-      <CorporateAgentDock />
 
       {/* Executive Board Authorization Modal (High Risk Sandbox Action) */}
       <CaptainApprovalModal
