@@ -686,3 +686,16 @@ export function reconcileAgentPositionOnSnapshot(
   };
 }
 
+// Re-export Phase 4.2 spatial navigation and collision avoidance systems
+export { SpatialHashGrid } from "./spatialHashGrid";
+export { CollisionAvoidanceSystem, DEFAULT_AVOIDANCE_CONFIG } from "./collisionAvoidance";
+export {
+  OfficeNavigationEngine,
+  officeNavEngine,
+  OFFICE_TOPOLOGY_NODES,
+  OFFICE_TOPOLOGY_EDGES,
+  WORKSTATION_CHAIR_OFFSET_Z,
+  WORKSTATION_SCREEN_FACING_YAW,
+} from "./officeNavigationEngine";
+
+

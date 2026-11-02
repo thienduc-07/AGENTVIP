@@ -96,6 +96,28 @@ export default function OfficeCanvas({
             />
           ))}
 
+          {/* Visual Destination Marker for Selected Moving Agent */}
+          {selectedAgentId &&
+            agents[selectedAgentId]?.isMoving &&
+            agents[selectedAgentId]?.targetPosition && (
+              <group
+                position={[
+                  agents[selectedAgentId].targetPosition![0],
+                  0.015,
+                  agents[selectedAgentId].targetPosition![2],
+                ]}
+              >
+                <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                  <ringGeometry args={[0.5, 0.68, 32]} />
+                  <meshBasicMaterial color="#38bdf8" transparent opacity={0.75} />
+                </mesh>
+                <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                  <circleGeometry args={[0.18, 16]} />
+                  <meshBasicMaterial color="#38bdf8" transparent opacity={0.4} />
+                </mesh>
+              </group>
+            )}
+
           {/* Smooth Lerp Camera Orbit Controller */}
           <OfficeCamera
             targetPosition={cameraPosition}

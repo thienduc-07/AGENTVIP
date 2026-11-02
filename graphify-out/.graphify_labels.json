@@ -26,7 +26,6 @@
   "118": "RedliningValidator",
   "122": "SkillLoader",
   "124": "ToolCenterModal.tsx",
-  "136": "agent_runtime/skills/slack-gif-creator/core/frame_composer.py",
   "148": "SandboxExecutor",
   "153": "test_v1_tasks.py",
   "186": ".call_tool",

@@ -283,6 +283,25 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
         const targetId = payload?.agent_id || agent_id;
         const targetPos = payload?.target_position;
         if (targetId && targetPos) {
+          const tx =
+            typeof targetPos.x === "number"
+              ? targetPos.x
+              : Array.isArray(targetPos)
+              ? targetPos[0]
+              : 0;
+          const ty =
+            typeof targetPos.y === "number"
+              ? targetPos.y
+              : Array.isArray(targetPos)
+              ? targetPos[1]
+              : 1;
+          const tz =
+            typeof targetPos.z === "number"
+              ? targetPos.z
+              : Array.isArray(targetPos)
+              ? targetPos[2]
+              : 0;
+
           setAgents((prev) => {
             const current = prev[targetId];
             if (!current) return prev;
@@ -292,11 +311,47 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
               [targetId]: {
                 ...current,
                 behavioralState: "ASSIGNED",
-                targetPosition: [targetPos[0], targetPos[1], targetPos[2]],
+                targetPosition: [tx, ty, tz],
                 isMoving: true,
+                waypoints: Array.isArray(payload?.waypoints) ? payload.waypoints : undefined,
               },
             };
           });
+        }
+      } else if (event_type === "agent.movement_progress") {
+        const targetId = payload?.agent_id || agent_id;
+        if (targetId && payload?.position) {
+          const px =
+            typeof payload.position.x === "number"
+              ? payload.position.x
+              : Array.isArray(payload.position)
+              ? payload.position[0]
+              : undefined;
+          const py =
+            typeof payload.position.y === "number"
+              ? payload.position.y
+              : Array.isArray(payload.position)
+              ? payload.position[1]
+              : 1;
+          const pz =
+            typeof payload.position.z === "number"
+              ? payload.position.z
+              : Array.isArray(payload.position)
+              ? payload.position[2]
+              : undefined;
+          if (typeof px === "number" && typeof pz === "number") {
+            setAgents((prev) => {
+              const current = prev[targetId];
+              if (!current) return prev;
+              return {
+                ...prev,
+                [targetId]: {
+                  ...current,
+                  position: [px, py, pz],
+                },
+              };
+            });
+          }
         }
       } else if (event_type === "agent.movement_completed") {
         const targetId = payload?.agent_id || agent_id;
@@ -307,14 +362,73 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
             if (!current) return prev;
             const finalState = (payload?.behavioral_state as CanonicalAgentState) || "IDLE";
             syncWorkstationOccupantState(targetId, finalState);
+            const fx =
+              typeof finalPos?.x === "number"
+                ? finalPos.x
+                : Array.isArray(finalPos)
+                ? finalPos[0]
+                : current.position[0];
+            const fy =
+              typeof finalPos?.y === "number"
+                ? finalPos.y
+                : Array.isArray(finalPos)
+                ? finalPos[1]
+                : current.position[1];
+            const fz =
+              typeof finalPos?.z === "number"
+                ? finalPos.z
+                : Array.isArray(finalPos)
+                ? finalPos[2]
+                : current.position[2];
+
             return {
               ...prev,
               [targetId]: {
                 ...current,
-                position: finalPos ? [finalPos[0], finalPos[1], finalPos[2]] : current.position,
+                position: [fx, fy, fz],
                 targetPosition: null,
+                waypoints: undefined,
                 isMoving: false,
                 behavioralState: finalState,
+              },
+            };
+          });
+        }
+      } else if (event_type === "agent.movement_interrupted") {
+        const targetId = payload?.agent_id || agent_id;
+        if (targetId) {
+          setAgents((prev) => {
+            const current = prev[targetId];
+            if (!current) return prev;
+            const stopPos = payload?.position;
+            const sx =
+              typeof stopPos?.x === "number"
+                ? stopPos.x
+                : Array.isArray(stopPos)
+                ? stopPos[0]
+                : current.position[0];
+            const sy =
+              typeof stopPos?.y === "number"
+                ? stopPos.y
+                : Array.isArray(stopPos)
+                ? stopPos[1]
+                : current.position[1];
+            const sz =
+              typeof stopPos?.z === "number"
+                ? stopPos.z
+                : Array.isArray(stopPos)
+                ? stopPos[2]
+                : current.position[2];
+
+            return {
+              ...prev,
+              [targetId]: {
+                ...current,
+                position: [sx, sy, sz],
+                targetPosition: null,
+                waypoints: undefined,
+                isMoving: false,
+                behavioralState: "IDLE",
               },
             };
           });

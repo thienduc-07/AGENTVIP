@@ -20,6 +20,7 @@ export interface AgentAvatarData {
   currentTaskTitle?: string | null;
   assignedWorkstation?: string | null;
   isMoving?: boolean;
+  waypoints?: Array<{ x: number; y: number; z: number }> | null;
 }
 
 interface AgentAvatarProps {
@@ -47,31 +48,58 @@ export default function AgentAvatar({
 
   const currentPos = useRef(new THREE.Vector3(...data.position));
   const currentHeading = useRef(data.headingRadians ?? 0);
+  const waypointIndexRef = useRef<number>(0);
 
-  // Smooth position lerping and articulated animation loop
+  // Smooth position lerping, waypoint queue traversal, and articulated animation loop
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
     const t = state.clock.getElapsedTime();
     const isMoving = data.isMoving || (data.targetPosition !== null && data.targetPosition !== undefined);
 
-    // 1. Position Lerp towards target or home position
-    const targetPos = data.targetPosition
-      ? new THREE.Vector3(...data.targetPosition)
-      : new THREE.Vector3(...data.position);
+    // 1. Determine active goal (waypoint traversal vs target destination)
+    let activeGoal: THREE.Vector3;
+    if (isMoving && data.waypoints && data.waypoints.length > 0) {
+      const idx = Math.min(waypointIndexRef.current, data.waypoints.length - 1);
+      const wp = data.waypoints[idx];
+      activeGoal = new THREE.Vector3(wp.x, wp.y ?? 1.0, wp.z);
+      if (currentPos.current.distanceTo(activeGoal) < 0.35 && idx < data.waypoints.length - 1) {
+        waypointIndexRef.current += 1;
+        const nextWp = data.waypoints[waypointIndexRef.current];
+        activeGoal = new THREE.Vector3(nextWp.x, nextWp.y ?? 1.0, nextWp.z);
+      }
+    } else if (data.targetPosition) {
+      activeGoal = new THREE.Vector3(...data.targetPosition);
+    } else {
+      activeGoal = new THREE.Vector3(...data.position);
+    }
 
     if (isMoving) {
-      currentPos.current.lerp(targetPos, Math.min(1, delta * 8));
+      currentPos.current.lerp(activeGoal, Math.min(1, delta * 8));
 
-      // Calculate movement heading
-      const diffX = targetPos.x - currentPos.current.x;
-      const diffZ = targetPos.z - currentPos.current.z;
-      if (Math.abs(diffX) > 0.05 || Math.abs(diffZ) > 0.05) {
+      // Calculate movement heading towards active waypoint/target
+      const diffX = activeGoal.x - currentPos.current.x;
+      const diffZ = activeGoal.z - currentPos.current.z;
+      if (Math.abs(diffX) > 0.04 || Math.abs(diffZ) > 0.04) {
         const targetHeading = Math.atan2(diffX, diffZ);
-        currentHeading.current = THREE.MathUtils.lerp(currentHeading.current, targetHeading, Math.min(1, delta * 10));
+        currentHeading.current = THREE.MathUtils.lerp(
+          currentHeading.current,
+          targetHeading,
+          Math.min(1, delta * 10)
+        );
       }
     } else {
-      currentPos.current.lerp(targetPos, Math.min(1, delta * 12));
+      currentPos.current.lerp(activeGoal, Math.min(1, delta * 12));
+      // When docked at workstation, smoothly orient facing monitors (-Z axis = Math.PI)
+      const targetHeading = data.assignedWorkstation
+        ? Math.PI
+        : data.headingRadians ?? currentHeading.current;
+      currentHeading.current = THREE.MathUtils.lerp(
+        currentHeading.current,
+        targetHeading,
+        Math.min(1, delta * 8)
+      );
+      waypointIndexRef.current = 0;
     }
 
     groupRef.current.position.copy(currentPos.current);

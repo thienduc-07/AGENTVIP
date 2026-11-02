@@ -52,6 +52,7 @@ export interface AgentCharacterData {
   id: string;
   name: string;
   role: string;
+  department?: string;
   station: string;
   position: [number, number, number];
   targetPosition?: [number, number, number] | null;
