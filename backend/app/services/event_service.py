@@ -38,6 +38,9 @@ TOOL_EXECUTION_FAILED = "tool.execution_failed"
 
 APPROVAL_REQUIRED = "approval.required"
 APPROVAL_RESOLVED = "approval.resolved"
+APPROVAL_DECIDED = "approval.decided"
+APPROVAL_APPROVED = "approval.approved"
+APPROVAL_REJECTED = "approval.rejected"
 ARTIFACT_CREATED = "artifact.created"
 
 # Milestone 6: Multi-Agent Workflow & Subtask Lifecycle Events
@@ -146,6 +149,9 @@ VALID_EVENT_TYPES: Set[str] = {
     TOOL_EXECUTION_FAILED,
     APPROVAL_REQUIRED,
     APPROVAL_RESOLVED,
+    APPROVAL_DECIDED,
+    APPROVAL_APPROVED,
+    APPROVAL_REJECTED,
     ARTIFACT_CREATED,
     WORKFLOW_CREATED,
     WORKFLOW_PLANNED,
@@ -239,6 +245,9 @@ class EventService:
     EVENT_TASK_COMPLETED = TASK_COMPLETED
     EVENT_TASK_PAUSED = TASK_PAUSED
     EVENT_TASK_RESUMED = TASK_RESUMED
+    EVENT_APPROVAL_DECIDED = APPROVAL_DECIDED
+    EVENT_APPROVAL_APPROVED = APPROVAL_APPROVED
+    EVENT_APPROVAL_REJECTED = APPROVAL_REJECTED
 
     _sequence_lock = threading.Lock()
     _current_max_seq: Optional[int] = None

@@ -317,42 +317,91 @@ class ExecutionLoop:
 
                     # Approval required check
                     if decision.requires_approval:
-                        logger.info(f"Tool '{tool.name}' requires authorization: {decision.approval_description}")
-                        if db:
-                            tool_service.record_execution(
-                                db=db,
-                                tool_name=tool.name,
-                                arguments=tool_call.arguments,
-                                output_summary=decision.approval_description,
-                                status="awaiting_approval",
-                                task_id=task_id,
-                                agent_id=agent_id,
-                            )
-                            try:
-                                from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
-                                behavioral_state_service.transition_state(
-                                    db=db,
-                                    agent_id=agent_id,
-                                    target_state=BehavioralState.WAITING,
-                                    task_id=task_id,
-                                    reason=decision.approval_description,
-                                    commit=True,
-                                    broadcast=True,
+                        from backend.app.models.approval import ApprovalModel
+                        approved_rec = None
+                        rejected_rec = None
+                        if db and task_id:
+                            # 1. Check if tool action was already approved for this task
+                            approved_rec = (
+                                db.query(ApprovalModel)
+                                .filter(
+                                    ApprovalModel.task_id == task_id,
+                                    ApprovalModel.action_type == decision.approval_action_type,
+                                    ApprovalModel.status == "approved"
                                 )
-                            except Exception as bs_err:
-                                logger.debug(f"Behavioral state WAITING update skipped: {bs_err}")
-                        return _build_result(
-                            status="waiting_approval",
-                            requires_approval=True,
-                            approval_details={
-                                "tool_name": tool.name,
-                                "arguments": tool_call.arguments,
-                                "action_type": decision.approval_action_type,
-                                "description": decision.approval_description,
-                            },
-                            tool_results=context.tool_results,
-                            artifacts=context.artifacts_created,
-                        )
+                                .order_by(ApprovalModel.resolved_at.desc())
+                                .first()
+                            )
+                            # 2. Check if tool action was rejected for this task
+                            if not approved_rec:
+                                rejected_rec = (
+                                    db.query(ApprovalModel)
+                                    .filter(
+                                        ApprovalModel.task_id == task_id,
+                                        ApprovalModel.action_type == decision.approval_action_type,
+                                        ApprovalModel.status == "rejected"
+                                    )
+                                    .first()
+                                )
+
+                        if approved_rec:
+                            logger.info(
+                                f"Authorization verified for tool '{tool.name}' (action='{decision.approval_action_type}', "
+                                f"approval_id='{approved_rec.id}'). Proceeding with execution."
+                            )
+                            # Permitted by operator approval: continue to execute tool below
+                        elif rejected_rec:
+                            logger.warning(
+                                f"Tool '{tool.name}' rejected by human operator (action='{decision.approval_action_type}', "
+                                f"approval_id='{rejected_rec.id}'). Protected operation blocked."
+                            )
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.call_id,
+                                "name": tool.name,
+                                "content": json.dumps({
+                                    "error": f"Tool execution rejected by operator: {rejected_rec.decision_reason or 'No reason provided'}"
+                                }),
+                            })
+                            continue
+                        else:
+                            # Requires authorization and not yet decided
+                            logger.info(f"Tool '{tool.name}' requires authorization: {decision.approval_description}")
+                            if db:
+                                tool_service.record_execution(
+                                    db=db,
+                                    tool_name=tool.name,
+                                    arguments=tool_call.arguments,
+                                    output_summary=decision.approval_description,
+                                    status="awaiting_approval",
+                                    task_id=task_id,
+                                    agent_id=agent_id,
+                                )
+                                try:
+                                    from backend.app.services.behavioral_state_service import behavioral_state_service, BehavioralState
+                                    behavioral_state_service.transition_state(
+                                        db=db,
+                                        agent_id=agent_id,
+                                        target_state=BehavioralState.WAITING,
+                                        task_id=task_id,
+                                        reason=decision.approval_description,
+                                        commit=True,
+                                        broadcast=True,
+                                    )
+                                except Exception as bs_err:
+                                    logger.debug(f"Behavioral state WAITING update skipped: {bs_err}")
+                            return _build_result(
+                                status="waiting_approval",
+                                requires_approval=True,
+                                approval_details={
+                                    "tool_name": tool.name,
+                                    "arguments": tool_call.arguments,
+                                    "action_type": decision.approval_action_type,
+                                    "description": decision.approval_description,
+                                },
+                                tool_results=context.tool_results,
+                                artifacts=context.artifacts_created,
+                            )
 
                     # Execute Tool
                     logger.info(f"Executing tool '{tool.name}' with arguments: {tool_call.arguments}")

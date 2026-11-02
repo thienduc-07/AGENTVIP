@@ -112,6 +112,7 @@ ALLOWED_TRANSITIONS: Dict[TaskStatus, Set[TaskStatus]] = {
     },
     TaskStatus.WAITING: {
         TaskStatus.IN_PROGRESS,
+        TaskStatus.QUEUED,
         TaskStatus.FAILED,
         TaskStatus.CANCELLED,
         TaskStatus.PAUSED,

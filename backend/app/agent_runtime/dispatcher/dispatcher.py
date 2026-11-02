@@ -534,15 +534,28 @@ class TaskDispatcher:
                     except Exception as bs_err:
                         logger.debug(f"Behavioral state WAITING transition skipped: {bs_err}")
 
-                approval = ApprovalModel(
-                    task_id=task.id,
-                    action_type=exec_result.approval_details.get("action_type", "high_risk_action"),
-                    description=exec_result.approval_details.get("description", "Requires authorization"),
-                    status="pending",
-                    requested_at=datetime.utcnow(),
+                act_type = exec_result.approval_details.get("action_type", "high_risk_action")
+                existing_pending = (
+                    db.query(ApprovalModel)
+                    .filter(
+                        ApprovalModel.task_id == task.id,
+                        ApprovalModel.action_type == act_type,
+                        ApprovalModel.status == "pending"
+                    )
+                    .first()
                 )
-                db.add(approval)
-                db.flush()
+                if not existing_pending:
+                    approval = ApprovalModel(
+                        task_id=task.id,
+                        action_type=act_type,
+                        description=exec_result.approval_details.get("description", "Requires authorization"),
+                        status="pending",
+                        requested_at=datetime.utcnow(),
+                    )
+                    db.add(approval)
+                    db.flush()
+                else:
+                    approval = existing_pending
 
                 ev_appr = event_service.create_event(
                     db=db,

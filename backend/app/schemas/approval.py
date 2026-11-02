@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, Literal
 from pydantic import BaseModel, Field, ConfigDict
 
-ApprovalStatusType = Literal["pending", "approved", "rejected", "expired"]
+ApprovalStatusType = Literal["pending", "approved", "rejected", "expired", "cancelled"]
 
 class ApprovalResponse(BaseModel):
     id: str
@@ -17,5 +17,8 @@ class ApprovalResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class ApprovalDecisionRequest(BaseModel):
-    decision: Literal["approved", "rejected"] = Field(..., description="Decision must be 'approved' or 'rejected'")
+    decision: Literal["approved", "rejected", "expired", "cancelled"] = Field(
+        ...,
+        description="Decision must be 'approved', 'rejected', 'expired', or 'cancelled'"
+    )
     reason: Optional[str] = Field(None, max_length=500, description="Optional justification for the decision")
