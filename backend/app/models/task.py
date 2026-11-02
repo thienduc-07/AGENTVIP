@@ -27,6 +27,7 @@ class TaskModel(Base):
         default="org_default_company",
         index=True
     )
+    idempotency_key = Column(String(64), nullable=True, index=True)
     
     dependencies_json = Column(JSON, nullable=True) # list of subtask IDs
     input_data_json = Column(JSON, nullable=True)
@@ -58,11 +59,13 @@ class TaskModel(Base):
         Index("ix_tasks_status_created", "status", "created_at"),
         Index("ix_tasks_parent_status", "parent_task_id", "status"),
         Index("ix_tasks_org_status", "organization_id", "status"),
+        Index("ix_tasks_org_idempotency", "organization_id", "idempotency_key"),
     )
 
     def to_subtask_dict(self):
         return {
             "id": self.id,
+            "idempotency_key": self.idempotency_key,
             "parent_task_id": self.parent_task_id,
             "title": self.title,
             "description": self.description,
@@ -83,6 +86,7 @@ class TaskModel(Base):
     def to_workflow_dict(self):
         return {
             "id": self.id,
+            "idempotency_key": self.idempotency_key,
             "title": self.title,
             "description": self.description,
             "task_type": self.task_type,

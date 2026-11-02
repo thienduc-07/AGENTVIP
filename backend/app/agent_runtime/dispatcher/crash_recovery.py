@@ -44,6 +44,33 @@ def recover_abandoned_tasks(db: Session, auto_retry: bool = False) -> int:
 
             for c_st in running_children:
                 processed_task_ids.add(c_st.id)
+
+                # Check if subtask already produced a verified deliverable prior to crash
+                existing_deliv = (c_st.output_data_json or {}).get("deliverable")
+                if existing_deliv and existing_deliv.get("verification_status") == "VERIFIED":
+                    c_st.status = "completed"
+                    c_st.completed_at = now
+                    c_st.updated_at = now
+                    completed_children.append(c_st)
+                    event_service.create_event(
+                        db=db,
+                        event_type="task.completed",
+                        agent_id=c_st.assigned_agent_id,
+                        task_id=c_st.id,
+                        organization_id=c_st.organization_id,
+                        payload={"reason": "Recovered from existing verified deliverable", "deliverable_id": existing_deliv.get("deliverable_id")},
+                        commit=False,
+                    )
+                    if c_st.assigned_agent_id:
+                        child_agent = db.query(AgentModel).filter(AgentModel.id == c_st.assigned_agent_id).first()
+                        if child_agent and (child_agent.status == "working" or getattr(child_agent, "behavioral_state", "IDLE") != "IDLE"):
+                            child_agent.status = "idle" if child_agent.status != "offline" else "offline"
+                            child_agent.behavioral_state = "IDLE"
+                            child_agent.current_task_id = None
+                            child_agent.active_movement_id = None
+                            child_agent.updated_at = now
+                    continue
+
                 c_decision = retry_manager.evaluate_retry(
                     c_st,
                     error_message="Worker process rebooted during subtask execution",
@@ -63,7 +90,11 @@ def recover_abandoned_tasks(db: Session, auto_retry: bool = False) -> int:
                     )
                 else:
                     c_st.status = "failed"
-                    c_st.error_message = "Subtask terminated unexpectedly during server restart (retries exhausted)."
+                    c_st.error_message = (
+                        f"Subtask terminated unexpectedly: {c_decision.reason}."
+                        if (c_decision and not c_decision.should_retry)
+                        else "Subtask terminated unexpectedly during server restart (retries exhausted)."
+                    )
                     c_st.completed_at = now
                     c_st.updated_at = now
 
@@ -83,6 +114,11 @@ def recover_abandoned_tasks(db: Session, auto_retry: bool = False) -> int:
                 task.status = "queued"
                 task.updated_at = now
                 logger.info(f"Workflow '{task.id}' preserved with {len(completed_children)} completed subtasks; re-queued to resume remaining.")
+            elif all(st.status == "completed" for st in child_subtasks):
+                task.status = "completed"
+                task.completed_at = now
+                task.updated_at = now
+                logger.info(f"Workflow '{task.id}' all subtasks completed during crash recovery.")
             else:
                 task.status = "failed"
                 task.error_message = "Workflow interrupted and unable to resume remaining work."
@@ -91,29 +127,48 @@ def recover_abandoned_tasks(db: Session, auto_retry: bool = False) -> int:
 
         else:
             # 2. Standalone task or isolated subtask recovery
-            decision = retry_manager.evaluate_retry(
-                task,
-                error_message="Worker process restarted during task execution",
-            )
-            if auto_retry and decision.should_retry:
-                retry_manager.record_retry_attempt(task, decision, "Server process restarted during execution")
-                task.status = "queued"
+            existing_deliv = (task.output_data_json or {}).get("deliverable")
+            if existing_deliv and existing_deliv.get("verification_status") == "VERIFIED":
+                task.status = "completed"
+                task.completed_at = now
                 task.updated_at = now
                 event_service.create_event(
                     db=db,
-                    event_type="task.retrying",
+                    event_type="task.completed",
                     agent_id=task.assigned_agent_id,
                     task_id=task.id,
                     organization_id=task.organization_id,
-                    payload={"reason": "Server restart: task re-queued for execution", "attempt": task.retry_count},
+                    payload={"reason": "Recovered from existing verified deliverable", "deliverable_id": existing_deliv.get("deliverable_id")},
                     commit=False,
                 )
-                logger.info(f"Task '{task.id}' re-queued under retry attempt {task.retry_count}/{task.max_retries}")
             else:
-                task.status = "failed"
-                task.error_message = "Task terminated unexpectedly due to worker restart or process interruption."
-                task.completed_at = now
-                task.updated_at = now
+                decision = retry_manager.evaluate_retry(
+                    task,
+                    error_message="Worker process restarted during task execution",
+                )
+                if auto_retry and decision.should_retry:
+                    retry_manager.record_retry_attempt(task, decision, "Server process restarted during execution")
+                    task.status = "queued"
+                    task.updated_at = now
+                    event_service.create_event(
+                        db=db,
+                        event_type="task.retrying",
+                        agent_id=task.assigned_agent_id,
+                        task_id=task.id,
+                        organization_id=task.organization_id,
+                        payload={"reason": "Server restart: task re-queued for execution", "attempt": task.retry_count},
+                        commit=False,
+                    )
+                    logger.info(f"Task '{task.id}' re-queued under retry attempt {task.retry_count}/{task.max_retries}")
+                else:
+                    task.status = "failed"
+                    task.error_message = (
+                        f"Task terminated unexpectedly: {decision.reason}."
+                        if (decision and not decision.should_retry)
+                        else "Task terminated unexpectedly due to worker restart or process interruption."
+                    )
+                    task.completed_at = now
+                    task.updated_at = now
 
         # Free assigned agent
         agent = db.query(AgentModel).filter(AgentModel.id == task.assigned_agent_id).first()

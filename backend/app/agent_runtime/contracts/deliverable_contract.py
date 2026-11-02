@@ -24,6 +24,7 @@ class StructuredDeliverable(BaseModel):
     evidence_references: List[str] = Field(default_factory=list, description="Citations, file paths, or verified references")
     result_summary: str = Field(..., description="Verified output summary")
     artifact_paths: List[str] = Field(default_factory=list, description="Physical sandbox artifact file paths")
+    artifact_hashes: Dict[str, str] = Field(default_factory=dict, description="Cryptographic SHA-256 hashes of physical artifacts")
     verification_status: str = Field(
         default="VERIFIED",
         description="Verification outcome: VERIFIED | PARTIALLY_VERIFIED | FAILED | PENDING_REVIEW",

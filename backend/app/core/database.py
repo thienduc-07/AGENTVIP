@@ -11,6 +11,9 @@ if "sqlite" in settings.DATABASE_URL:
 engine = create_engine(
     settings.DATABASE_URL,
     connect_args=connect_args,
+    pool_size=50,
+    max_overflow=100,
+    pool_timeout=60.0,
     pool_pre_ping=True
 )
 
@@ -48,6 +51,23 @@ def configure_sqlite_wal(engine_to_configure: Engine = engine) -> str:
 
 # Configure WAL mode for production database engine on module import
 configure_sqlite_wal(engine)
+
+def apply_schema_upgrades(engine_to_upgrade: Engine = engine) -> None:
+    """
+    Applies backward-compatible schema updates (e.g. idempotency_key column) safely.
+    """
+    try:
+        with engine_to_upgrade.connect() as conn:
+            cursor = conn.exec_driver_sql("PRAGMA table_info(tasks)")
+            cols = [row[1] for row in cursor.fetchall()]
+            if cols and "idempotency_key" not in cols:
+                conn.exec_driver_sql("ALTER TABLE tasks ADD COLUMN idempotency_key VARCHAR(64)")
+                conn.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_tasks_org_idempotency ON tasks (organization_id, idempotency_key)")
+                logger.info("Schema migration: added 'idempotency_key' to tasks table.")
+    except Exception as e:
+        logger.warning(f"Could not apply schema upgrades: {e}")
+
+apply_schema_upgrades(engine)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

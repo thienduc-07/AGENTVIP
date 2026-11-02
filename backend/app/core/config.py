@@ -89,6 +89,7 @@ class Settings(BaseSettings):
     # Task Dispatcher & Worker
     DISPATCHER_POLL_INTERVAL: float = 1.0  # seconds
     DISPATCHER_ENABLED: bool = True
+    MAX_WORKFLOW_CONCURRENCY: int = 4
 
     # Autonomous CEO Supervisory Heartbeat (Phase 3.3.3.4)
     # Safely disabled by default in development and testing environments

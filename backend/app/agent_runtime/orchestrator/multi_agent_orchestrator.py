@@ -8,6 +8,7 @@ def _utcnow() -> datetime:
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import SessionLocal
+from backend.app.core.config import settings
 from backend.app.models.task import TaskModel
 from backend.app.models.agent import AgentModel
 from backend.app.agent_runtime.cancellation import CancellationToken, TaskCancelledException
@@ -62,6 +63,7 @@ class MultiAgentOrchestrator:
         task_id: str,
         token: CancellationToken,
         db: Optional[Session] = None,
+        max_concurrency: Optional[int] = None,
     ) -> None:
         """
         Executes a multi-agent workflow from end to end:
@@ -280,11 +282,37 @@ class MultiAgentOrchestrator:
             db.commit()
             await ws_manager.broadcast_envelope(ev_wf_start.to_envelope())
 
+            # 2.5 Validate subtask DAG for circular dependencies before execution loop
+            subtasks_for_validation = db.query(TaskModel).filter(TaskModel.parent_task_id == parent_task.id).all()
+            try:
+                self._validate_subtask_dag_cycles(subtasks_for_validation)
+            except Exception as dag_err:
+                logger.error(f"Workflow '{task_id}' DAG validation failed: {dag_err}")
+                parent_task.status = "failed"
+                parent_task.error_message = str(dag_err)
+                parent_task.completed_at = _utcnow()
+                for st in subtasks_for_validation:
+                    if st.status not in ("completed", "cancelled"):
+                        st.status = "failed"
+                        st.error_message = f"Workflow DAG validation failed: {dag_err}"
+                        st.completed_at = _utcnow()
+                ev_wf_fail = event_service.create_event(
+                    db=db,
+                    event_type=WORKFLOW_FAILED,
+                    agent_id=parent_task.assigned_agent_id,
+                    task_id=parent_task.id,
+                    payload={"workflow_id": parent_task.id, "status": "failed", "error": str(dag_err)},
+                    commit=False
+                )
+                db.commit()
+                await ws_manager.broadcast_envelope(ev_wf_fail.to_envelope())
+                return
+
             # 3. Execution Coordinator Loop
             subtask_results: Dict[str, SubtaskResultContract] = {}
             max_workflow_duration = 300 # 5 minutes hard cap
             start_time = asyncio.get_event_loop().time()
-            max_concurrency = 2
+            effective_concurrency = max_concurrency or getattr(settings, "MAX_WORKFLOW_CONCURRENCY", 4)
 
             while asyncio.get_event_loop().time() - start_time < max_workflow_duration:
                 token.check()
@@ -349,7 +377,7 @@ class MultiAgentOrchestrator:
                     continue
 
                 # Process ready subtasks within concurrency limit (concurrent execution of independent subtasks)
-                ready_batch = queued_subtasks[:max_concurrency]
+                ready_batch = queued_subtasks[:effective_concurrency]
                 if len(ready_batch) == 1:
                     token.check()
                     await self._execute_subtask(
@@ -363,6 +391,7 @@ class MultiAgentOrchestrator:
                 elif len(ready_batch) > 1:
                     async def _run_subtask_isolated(st_item: TaskModel):
                         sub_db = None
+                        executed = False
                         try:
                             from sqlalchemy.orm import sessionmaker
                             sub_session_factory = sessionmaker(bind=db.get_bind())
@@ -370,6 +399,7 @@ class MultiAgentOrchestrator:
                             st_reloaded = sub_db.query(TaskModel).filter(TaskModel.id == st_item.id).first()
                             p_reloaded = sub_db.query(TaskModel).filter(TaskModel.id == parent_task.id).first()
                             if st_reloaded and p_reloaded:
+                                executed = True
                                 await self._execute_subtask(
                                     db=sub_db,
                                     subtask=st_reloaded,
@@ -385,15 +415,16 @@ class MultiAgentOrchestrator:
                             if sub_db is not None:
                                 sub_db.close()
 
-                        # Fallback to current session if isolated worker session unavailable
-                        await self._execute_subtask(
-                            db=db,
-                            subtask=st_item,
-                            parent_task=parent_task,
-                            subtask_results=subtask_results,
-                            llm_provider=llm_provider,
-                            token=token,
-                        )
+                        # Only fallback to shared db session if isolated worker session could not resolve rows
+                        if not executed:
+                            await self._execute_subtask(
+                                db=db,
+                                subtask=st_item,
+                                parent_task=parent_task,
+                                subtask_results=subtask_results,
+                                llm_provider=llm_provider,
+                                token=token,
+                            )
 
                     tasks_to_run = [_run_subtask_isolated(st) for st in ready_batch]
                     await asyncio.gather(*tasks_to_run, return_exceptions=True)
@@ -606,6 +637,34 @@ class MultiAgentOrchestrator:
             agent_def = GENERAL_AGENT_DEF
         assigned_agent_id = subtask.assigned_agent_id
 
+        # 0. Check if subtask already has a verified deliverable from previous interrupted run
+        existing_deliv = (subtask.output_data_json or {}).get("deliverable")
+        if existing_deliv and existing_deliv.get("verification_status") == "VERIFIED":
+            logger.info(f"Subtask '{subtask.id}' already has verified deliverable. Finalizing without re-execution.")
+            subtask.status = "completed"
+            subtask.completed_at = _utcnow()
+            db.commit()
+            contract = SubtaskResultContract(
+                task_id=subtask.id,
+                subtask_key=subtask_key,
+                parent_task_id=parent_task.id,
+                agent_id=assigned_agent_id,
+                agent_type=subtask.agent_type or "general",
+                status="completed",
+                summary=existing_deliv.get("summary") or subtask.result_summary or "Recovered from verified deliverable",
+                output=existing_deliv.get("summary") or subtask.result_summary or "Recovered from verified deliverable",
+                evidence=existing_deliv.get("evidence", []),
+                artifacts=existing_deliv.get("artifact_paths", []),
+                raw_deliverable=existing_deliv,
+            )
+            subtask_results[subtask_key] = contract
+            behavioral_state_service.safe_release_agent(
+                db=db,
+                agent_id=assigned_agent_id,
+                reason="Subtask recovered from existing verified deliverable",
+            )
+            return
+
         # 1. Update subtask and agent to running
         subtask.status = "running"
         subtask.started_at = _utcnow()
@@ -781,9 +840,19 @@ class MultiAgentOrchestrator:
         # 4. Handle Result & Emit Events
         if exec_res.success:
             artifact_str_list = [
-                a.get("file_path", str(a)) if isinstance(a, dict) else str(a)
+                a.get("file_path", a.get("filepath", str(a))) if isinstance(a, dict) else str(a)
                 for a in (exec_res.artifacts or [])
             ]
+            artifact_hashes = {}
+            for a_item in (exec_res.artifacts or []):
+                p_str = a_item.get("file_path", a_item.get("filepath", str(a_item))) if isinstance(a_item, dict) else str(a_item)
+                target_p = settings.WORKSPACE_ROOT / p_str
+                if target_p.exists() and target_p.is_file():
+                    try:
+                        import hashlib
+                        artifact_hashes[p_str] = hashlib.sha256(target_p.read_bytes()).hexdigest()
+                    except Exception:
+                        pass
 
             deliverable = StructuredDeliverable(
                 task_id=subtask.id,
@@ -797,6 +866,7 @@ class MultiAgentOrchestrator:
                 evidence_references=artifact_str_list or [f"Verified by {assigned_agent_id}"],
                 result_summary=exec_res.summary,
                 artifact_paths=artifact_str_list,
+                artifact_hashes=artifact_hashes,
                 verification_status="VERIFIED",
                 verification_notes="Deliverable output and artifacts verified by execution verifier.",
             )
@@ -807,7 +877,7 @@ class MultiAgentOrchestrator:
                 subtask_key=subtask_key,
                 parent_task_id=parent_task.id,
                 agent_id=assigned_agent_id,
-                agent_type=subtask.agent_type,
+                agent_type=subtask.agent_type or "general",
                 status="completed",
                 summary=exec_res.summary,
                 output=exec_res.summary,
@@ -821,6 +891,8 @@ class MultiAgentOrchestrator:
             out_dict["deliverable"] = deliverable.to_dict()
             subtask.output_data_json = out_dict
             subtask_results[subtask.id] = contract
+            if subtask_key:
+                subtask_results[subtask_key] = contract
 
             try:
                 task_lifecycle_engine.transition(
@@ -1009,5 +1081,47 @@ class MultiAgentOrchestrator:
                 db.commit()
                 await ws_manager.broadcast_envelope(ev_fail.to_envelope())
                 await ws_manager.broadcast_envelope(ev_idle.to_envelope())
+
+    def _validate_subtask_dag_cycles(self, subtasks: List[TaskModel]) -> None:
+        """
+        Validates the subtask dependency graph for cycles using topological sort.
+        Raises DAGValidationError if a cycle is detected.
+        """
+        from backend.app.agent_runtime.planner.multi_agent_planner import DAGValidationError
+        if not subtasks:
+            return
+
+        key_to_st = {}
+        for st in subtasks:
+            k = (st.input_data_json or {}).get("subtask_key") or st.id
+            key_to_st[k] = st
+
+        adj = {k: [] for k in key_to_st}
+        in_degree = {k: 0 for k in key_to_st}
+
+        for k, st in key_to_st.items():
+            deps = st.dependencies_json or []
+            for d in deps:
+                if d == k:
+                    raise DAGValidationError(f"Self-dependency detected: subtask '{k}' depends on itself.")
+                if d not in key_to_st:
+                    raise DAGValidationError(f"Non-existent dependency detected: subtask '{k}' depends on unknown '{d}'.")
+                if d in adj:
+                    adj[d].append(k)
+                    in_degree[k] += 1
+
+        queue = [k for k, deg in in_degree.items() if deg == 0]
+        visited = 0
+        while queue:
+            curr = queue.pop(0)
+            visited += 1
+            for nxt in adj[curr]:
+                in_degree[nxt] -= 1
+                if in_degree[nxt] == 0:
+                    queue.append(nxt)
+
+        if visited != len(key_to_st):
+            cycle_nodes = [k for k, deg in in_degree.items() if deg > 0]
+            raise DAGValidationError(f"Circular dependency detected involving subtasks: {cycle_nodes}")
 
 multi_agent_orchestrator = MultiAgentOrchestrator()

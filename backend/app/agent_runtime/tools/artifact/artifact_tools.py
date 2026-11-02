@@ -70,28 +70,52 @@ class ArtifactCreateTool:
             )
             target_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(target_path, "w", encoding="utf-8") as f:
-                f.write(content)
+            # Atomic write pattern to prevent corrupt/partial writes during crashes
+            temp_path = target_path.with_name(f".{target_path.name}.tmp.{uuid.uuid4().hex[:8]}")
+            try:
+                with open(temp_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(temp_path, target_path)
+            except Exception as write_err:
+                if temp_path.exists():
+                    try:
+                        temp_path.unlink()
+                    except OSError:
+                        pass
+                raise write_err
 
             size_bytes = target_path.stat().st_size
             rel_storage = str(target_path.relative_to(settings.WORKSPACE_ROOT))
             artifact_id = f"art-{uuid.uuid4().hex[:12]}"
             task_id = getattr(context, "task_id", None) if context else None
 
-            # Attempt DB registration if session available
+            # Attempt DB registration if session available (idempotent duplicate prevention)
             db = getattr(context, "db", None)
             if db and task_id:
                 try:
-                    db_art = ArtifactModel(
-                        id=artifact_id,
-                        task_id=task_id,
-                        name=name,
-                        artifact_type=artifact_type,
-                        storage_path=rel_storage,
-                        mime_type=mime_type,
-                        size_bytes=size_bytes,
-                    )
-                    db.add(db_art)
+                    existing_art = db.query(ArtifactModel).filter(
+                        ArtifactModel.task_id == task_id,
+                        ArtifactModel.name == name,
+                    ).first()
+                    if existing_art:
+                        existing_art.storage_path = rel_storage
+                        existing_art.mime_type = mime_type
+                        existing_art.size_bytes = size_bytes
+                        existing_art.artifact_type = artifact_type
+                        artifact_id = existing_art.id
+                    else:
+                        db_art = ArtifactModel(
+                            id=artifact_id,
+                            task_id=task_id,
+                            name=name,
+                            artifact_type=artifact_type,
+                            storage_path=rel_storage,
+                            mime_type=mime_type,
+                            size_bytes=size_bytes,
+                        )
+                        db.add(db_art)
                     db.commit()
                 except Exception:
                     if db:

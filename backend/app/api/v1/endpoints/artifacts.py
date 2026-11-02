@@ -25,4 +25,39 @@ def list_artifacts(
     """Lists generated artifacts with strict tenant verification."""
     if task_id:
         task_service.get_task_by_id(db, task_id, organization_id=tenant_org)
-    return artifact_service.list_artifacts(db=db, task_id=task_id, limit=limit, offset=offset)
+    return artifact_service.list_artifacts(
+        db=db,
+        organization_id=tenant_org,
+        task_id=task_id,
+        limit=limit,
+        offset=offset,
+    )
+
+@router.get("/{artifact_id}", response_model=ArtifactResponse)
+def get_artifact(
+    artifact_id: str,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retrieves single artifact metadata with strict tenant verification."""
+    return artifact_service.get_artifact_by_id(
+        db=db,
+        artifact_id=artifact_id,
+        organization_id=tenant_org,
+    )
+
+@router.get("/{artifact_id}/content")
+def get_artifact_content(
+    artifact_id: str,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retrieves raw file content for a verified artifact with tenant isolation."""
+    content = artifact_service.get_artifact_content(
+        db=db,
+        artifact_id=artifact_id,
+        organization_id=tenant_org,
+    )
+    return {"artifact_id": artifact_id, "content": content}

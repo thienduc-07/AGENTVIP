@@ -79,6 +79,7 @@ export interface StructuredDeliverable {
   evidence_references: string[];
   result_summary: string;
   artifact_paths: string[];
+  artifact_hashes?: Record<string, string>;
   verification_status: "VERIFIED" | "PARTIALLY_VERIFIED" | "FAILED" | "PENDING_REVIEW";
   verification_notes?: string | null;
   completion_timestamp: string;
@@ -86,6 +87,7 @@ export interface StructuredDeliverable {
 
 export interface ApiTask {
   id: string;
+  idempotency_key?: string | null;
   title: string;
   description: string;
   status: TaskStatus;

@@ -30,6 +30,7 @@ def list_events(
         agent_id=agent_id,
         task_id=task_id,
         event_type=event_type,
+        organization_id=tenant_org,
         limit=limit,
         offset=offset
     )

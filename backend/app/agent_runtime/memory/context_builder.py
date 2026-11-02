@@ -18,17 +18,27 @@ class MemoryContextBuilder:
         task_description: str,
         agent_id: str,
         task_id: Optional[str] = None,
+        organization_id: Optional[str] = None,
     ) -> Optional[str]:
         """
         Retrieves relevant memories for the caller agent and builds an isolated, injection-safe
         reference context block to be injected into the LLM prompt.
+        Enforces tenant isolation: strictly excludes memories belonging to other organizations.
         """
+        effective_org = organization_id
+        if not effective_org and agent_id:
+            from backend.app.models.agent import AgentModel
+            ag_obj = db.query(AgentModel).filter(AgentModel.id == agent_id).first()
+            if ag_obj:
+                effective_org = ag_obj.organization_id
+
         search_query = f"{task_title} {task_description}"
         try:
             resp = memory_service.search_memories(
                 db=db,
                 query=search_query,
                 caller_agent_id=agent_id,
+                organization_id=effective_org,
                 status="active",
                 limit=self.max_items,
                 task_id_for_citation=task_id,

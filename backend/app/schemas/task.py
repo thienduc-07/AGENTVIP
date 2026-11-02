@@ -70,6 +70,7 @@ class DeliverableResponse(BaseModel):
 
 class TaskResponse(BaseModel):
     id: str
+    idempotency_key: Optional[str] = None
     organization_id: str = "org_default_company"
     parent_task_id: Optional[str] = None
     title: str

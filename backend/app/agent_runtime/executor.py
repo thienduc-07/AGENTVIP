@@ -262,6 +262,19 @@ class ExecutionLoop:
 
                 for tool_call in response.tool_calls:
                     cancellation_token.check()
+
+                    # Deduplication / Idempotency check: prevent duplicate tool execution for identical call_id
+                    if tool_call.call_id and tool_call.call_id in context.executed_call_ids:
+                        logger.info(f"Deduplication: Skipping duplicate tool execution for call_id '{tool_call.call_id}'")
+                        cached_entry = context.executed_call_ids[tool_call.call_id]
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.call_id,
+                            "name": tool_call.tool_name,
+                            "content": json.dumps(cached_entry) if isinstance(cached_entry, dict) else str(cached_entry),
+                        })
+                        continue
+
                     try:
                         context.check_execution_duration(time.perf_counter() - start_time)
                         context.record_tool_call()
@@ -398,6 +411,8 @@ class ExecutionLoop:
                         "duration_ms": tool_result.duration_ms,
                     }
                     context.tool_results.append(result_record)
+                    if tool_call.call_id:
+                        context.executed_call_ids[tool_call.call_id] = result_record
 
                     # Emit completion / failure event
                     if db:

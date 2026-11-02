@@ -241,11 +241,18 @@ class EventService:
         organization_id: Optional[str] = None,
         payload: Optional[Dict[str, Any]] = None,
         commit: bool = True,
+        event_id: Optional[str] = None,
     ) -> AgentEventModel:
         """
         Creates and persists an event record with monotonic sequence_id and tenant organization ownership.
         Strictly enforces resource existence, cross-tenant consistency, and non-repudiation.
+        Supports idempotent submission: if event_id already exists, returns existing event without duplicates.
         """
+        if event_id:
+            existing_ev = db.query(AgentEventModel).filter(AgentEventModel.id == event_id).first()
+            if existing_ev:
+                return existing_ev
+
         # Flush pending objects in the current transaction so newly created agents/tasks are queryable
         try:
             db.flush()
@@ -313,7 +320,7 @@ class EventService:
         next_seq = int(max_seq) + 1
 
         event = AgentEventModel(
-            id=f"evt_{uuid.uuid4().hex[:16]}",
+            id=event_id or f"evt_{uuid.uuid4().hex[:16]}",
             sequence_id=next_seq,
             event_type=event_type,
             agent_id=resolved_agent_id,

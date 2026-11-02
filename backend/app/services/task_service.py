@@ -15,7 +15,17 @@ from backend.app.websocket_manager import ws_manager
 class TaskService:
     @staticmethod
     def create_task(db: Session, task_in: TaskCreate, organization_id: Optional[str] = None) -> TaskModel:
-        # Idempotency check: If client provided an explicit task ID / idempotency identity, return existing record
+        # Idempotency check 1: If client provided an explicit idempotency_key for this tenant
+        idem_key = task_in.idempotency_key.strip() if (task_in.idempotency_key and task_in.idempotency_key.strip()) else None
+        if idem_key:
+            query = db.query(TaskModel).filter(TaskModel.idempotency_key == idem_key)
+            if organization_id:
+                query = query.filter(TaskModel.organization_id == organization_id)
+            existing_idem = query.first()
+            if existing_idem:
+                return existing_idem
+
+        # Idempotency check 2: If client provided an explicit task ID / idempotency identity, return existing record
         target_id = task_in.id.strip() if (task_in.id and task_in.id.strip()) else None
         if target_id:
             existing = db.query(TaskModel).filter(
@@ -87,6 +97,7 @@ class TaskService:
         # 2. Create task record with tenant-scoped organization_id and canonical task ID
         task = TaskModel(
             id=target_id or generate_uuid(),
+            idempotency_key=idem_key,
             organization_id=effective_org,
             title=task_in.title.strip(),
             description=task_in.description.strip(),
@@ -266,5 +277,22 @@ class TaskService:
             commit=True,
             broadcast=True,
         )
+
+    @staticmethod
+    def claim_subtask(db: Session, task_id: str, agent_id: str) -> bool:
+        """
+        Atomic Compare-And-Swap (CAS) assignment to prevent race conditions when two
+        agents attempt to claim or be assigned the same subtask simultaneously.
+        """
+        rows = db.query(TaskModel).filter(
+            TaskModel.id == task_id,
+            TaskModel.status.in_(["pending", "queued"]),
+            (TaskModel.assigned_agent_id == None) | (TaskModel.assigned_agent_id == agent_id)
+        ).update(
+            {"assigned_agent_id": agent_id, "status": "running", "updated_at": datetime.utcnow()},
+            synchronize_session=False,
+        )
+        db.commit()
+        return rows > 0
 
 task_service = TaskService()

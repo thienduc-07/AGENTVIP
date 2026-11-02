@@ -1,4 +1,5 @@
 import os
+import uuid
 from pathlib import Path
 from typing import Dict, Any, Optional
 from backend.app.core.config import settings
@@ -61,9 +62,21 @@ class WorkspaceWriteTool:
             # Ensure parent directories exist
             target_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Write file with UTF-8 encoding
-            with open(target_path, "w", encoding="utf-8") as f:
-                f.write(content)
+            # Atomic write pattern to prevent corrupt/partial writes during crashes
+            temp_path = target_path.with_name(f".{target_path.name}.tmp.{uuid.uuid4().hex[:8]}")
+            try:
+                with open(temp_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(temp_path, target_path)
+            except Exception as write_err:
+                if temp_path.exists():
+                    try:
+                        temp_path.unlink()
+                    except OSError:
+                        pass
+                raise write_err
 
             written_bytes = target_path.stat().st_size
             rel_path = str(target_path.relative_to(settings.WORKSPACE_ROOT))
