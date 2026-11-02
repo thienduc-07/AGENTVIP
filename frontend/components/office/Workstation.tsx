@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import * as THREE from "three";
 import { Html } from "@react-three/drei";
+import { Terminal } from "lucide-react";
 import { CanonicalAgentState, CANONICAL_STATE_CONFIGS } from "@/types/office";
+import { useWorkstationStore } from "@/store/workstationStore";
 
 export interface WorkstationData {
   workstation_id: string;
@@ -232,6 +234,18 @@ export default function Workstation({
                     {data.label || data.workstation_id} • {stateConfig.label}
                   </span>
                 </div>
+                {/* Direct Live Terminal button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    useWorkstationStore.getState().openWorkstationScreen(data.assigned_employee || data.workstation_id);
+                  }}
+                  className="ml-1 p-1 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 border border-slate-700 hover:border-emerald-700 transition-colors cursor-pointer"
+                  title="Mở màn hình làm việc (Live Terminal)"
+                >
+                  <Terminal className="w-3 h-3" />
+                </button>
               </>
             ) : (
               <div className="flex flex-col text-center">

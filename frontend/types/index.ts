@@ -165,3 +165,6 @@ export interface ToolItem {
   risk_reason?: string;
   parameters: Record<string, any>;
 }
+
+export * from "./workstation";
+

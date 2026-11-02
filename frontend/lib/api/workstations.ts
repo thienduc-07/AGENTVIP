@@ -1,4 +1,10 @@
 import { apiClient } from "./client";
+import type {
+  WorkstationLiveDetail,
+  ExecutionListResponse,
+  TerminalHistoryResponse,
+  ApiExecution,
+} from "../../types/workstation";
 
 export interface ZoneConfig {
   department: string;
@@ -90,6 +96,123 @@ export async function getWorkstationInspection(
   }
 ): Promise<any> {
   return apiClient<any>(`/api/v1/workstations/${workstationId}/inspection`, {
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}
+
+// ==================== Phase 4.3.6 Live Workstation & Terminal Endpoints ====================
+
+export async function getWorkstation(
+  agentOrWsId: string,
+  options?: {
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<WorkstationLiveDetail> {
+  return apiClient<WorkstationLiveDetail>(`/api/v1/workstations/${agentOrWsId}`, {
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}
+
+export async function getWorkstationExecutions(
+  agentOrWsId: string,
+  options?: {
+    limit?: number;
+    offset?: number;
+    status?: string;
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<ExecutionListResponse> {
+  return apiClient<ExecutionListResponse>(`/api/v1/workstations/${agentOrWsId}/executions`, {
+    params: {
+      limit: options?.limit,
+      offset: options?.offset,
+      status: options?.status,
+    },
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}
+
+export async function getWorkstationEvents(
+  agentOrWsId: string,
+  options?: {
+    limit?: number;
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<any> {
+  return apiClient<any>(`/api/v1/workstations/${agentOrWsId}/events`, {
+    params: {
+      limit: options?.limit,
+    },
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}
+
+export async function getWorkstationTerminal(
+  agentOrWsId: string,
+  options?: {
+    limit?: number;
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<TerminalHistoryResponse> {
+  return apiClient<TerminalHistoryResponse>(`/api/v1/workstations/${agentOrWsId}/terminal`, {
+    params: {
+      limit: options?.limit,
+    },
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}
+
+export async function getExecution(
+  executionId: string,
+  options?: {
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<ApiExecution> {
+  return apiClient<ApiExecution>(`/api/v1/executions/${executionId}`, {
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}
+
+export async function getExecutionEvents(
+  executionId: string,
+  options?: {
+    limit?: number;
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<any> {
+  return apiClient<any>(`/api/v1/executions/${executionId}/events`, {
+    params: {
+      limit: options?.limit,
+    },
+    token: options?.token,
+    organizationId: options?.organizationId,
+  });
+}
+
+export async function getExecutionTerminal(
+  executionId: string,
+  options?: {
+    limit?: number;
+    token?: string | null;
+    organizationId?: string | null;
+  }
+): Promise<TerminalHistoryResponse> {
+  return apiClient<TerminalHistoryResponse>(`/api/v1/executions/${executionId}/terminal`, {
+    params: {
+      limit: options?.limit,
+    },
     token: options?.token,
     organizationId: options?.organizationId,
   });

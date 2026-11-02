@@ -19,6 +19,10 @@ from backend.app.models.meeting import (
     MeetingActionItemModel,
     MeetingTranscriptModel,
 )
+from backend.app.models.execution import (
+    ExecutionModel,
+    TerminalLineModel,
+)
 
 __all__ = [
     "AgentModel",
@@ -46,5 +50,7 @@ __all__ = [
     "MeetingVoteModel",
     "MeetingActionItemModel",
     "MeetingTranscriptModel",
+    "ExecutionModel",
+    "TerminalLineModel",
 ]
 

@@ -68,6 +68,14 @@ def apply_schema_upgrades(engine_to_upgrade: Engine = engine) -> None:
                 conn.exec_driver_sql("ALTER TABLE tasks ADD COLUMN lease_token VARCHAR(64)")
                 conn.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_tasks_lease_token ON tasks (lease_token)")
                 logger.info("Schema migration: added 'lease_token' to tasks table.")
+
+            # Check agent_events for execution_id
+            cursor_events = conn.exec_driver_sql("PRAGMA table_info(agent_events)")
+            cols_events = [row[1] for row in cursor_events.fetchall()]
+            if cols_events and "execution_id" not in cols_events:
+                conn.exec_driver_sql("ALTER TABLE agent_events ADD COLUMN execution_id VARCHAR(64)")
+                conn.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_agent_events_exec_created ON agent_events (execution_id, created_at)")
+                logger.info("Schema migration: added 'execution_id' to agent_events table.")
     except Exception as e:
         logger.warning(f"Could not apply schema upgrades: {e}")
 

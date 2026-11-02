@@ -46,6 +46,7 @@ class ExecutionResult:
         llm_provider_name: Optional[str] = None,
         llm_model_name: Optional[str] = None,
         is_live_provider: bool = False,
+        execution_id: Optional[str] = None,
     ):
         self.status = status
         self.result_summary = redact_secrets(result_summary) if result_summary else result_summary
@@ -61,6 +62,7 @@ class ExecutionResult:
         self.llm_provider_name = llm_provider_name
         self.llm_model_name = llm_model_name
         self.is_live_provider = is_live_provider
+        self.execution_id = execution_id
 
     @property
     def success(self) -> bool:
@@ -97,9 +99,11 @@ class ExecutionLoop:
         db: Optional[Session] = None,
         system_instruction: Optional[str] = None,
         memory_context: Optional[str] = None,
+        execution_id: Optional[str] = None,
     ) -> ExecutionResult:
         from backend.app.services.tool_service import tool_service
         from backend.app.core.config import settings
+        from backend.app.services.workstation_execution_service import workstation_execution_service
         context = TaskContext(
             task_id=task_id,
             agent_id=agent_id,
@@ -133,6 +137,7 @@ class ExecutionLoop:
                 llm_provider_name=provider_name,
                 llm_model_name=model_name,
                 is_live_provider=is_live_provider,
+                execution_id=execution_id,
                 **kwargs,
             )
 
@@ -202,6 +207,15 @@ class ExecutionLoop:
                     )
                 except Exception as bs_err:
                     logger.debug(f"Behavioral state THINKING update skipped: {bs_err}")
+
+                if execution_id:
+                    workstation_execution_service.append_terminal_line(
+                        db=db,
+                        execution_id=execution_id,
+                        stream="stdout",
+                        content=f"[REASONING] Iteration {context.iteration}/{context.max_iterations}: Evaluating task state...",
+                        broadcast=True,
+                    )
 
             # Call LLM provider
             try:
@@ -426,8 +440,18 @@ class ExecutionLoop:
                             task_id=task_id,
                             payload={"tool_name": tool.name, "arguments": tool_call.arguments},
                             commit=True,
+                            execution_id=execution_id,
                         )
                         await ws_manager.broadcast_envelope(start_ev.to_envelope())
+
+                        if execution_id:
+                            workstation_execution_service.record_tool_call_started(
+                                db=db,
+                                execution_id=execution_id,
+                                tool_name=tool.name,
+                                arguments=tool_call.arguments or {},
+                                call_id=tool_call.call_id,
+                            )
 
                     tool_result = await self.tool_registry.execute(
                         tool_name=tool.name,
@@ -473,8 +497,30 @@ class ExecutionLoop:
                                 task_id=task_id,
                                 payload={"tool_name": tool.name, "output": redact_secrets(tool_result.output[:500]), "duration_ms": tool_result.duration_ms},
                                 commit=True,
+                                execution_id=execution_id,
                             )
                             await ws_manager.broadcast_envelope(done_ev.to_envelope())
+
+                            if execution_id:
+                                workstation_execution_service.record_tool_call_completed(
+                                    db=db,
+                                    execution_id=execution_id,
+                                    tool_name=tool.name,
+                                    duration_ms=tool_result.duration_ms,
+                                    output_summary=tool_result.output,
+                                    call_id=tool_call.call_id,
+                                )
+                                # Check file operations
+                                raw_args = tool_call.arguments if isinstance(tool_call.arguments, dict) else {}
+                                if "path" in raw_args or "file_path" in raw_args or "filepath" in raw_args or any(k in tool.name for k in ("write", "file", "verify", "read")):
+                                    f_path = raw_args.get("path") or raw_args.get("file_path") or raw_args.get("filepath") or tool.name
+                                    op_name = "WRITE" if "write" in tool.name else "VERIFY" if "verify" in tool.name else "READ"
+                                    workstation_execution_service.record_file_operation(
+                                        db=db,
+                                        execution_id=execution_id,
+                                        file_path=str(f_path),
+                                        operation=op_name,
+                                    )
                         else:
                             fail_ev = event_service.create_event(
                                 db=db,
@@ -483,8 +529,19 @@ class ExecutionLoop:
                                 task_id=task_id,
                                 payload={"tool_name": tool.name, "error": redact_secrets(tool_result.output[:500]), "duration_ms": tool_result.duration_ms},
                                 commit=True,
+                                execution_id=execution_id,
                             )
                             await ws_manager.broadcast_envelope(fail_ev.to_envelope())
+
+                            if execution_id:
+                                workstation_execution_service.record_tool_call_failed(
+                                    db=db,
+                                    execution_id=execution_id,
+                                    tool_name=tool.name,
+                                    error=tool_result.error or tool_result.output or "Tool execution failed",
+                                    duration_ms=tool_result.duration_ms,
+                                    call_id=tool_call.call_id,
+                                )
 
                     # Track artifacts
                     if (tool.name in ("workspace_write", "workspace.write_file", "artifact.create", "artifact_create")) and tool_result.success and tool_result.data:

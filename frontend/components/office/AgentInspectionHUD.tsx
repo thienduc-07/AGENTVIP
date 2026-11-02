@@ -19,7 +19,9 @@ import {
   Loader2,
   ChevronRight,
   ExternalLink,
+  Terminal,
 } from "lucide-react";
+import { useWorkstationStore } from "@/store/workstationStore";
 import { ApiAgentInspection, ApiApproval, ApiEvent } from "@/types/api";
 import { CanonicalAgentState, CANONICAL_STATE_CONFIGS } from "@/types/office";
 import { getAgentInspection } from "@/lib/api/agents";
@@ -354,6 +356,15 @@ export default function AgentInspectionHUD({
                   Chưa gán bàn làm việc cố định
                 </div>
               )}
+
+              {/* Live Terminal & Workstation Screen Button */}
+              <button
+                onClick={() => useWorkstationStore.getState().openWorkstationScreen(agentId)}
+                className="w-full mt-2.5 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800/90 border border-emerald-500/30 hover:border-emerald-500/60 text-emerald-400 font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+              >
+                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Mở Live Terminal & Workstation</span>
+              </button>
             </div>
 
             {/* Action Feedback Notice */}

@@ -8,9 +8,11 @@ import AgentInspectionHUD from "./AgentInspectionHUD";
 import EmptyOfficeState from "./EmptyOfficeState";
 import MeetingHUD from "./MeetingHUD";
 import MeetingDiscoveryModal from "./MeetingDiscoveryModal";
+import WorkstationScreen from "./workstation/WorkstationScreen";
 import { useOfficeSync } from "@/hooks/useOfficeSync";
 import { useMeetingSync } from "@/hooks/useMeetingSync";
 import { useMeetingStore } from "@/store/meetingStore";
+import { useWorkstationStore } from "@/store/workstationStore";
 import { OfficeSelection } from "@/types/office";
 
 interface OfficeSceneProps {
@@ -49,6 +51,7 @@ export default function OfficeScene({
   const activeMeeting = useMeetingStore((s) => s.activeMeeting);
   const isMeetingHUDOpen = useMeetingStore((s) => s.isMeetingHUDOpen);
   const setMeetingHUDOpen = useMeetingStore((s) => s.setMeetingHUDOpen);
+  const isWorkstationScreenOpen = useWorkstationStore((s) => s.isWorkstationScreenOpen);
 
   const [selection, setSelection] = useState<OfficeSelection>({ type: "none" });
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(TACTICAL_OVERVIEW_POS);
@@ -251,6 +254,11 @@ export default function OfficeScene({
           handleEnterMeetingView();
         }}
       />
+
+      {/* Phase 4.3.6: Workstation Screen & Live Terminal Modal */}
+      {isWorkstationScreenOpen && (
+        <WorkstationScreen organizationId={organizationId} />
+      )}
 
       {/* Empty Organization State Overlay */}
       {isEmptyOrg && (

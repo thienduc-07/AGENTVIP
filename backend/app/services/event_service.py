@@ -122,6 +122,19 @@ MEETING_DECISION_RESOLVED = "meeting.decision_resolved"
 MEETING_ACTION_ITEM_CREATED = "meeting.action_item_created"
 MEETING_SUMMARY_GENERATED = "meeting.summary_generated"
 
+# Phase 4.3.6: Live Terminal & Workstation Execution Events
+EXECUTION_STARTED = "execution.started"
+EXECUTION_PROGRESS = "execution.progress"
+EXECUTION_COMPLETED = "execution.completed"
+EXECUTION_FAILED = "execution.failed"
+EXECUTION_CANCELLED = "execution.cancelled"
+TERMINAL_OUTPUT = "terminal.output"
+TERMINAL_ERROR = "terminal.error"
+FILE_OPERATION = "file.operation"
+TOOL_CALL_STARTED = TOOL_EXECUTION_STARTED
+TOOL_CALL_COMPLETED = TOOL_EXECUTION_COMPLETED
+TOOL_CALL_FAILED = TOOL_EXECUTION_FAILED
+
 VALID_EVENT_TYPES: Set[str] = {
     TASK_CREATED,
     TASK_QUEUED,
@@ -214,9 +227,29 @@ VALID_EVENT_TYPES: Set[str] = {
     MEETING_DECISION_RESOLVED,
     MEETING_ACTION_ITEM_CREATED,
     MEETING_SUMMARY_GENERATED,
+    EXECUTION_STARTED,
+    EXECUTION_PROGRESS,
+    EXECUTION_COMPLETED,
+    EXECUTION_FAILED,
+    EXECUTION_CANCELLED,
+    TERMINAL_OUTPUT,
+    TERMINAL_ERROR,
+    FILE_OPERATION,
 }
 
 class EventService:
+    EXECUTION_STARTED = EXECUTION_STARTED
+    EXECUTION_PROGRESS = EXECUTION_PROGRESS
+    EXECUTION_COMPLETED = EXECUTION_COMPLETED
+    EXECUTION_FAILED = EXECUTION_FAILED
+    EXECUTION_CANCELLED = EXECUTION_CANCELLED
+    TERMINAL_OUTPUT = TERMINAL_OUTPUT
+    TERMINAL_ERROR = TERMINAL_ERROR
+    FILE_OPERATION = FILE_OPERATION
+    TOOL_CALL_STARTED = TOOL_CALL_STARTED
+    TOOL_CALL_COMPLETED = TOOL_CALL_COMPLETED
+    TOOL_CALL_FAILED = TOOL_CALL_FAILED
+
     MEETING_CREATED = MEETING_CREATED
     MEETING_INITIALIZING = MEETING_INITIALIZING
     MEETING_STARTED = MEETING_STARTED
@@ -324,6 +357,7 @@ class EventService:
         event_id: Optional[str] = None,
         correlation_id: Optional[str] = None,
         causation_id: Optional[str] = None,
+        execution_id: Optional[str] = None,
     ) -> AgentEventModel:
         """
         Creates and persists an event record with monotonic sequence_id and tenant organization ownership.
@@ -407,12 +441,15 @@ class EventService:
             next_seq = current + 1
             EventService._current_max_seq = next_seq
 
+        resolved_exec_id = execution_id or payload_data.get("execution_id")
+
         event = AgentEventModel(
             id=event_id or f"evt_{uuid.uuid4().hex[:16]}",
             sequence_id=next_seq,
             event_type=event_type,
             agent_id=resolved_agent_id,
             task_id=resolved_task_id,
+            execution_id=resolved_exec_id,
             organization_id=resolved_org_id,
             payload_json=payload_data,
             created_at=datetime.utcnow(),

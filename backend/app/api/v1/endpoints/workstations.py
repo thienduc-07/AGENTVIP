@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
@@ -9,6 +9,7 @@ from backend.app.core.auth import (
     UserContext,
 )
 from backend.app.services.workstation_service import workstation_service, ZONE_CONFIGS
+from backend.app.services.workstation_execution_service import workstation_execution_service
 from backend.app.models.workstation import WorkstationAllocationModel
 from backend.app.models.agent import AgentModel
 from backend.app.schemas.workstation import (
@@ -17,6 +18,12 @@ from backend.app.schemas.workstation import (
     WorkstationAllocationResponse,
     WorkstationTelemetrySummary,
     WorkstationInspectionResponse,
+)
+from backend.app.schemas.execution import (
+    WorkstationLiveDetailResponse,
+    ExecutionListResponse,
+    ExecutionEventListResponse,
+    TerminalHistoryResponse,
 )
 
 router = APIRouter(prefix="/workstations", tags=["Workstations"])
@@ -202,4 +209,107 @@ def get_workstation_inspection(
         db=db,
         workstation_id=workstation_id,
         organization_id=tenant_org,
+    )
+
+@router.get("/{agent_id}", response_model=WorkstationLiveDetailResponse)
+def get_agent_workstation_live_detail(
+    agent_id: str,
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieves live workstation execution environment status for an agent or workstation identifier.
+    Includes active task directive, desk coordinates, behavioral state, and latest execution telemetry.
+    """
+    detail = workstation_execution_service.get_workstation_for_agent(
+        db=db,
+        agent_id=agent_id,
+        organization_id=tenant_org,
+    )
+    if not detail:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workstation or Agent '{agent_id}' not found in organization '{tenant_org}'.",
+        )
+    return detail
+
+@router.get("/{agent_id}/executions", response_model=ExecutionListResponse)
+def list_agent_workstation_executions(
+    agent_id: str,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieves paginated historical executions run at this agent's workstation.
+    """
+    resolved_id = workstation_execution_service.resolve_agent_id(db, agent_id, tenant_org)
+    if not resolved_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent '{agent_id}' not found in organization '{tenant_org}'.",
+        )
+    return workstation_execution_service.list_executions_for_agent(
+        db=db,
+        agent_id=resolved_id,
+        organization_id=tenant_org,
+        limit=limit,
+        offset=offset,
+    )
+
+@router.get("/{agent_id}/events", response_model=ExecutionEventListResponse)
+def list_agent_workstation_events(
+    agent_id: str,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieves chronological execution events emitted by this agent's workstation.
+    """
+    resolved_id = workstation_execution_service.resolve_agent_id(db, agent_id, tenant_org)
+    if not resolved_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent '{agent_id}' not found in organization '{tenant_org}'.",
+        )
+    return workstation_execution_service.list_events_for_agent(
+        db=db,
+        agent_id=resolved_id,
+        organization_id=tenant_org,
+        limit=limit,
+        offset=offset,
+    )
+
+@router.get("/{agent_id}/terminal", response_model=TerminalHistoryResponse)
+def get_agent_workstation_terminal(
+    agent_id: str,
+    execution_id: Optional[str] = Query(None, description="Optional specific execution ID filter"),
+    limit: int = Query(100, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    tenant_org: str = Depends(get_current_tenant_org),
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieves paginated terminal output lines (stdout, stderr, system) for the agent's workstation.
+    """
+    resolved_id = workstation_execution_service.resolve_agent_id(db, agent_id, tenant_org)
+    if not resolved_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent '{agent_id}' not found in organization '{tenant_org}'.",
+        )
+    return workstation_execution_service.get_terminal_history_for_agent(
+        db=db,
+        agent_id=resolved_id,
+        organization_id=tenant_org,
+        execution_id=execution_id,
+        limit=limit,
+        offset=offset,
     )

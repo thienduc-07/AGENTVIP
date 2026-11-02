@@ -15,6 +15,7 @@ class AgentEventModel(Base):
     event_type = Column(String(64), nullable=False, index=True)
     agent_id = Column(String(64), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True, index=True)
     task_id = Column(String(64), ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True, index=True)
+    execution_id = Column(String(64), nullable=True, index=True)
     organization_id = Column(
         String(64),
         ForeignKey("organizations.id", ondelete="RESTRICT"),
@@ -30,6 +31,7 @@ class AgentEventModel(Base):
     __table_args__ = (
         Index("ix_agent_events_type_created", "event_type", "created_at"),
         Index("ix_agent_events_task_created", "task_id", "created_at"),
+        Index("ix_agent_events_exec_created", "execution_id", "created_at"),
         Index("ix_agent_events_sequence_id", "sequence_id"),
         Index("ix_agent_events_org_seq", "organization_id", "sequence_id"),
     )
@@ -48,8 +50,10 @@ class AgentEventModel(Base):
             "event_type": self.event_type,
             "occurred_at": iso_str,
             "sequence_id": self.sequence_id,
+            "sequence_number": self.sequence_id,
             "agent_id": self.agent_id,
             "task_id": self.task_id,
+            "execution_id": self.execution_id or payload_dict.get("execution_id"),
             "organization_id": self.organization_id,
             "correlation_id": payload_dict.get("correlation_id", self.task_id),
             "causation_id": payload_dict.get("causation_id", self.id),

@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { X, User, Monitor, Building2, Activity, CheckCircle2, AlertCircle, Clock, ArrowRight } from "lucide-react";
+import { X, User, Monitor, Building2, Activity, CheckCircle2, AlertCircle, Clock, ArrowRight, Terminal } from "lucide-react";
+import { useWorkstationStore } from "@/store/workstationStore";
 import { OfficeSelection, CANONICAL_STATE_CONFIGS } from "@/types/office";
 import { AgentAvatarData } from "./AgentAvatar";
 import { WorkstationData } from "./Workstation";
@@ -230,6 +231,15 @@ export default function OfficeInspector({
                     </div>
                   </div>
                 </div>
+
+                {/* Workstation Screen & Live Terminal Button */}
+                <button
+                  onClick={() => useWorkstationStore.getState().openWorkstationScreen(ws.assigned_employee || ws.workstation_id)}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800/90 border border-emerald-500/30 hover:border-emerald-500/60 text-emerald-400 font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+                >
+                  <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Mở Màn Hình Làm Việc (Live Terminal)</span>
+                </button>
               </>
             );
           })()}

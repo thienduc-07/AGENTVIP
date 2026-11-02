@@ -52,6 +52,14 @@ export type BackendEventType =
   | "meeting.decision_resolved"
   | "meeting.action_item_created"
   | "meeting.summary_generated"
+  | "execution.started"
+  | "execution.progress"
+  | "execution.completed"
+  | "execution.failed"
+  | "execution.cancelled"
+  | "terminal.output"
+  | "terminal.error"
+  | "file.operation"
   | (string & {});
 
 export interface EventEnvelope {
@@ -62,6 +70,7 @@ export interface EventEnvelope {
   sequence_id: number;
   agent_id: string | null;
   task_id: string | null;
+  execution_id?: string | null;
   organization_id?: string | null;
   payload: Record<string, any>;
 }

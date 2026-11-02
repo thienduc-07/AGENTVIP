@@ -417,6 +417,23 @@ class TaskDispatcher:
             # Check cancellation
             token.check()
 
+            # Initialize Workstation Execution & Live Terminal
+            from backend.app.services.workstation_execution_service import workstation_execution_service
+            execution = workstation_execution_service.start_execution(
+                db=db,
+                agent_id=task.assigned_agent_id,
+                organization_id=task.organization_id,
+                task_id=task.id,
+            )
+            execution_id = execution.id
+            workstation_execution_service.append_terminal_line(
+                db=db,
+                execution_id=execution_id,
+                stream="system",
+                content=f"[PLANNING] Generating execution plan for directive: '{task.title}'",
+                broadcast=True,
+            )
+
             # 1. Plan Generation Phase
             llm_provider = get_llm_provider(
                 organization_id=task.organization_id,
@@ -457,6 +474,13 @@ class TaskDispatcher:
                     "description": step.description,
                     "required_tool": step.required_tool,
                 })
+                workstation_execution_service.append_terminal_line(
+                    db=db,
+                    execution_id=execution_id,
+                    stream="system",
+                    content=f"[PLAN] Step {step.step_index}: {step.title}",
+                    broadcast=True,
+                )
 
             if hasattr(llm_provider, "bind_context"):
                 llm_provider.bind_context(plan_steps_count=len(plan_step_dicts))
@@ -468,7 +492,8 @@ class TaskDispatcher:
                 event_type="task.plan_created",
                 agent_id=task.assigned_agent_id,
                 task_id=task.id,
-                payload={"objective": plan.objective, "total_steps": len(plan.steps)},
+                execution_id=execution_id,
+                payload={"objective": plan.objective, "total_steps": len(plan.steps), "execution_id": execution_id},
                 commit=False
             )
             ev_step_start = event_service.create_event(
@@ -476,7 +501,8 @@ class TaskDispatcher:
                 event_type=TASK_STEP_STARTED,
                 agent_id=task.assigned_agent_id,
                 task_id=task.id,
-                payload={"step_index": 1, "title": plan.steps[0].title if plan.steps else "Execution"},
+                execution_id=execution_id,
+                payload={"step_index": 1, "title": plan.steps[0].title if plan.steps else "Execution", "execution_id": execution_id},
                 commit=False
             )
             db.commit()
@@ -505,6 +531,7 @@ class TaskDispatcher:
                 db=db,
                 system_instruction=effective_system_instruction,
                 memory_context=memory_context,
+                execution_id=execution_id,
             )
 
             # 3. Finalize State in Database
@@ -577,6 +604,19 @@ class TaskDispatcher:
 
                 await ws_manager.broadcast_envelope(ev_appr.to_envelope())
                 await ws_manager.broadcast_envelope(ev_agent_wait.to_envelope())
+
+                workstation_execution_service.complete_execution(
+                    db=db,
+                    execution_id=execution_id,
+                    status="waiting_approval",
+                    summary=f"Waiting for authorization: {exec_result.approval_details.get('description', '')}",
+                    prompt_tokens=exec_result.prompt_tokens,
+                    completion_tokens=exec_result.completion_tokens,
+                    total_tokens=exec_result.total_tokens,
+                    estimated_cost_usd=exec_result.estimated_cost_usd,
+                    tool_calls_count=len(exec_result.tool_results or []),
+                    files_count=len(exec_result.artifacts or []),
+                )
 
             elif exec_result.status == "completed":
                 task.status = "completed"
@@ -653,6 +693,19 @@ class TaskDispatcher:
                 await ws_manager.broadcast_envelope(ev_done.to_envelope())
                 await ws_manager.broadcast_envelope(ev_idle.to_envelope())
 
+                workstation_execution_service.complete_execution(
+                    db=db,
+                    execution_id=execution_id,
+                    status="completed",
+                    summary=task.result_summary,
+                    prompt_tokens=exec_result.prompt_tokens,
+                    completion_tokens=exec_result.completion_tokens,
+                    total_tokens=exec_result.total_tokens,
+                    estimated_cost_usd=exec_result.estimated_cost_usd,
+                    tool_calls_count=len(exec_result.tool_results or []),
+                    files_count=len(exec_result.artifacts or []),
+                )
+
                 # Propose candidate memory from successful execution
                 try:
                     await memory_extractor.extract_and_propose(
@@ -718,6 +771,20 @@ class TaskDispatcher:
                 await ws_manager.broadcast_envelope(ev_fail.to_envelope())
                 await ws_manager.broadcast_envelope(ev_idle.to_envelope())
 
+                workstation_execution_service.complete_execution(
+                    db=db,
+                    execution_id=execution_id,
+                    status="failed",
+                    error=task.error_message,
+                    summary=task.result_summary,
+                    prompt_tokens=exec_result.prompt_tokens,
+                    completion_tokens=exec_result.completion_tokens,
+                    total_tokens=exec_result.total_tokens,
+                    estimated_cost_usd=exec_result.estimated_cost_usd,
+                    tool_calls_count=len(exec_result.tool_results or []),
+                    files_count=len(exec_result.artifacts or []),
+                )
+
         except TaskPausedException as e:
             logger.info(f"Task '{task_id}' suspended by pause token: {e}")
             try:
@@ -762,6 +829,14 @@ class TaskDispatcher:
                     db.commit()
                     await ws_manager.broadcast_envelope(ev_pause.to_envelope())
                     await ws_manager.broadcast_envelope(ev_idle.to_envelope())
+
+                    if 'execution_id' in locals() and execution_id:
+                        workstation_execution_service.complete_execution(
+                            db=db,
+                            execution_id=execution_id,
+                            status="paused",
+                            summary=f"Task paused: {str(e)}",
+                        )
             except Exception as pause_rollback_err:
                 db.rollback()
                 logger.error(f"Error handling task pause checkpoint: {pause_rollback_err}")
@@ -802,6 +877,14 @@ class TaskDispatcher:
                     db.commit()
                     await ws_manager.broadcast_envelope(ev_cancel.to_envelope())
                     await ws_manager.broadcast_envelope(ev_idle.to_envelope())
+
+                    if 'execution_id' in locals() and execution_id:
+                        workstation_execution_service.complete_execution(
+                            db=db,
+                            execution_id=execution_id,
+                            status="cancelled",
+                            summary=f"Task cancelled: {str(e)}",
+                        )
             except Exception as rollback_err:
                 db.rollback()
                 logger.error(f"Error handling task cancellation rollback: {rollback_err}")
@@ -827,6 +910,14 @@ class TaskDispatcher:
                         broadcast=True,
                     )
                     db.commit()
+
+                    if 'execution_id' in locals() and execution_id:
+                        workstation_execution_service.complete_execution(
+                            db=db,
+                            execution_id=execution_id,
+                            status="failed",
+                            error=safe_err,
+                        )
             except Exception:
                 db.rollback()
         finally:
