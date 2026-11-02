@@ -22,10 +22,6 @@ def recover_abandoned_tasks(db: Session, auto_retry: bool = False) -> int:
         .all()
     )
 
-    if not interrupted_tasks:
-        logger.info("Crash recovery check: No orphaned tasks found.")
-        return 0
-
     now = datetime.now(timezone.utc)
     recovered_count = 0
     processed_task_ids: set = set()
@@ -252,8 +248,10 @@ def detect_and_reclaim_stale_leases(db: Session, lease_timeout_seconds: float = 
             error_message=f"Execution lease timed out after {lease_timeout_seconds}s without heartbeat",
         )
         if decision.should_retry:
+            import uuid
             retry_manager.record_retry_attempt(task, decision, "Stale execution lease reclaimed")
             task.status = "queued"
+            task.lease_token = f"lease_{uuid.uuid4().hex[:16]}"
             task.updated_at = now
             event_service.create_event(
                 db=db,

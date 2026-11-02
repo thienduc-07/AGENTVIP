@@ -279,20 +279,36 @@ class TaskService:
         )
 
     @staticmethod
-    def claim_subtask(db: Session, task_id: str, agent_id: str) -> bool:
+    def claim_subtask(
+        db: Session,
+        task_id: str,
+        agent_id: str,
+        lease_token: Optional[str] = None,
+        allow_reassign: bool = False,
+    ) -> bool:
         """
         Atomic Compare-And-Swap (CAS) assignment to prevent race conditions when two
         agents attempt to claim or be assigned the same subtask simultaneously.
+        Issues or updates a fencing lease_token to guarantee worker ownership.
         """
-        rows = db.query(TaskModel).filter(
+        import uuid
+        token = lease_token or f"lease_{uuid.uuid4().hex[:16]}"
+        from backend.app.core.database import commit_with_retry
+        
+        filter_conditions = [
             TaskModel.id == task_id,
             TaskModel.status.in_(["pending", "queued"]),
-            (TaskModel.assigned_agent_id == None) | (TaskModel.assigned_agent_id == agent_id)
-        ).update(
-            {"assigned_agent_id": agent_id, "status": "running", "updated_at": datetime.utcnow()},
+        ]
+        if not allow_reassign:
+            filter_conditions.append(
+                (TaskModel.assigned_agent_id == None) | (TaskModel.assigned_agent_id == agent_id)
+            )
+
+        rows = db.query(TaskModel).filter(*filter_conditions).update(
+            {"assigned_agent_id": agent_id, "status": "running", "lease_token": token, "updated_at": datetime.utcnow()},
             synchronize_session=False,
         )
-        db.commit()
+        commit_with_retry(db)
         return rows > 0
 
 task_service = TaskService()

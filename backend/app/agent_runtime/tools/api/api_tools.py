@@ -98,6 +98,12 @@ class ApiCallTool:
         try:
             data_bytes = None
             req_headers = {"User-Agent": "GrandLineAgent/1.0", "Accept": "application/json"}
+            if method == "POST":
+                # Propagate stable idempotency key to external provider if available
+                ctx_key = getattr(context, "idempotency_key", None) or getattr(context, "task_id", None)
+                if ctx_key:
+                    req_headers["Idempotency-Key"] = str(ctx_key)
+                    req_headers["X-Request-Id"] = str(ctx_key)
             if headers and isinstance(headers, dict):
                 req_headers.update(headers)
 

@@ -198,7 +198,19 @@ class TaskLifecycleEngine:
             if deliverable_verified is True:
                 is_verified = True
             elif deliverable and deliverable.verification_status == "VERIFIED":
-                is_verified = True
+                # If transitioning from REVIEW, verified deliverable with non-empty summary is accepted
+                if cur == TaskStatus.REVIEW and deliverable.result_summary and len(deliverable.result_summary.strip()) > 0:
+                    is_verified = True
+                # If completing directly from IN_PROGRESS or unreviewed states, physical evidence is required
+                elif (
+                    deliverable.result_summary
+                    and (
+                        len(deliverable.evidence_references) > 0
+                        or len(deliverable.artifact_paths) > 0
+                        or len(deliverable.tools_invoked) > 0
+                    )
+                ):
+                    is_verified = True
             elif isinstance(task.output_data_json, dict):
                 deliv_data = task.output_data_json.get("deliverable", {})
                 if deliv_data.get("verification_status") == "VERIFIED" or task.output_data_json.get("verified") is True:
@@ -206,14 +218,10 @@ class TaskLifecycleEngine:
                 elif task.output_data_json.get("reviewer_verdict") in ("APPROVED", "COMPLETED"):
                     is_verified = True
 
-            # If result_summary is provided and explicitly claims verified artifacts
-            if not is_verified and result_summary and len(result_summary.strip()) >= 20:
-                is_verified = True
-
             if not is_verified:
                 raise DeliverableNotVerifiedError(
                     f"Task '{task.id}' cannot transition to COMPLETED without deliverable verification. "
-                    "A verified deliverable contract or verified summary must be provided."
+                    "A verified deliverable contract with required evidence or reviewer approval must be provided."
                 )
 
             task.completed_at = now

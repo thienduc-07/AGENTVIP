@@ -729,6 +729,12 @@ class MultiAgentOrchestrator:
                 except Exception as bs_err:
                     logger.debug(f"Subtask THINKING state transition skipped: {bs_err}")
 
+        # Fencing Token Initialization for worker ownership verification
+        import uuid
+        if not subtask.lease_token:
+            subtask.lease_token = f"lease_{uuid.uuid4().hex[:16]}"
+        expected_lease_token = subtask.lease_token
+
         ev_start = event_service.create_event(
             db=db,
             event_type=SUBTASK_STARTED,
@@ -893,6 +899,17 @@ class MultiAgentOrchestrator:
             subtask_results[subtask.id] = contract
             if subtask_key:
                 subtask_results[subtask_key] = contract
+
+            # Fencing token ownership check: prevent stale reclaimed worker from overwriting newer execution
+            current_st = db.query(TaskModel).filter(TaskModel.id == subtask.id).first()
+            if current_st and current_st.lease_token and expected_lease_token:
+                if current_st.lease_token != expected_lease_token:
+                    logger.warning(
+                        f"Fencing token mismatch for subtask '{subtask.id}'. "
+                        f"Expected '{expected_lease_token}', found in DB '{current_st.lease_token}'. "
+                        "Rejecting stale worker execution to prevent duplicate/corrupted state."
+                    )
+                    return
 
             try:
                 task_lifecycle_engine.transition(

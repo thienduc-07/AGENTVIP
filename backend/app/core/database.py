@@ -54,7 +54,7 @@ configure_sqlite_wal(engine)
 
 def apply_schema_upgrades(engine_to_upgrade: Engine = engine) -> None:
     """
-    Applies backward-compatible schema updates (e.g. idempotency_key column) safely.
+    Applies backward-compatible schema updates (e.g. idempotency_key, lease_token columns) safely.
     """
     try:
         with engine_to_upgrade.connect() as conn:
@@ -64,6 +64,10 @@ def apply_schema_upgrades(engine_to_upgrade: Engine = engine) -> None:
                 conn.exec_driver_sql("ALTER TABLE tasks ADD COLUMN idempotency_key VARCHAR(64)")
                 conn.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_tasks_org_idempotency ON tasks (organization_id, idempotency_key)")
                 logger.info("Schema migration: added 'idempotency_key' to tasks table.")
+            if cols and "lease_token" not in cols:
+                conn.exec_driver_sql("ALTER TABLE tasks ADD COLUMN lease_token VARCHAR(64)")
+                conn.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_tasks_lease_token ON tasks (lease_token)")
+                logger.info("Schema migration: added 'lease_token' to tasks table.")
     except Exception as e:
         logger.warning(f"Could not apply schema upgrades: {e}")
 
@@ -72,6 +76,53 @@ apply_schema_upgrades(engine)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+import time
+import random
+from contextlib import contextmanager
+from sqlite3 import OperationalError as SqliteOperationalError
+from sqlalchemy.exc import OperationalError as SaOperationalError
+
+def commit_with_retry(session: Session, max_retries: int = 5, base_delay: float = 0.05) -> None:
+    """
+    Commits a transaction with exponential backoff and jitter if SQLite experiences lock contention.
+    Guarantees no lost committed updates or unhandled lock failures under write bursts.
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            session.commit()
+            return
+        except (SaOperationalError, SqliteOperationalError) as e:
+            err_msg = str(e).lower()
+            if "locked" in err_msg or "busy" in err_msg:
+                if attempt == max_retries:
+                    logger.error(f"commit_with_retry failed after {max_retries} attempts: {e}")
+                    session.rollback()
+                    raise
+                delay = base_delay * (2 ** attempt) + random.uniform(0.01, 0.05)
+                logger.warning(f"Database locked on commit attempt {attempt + 1}/{max_retries}. Retrying in {delay:.3f}s...")
+                time.sleep(delay)
+            else:
+                session.rollback()
+                raise
+        except Exception:
+            session.rollback()
+            raise
+
+@contextmanager
+def transaction_scope(session: Session, auto_retry: bool = True):
+    """
+    Transactional context manager ensuring safe commit with retry or rollback.
+    """
+    try:
+        yield session
+        if auto_retry:
+            commit_with_retry(session)
+        else:
+            session.commit()
+    except Exception:
+        session.rollback()
+        raise
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()

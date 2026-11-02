@@ -21,6 +21,12 @@ class SideEffectLevel(str, Enum):
     REVERSIBLE_MUTATION = "reversible_mutation"
     HIGH_RISK = "high_risk"
 
+class ToolExecutionSemantics(str, Enum):
+    AT_MOST_ONCE = "at_most_once"
+    AT_LEAST_ONCE = "at_least_once"
+    EFFECTIVELY_ONCE = "effectively_once"
+    UNKNOWN = "unknown"
+
 class ToolExecutionStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -51,6 +57,7 @@ class ToolMetadata(BaseModel):
     category: ToolCategory = ToolCategory.WORKSPACE
     permission_level: ToolPermissionLevel = ToolPermissionLevel.LEVEL_0_READ_ONLY
     side_effect_level: SideEffectLevel = SideEffectLevel.READ_ONLY
+    execution_semantics: ToolExecutionSemantics = ToolExecutionSemantics.UNKNOWN
     requires_approval: bool = False
     is_enabled: bool = True
     is_healthy: bool = True

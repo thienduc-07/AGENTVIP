@@ -51,5 +51,7 @@ class AgentEventModel(Base):
             "agent_id": self.agent_id,
             "task_id": self.task_id,
             "organization_id": self.organization_id,
+            "correlation_id": payload_dict.get("correlation_id", self.task_id),
+            "causation_id": payload_dict.get("causation_id", self.id),
             "payload": payload_dict,
         }

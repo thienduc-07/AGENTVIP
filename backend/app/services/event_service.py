@@ -1,9 +1,11 @@
 import uuid
+import threading
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any, Set
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 
+from backend.app.core.database import commit_with_retry
 from backend.app.models.agent_event import AgentEventModel
 from backend.app.models.agent import AgentModel
 from backend.app.models.task import TaskModel
@@ -232,6 +234,9 @@ class EventService:
     EVENT_TASK_STARTED = TASK_STARTED
     EVENT_TASK_COMPLETED = TASK_COMPLETED
 
+    _sequence_lock = threading.Lock()
+    _current_max_seq: Optional[int] = None
+
     @staticmethod
     def create_event(
         db: Session,
@@ -242,11 +247,14 @@ class EventService:
         payload: Optional[Dict[str, Any]] = None,
         commit: bool = True,
         event_id: Optional[str] = None,
+        correlation_id: Optional[str] = None,
+        causation_id: Optional[str] = None,
     ) -> AgentEventModel:
         """
         Creates and persists an event record with monotonic sequence_id and tenant organization ownership.
         Strictly enforces resource existence, cross-tenant consistency, and non-repudiation.
         Supports idempotent submission: if event_id already exists, returns existing event without duplicates.
+        Supports correlation_id and causation_id propagation for distributed observability and causal tracing.
         """
         if event_id:
             existing_ev = db.query(AgentEventModel).filter(AgentEventModel.id == event_id).first()
@@ -306,18 +314,23 @@ class EventService:
         elif relational_org:
             resolved_org_id = relational_org
         else:
-            # Trusted system-event / unattributed event policy:
-            # Events without Task, Agent, or verified explicit organization_id are system-level events (organization_id = None).
-            # Arbitrary payload metadata (e.g. payload.get("organization_id")) is NEVER trusted as authoritative ownership.
             resolved_org_id = None
 
-        # Globally monotonic sequence allocation:
-        # sequence_id is incremented monotonically across the persistent agent_events store.
-        # This provides a deterministic point-in-time watermark for snapshot hydration and replay.
-        # In multi-tenant environments, individual tenants observe monotonically increasing sequence IDs (seq > last_seq);
-        # non-consecutive sequence numbers within a single tenant are normal and expected due to other tenant traffic.
-        max_seq = db.query(func.coalesce(func.max(AgentEventModel.sequence_id), 0)).scalar() or 0
-        next_seq = int(max_seq) + 1
+        # Build payload with correlation & causation IDs
+        payload_data = dict(payload) if payload else {}
+        if correlation_id:
+            payload_data["correlation_id"] = correlation_id
+        if causation_id:
+            payload_data["causation_id"] = causation_id
+
+        # Globally monotonic thread-safe sequence allocation
+        with EventService._sequence_lock:
+            max_db_seq = db.query(func.coalesce(func.max(AgentEventModel.sequence_id), 0)).scalar() or 0
+            current = EventService._current_max_seq
+            if current is None or int(max_db_seq) > current:
+                current = int(max_db_seq)
+            next_seq = current + 1
+            EventService._current_max_seq = next_seq
 
         event = AgentEventModel(
             id=event_id or f"evt_{uuid.uuid4().hex[:16]}",
@@ -326,14 +339,85 @@ class EventService:
             agent_id=resolved_agent_id,
             task_id=resolved_task_id,
             organization_id=resolved_org_id,
-            payload_json=payload or {},
+            payload_json=payload_data,
             created_at=datetime.utcnow(),
         )
         db.add(event)
         if commit:
-            db.commit()
+            commit_with_retry(db)
             db.refresh(event)
         return event
+
+    @staticmethod
+    def replay_task_events(
+        db: Session,
+        task_id: str,
+    ) -> Dict[str, Any]:
+        """
+        Replays the immutable event stream for a task in sequence order to reconstruct its lifecycle state.
+        Demonstrates event-sourced projection consistency: current state matches replayed state.
+        """
+        events = (
+            db.query(AgentEventModel)
+            .filter(AgentEventModel.task_id == task_id)
+            .order_by(AgentEventModel.sequence_id.asc(), AgentEventModel.created_at.asc())
+            .all()
+        )
+        state = {
+            "task_id": task_id,
+            "status": "unknown",
+            "assigned_agent_id": None,
+            "steps_count": 0,
+            "tools_executed": [],
+            "artifacts_created": [],
+            "deliverable_verified": False,
+        }
+        for ev in events:
+            p = ev.payload_json or {}
+            if ev.event_type in (TASK_CREATED, TASK_QUEUED):
+                state["status"] = "queued"
+            elif ev.event_type in (TASK_STARTED, SUBTASK_STARTED):
+                state["status"] = "running"
+            elif ev.event_type in (TASK_COMPLETED, SUBTASK_COMPLETED):
+                state["status"] = "completed"
+            elif ev.event_type in (TASK_FAILED, SUBTASK_FAILED):
+                state["status"] = "failed"
+            elif ev.event_type == TASK_CANCELLED:
+                state["status"] = "cancelled"
+            elif ev.event_type in (TASK_ASSIGNED, SUBTASK_ASSIGNED):
+                state["assigned_agent_id"] = ev.agent_id or p.get("assigned_agent_id")
+            elif ev.event_type == TASK_STEP_COMPLETED:
+                state["steps_count"] += 1
+            elif ev.event_type == TOOL_EXECUTION_COMPLETED:
+                tool_name = p.get("tool_name")
+                if tool_name:
+                    state["tools_executed"].append(tool_name)
+            elif ev.event_type == ARTIFACT_CREATED:
+                art_id = p.get("artifact_id")
+                if art_id:
+                    state["artifacts_created"].append(art_id)
+            elif ev.event_type == DELIVERABLE_VERIFIED:
+                state["deliverable_verified"] = True
+        return state
+
+    @staticmethod
+    def detect_sequence_gaps(
+        events: List[AgentEventModel],
+    ) -> List[tuple]:
+        """
+        Detects missing sequence gaps in a stream of events.
+        Returns a list of (expected_start, gap_end) tuples where gaps occurred.
+        """
+        gaps = []
+        if not events:
+            return gaps
+        sorted_events = sorted([e for e in events if e.sequence_id is not None], key=lambda e: e.sequence_id)
+        for i in range(len(sorted_events) - 1):
+            curr_seq = sorted_events[i].sequence_id
+            next_seq = sorted_events[i + 1].sequence_id
+            if next_seq > curr_seq + 1:
+                gaps.append((curr_seq + 1, next_seq - 1))
+        return gaps
 
     @staticmethod
     def get_events(

@@ -6072,18 +6072,6 @@
     "ast_hash": "f15aaa42d5d299d091b1171097ea56ad",
     "semantic_hash": ""
   },
-  "workspace_sandbox/artifacts/citadel_armory_manifest.md": {
-    "mtime": 1793381024.109423,
-    "seen": 1793384979.289602,
-    "ast_hash": "520e73855f5fcd4e5143185de13f1a01",
-    "semantic_hash": ""
-  },
-  "workspace_sandbox/artifacts/test_deliverable.md": {
-    "mtime": 1793591688.4021988,
-    "seen": 1793591735.646703,
-    "ast_hash": "4e56a12c9abc9b7285477aa622b31d85",
-    "semantic_hash": ""
-  },
   "workspace_sandbox/multiagent_report.md": {
     "mtime": 1793591688.0084708,
     "seen": 1793591735.6467042,
@@ -7398,58 +7386,34 @@
     "ast_hash": "858ca23249170d25a33f8239dc23215b",
     "semantic_hash": ""
   },
-  "workspace_sandbox/artifacts/api_rep_d0644506.md": {
-    "mtime": 1793591313.219065,
-    "seen": 1793591735.646695,
-    "ast_hash": "6655f4cedcc36d4f2ef70a6a751311e8",
+  "PHASE_3_3_5_ARCHITECTURE_AUDIT.md": {
+    "mtime": 1793591972.4517365,
+    "seen": 1793592016.648746,
+    "ast_hash": "8cbb211a622940b3722fbfb7093894ad",
     "semantic_hash": ""
   },
-  "workspace_sandbox/artifacts/report_1bc760a0.md": {
-    "mtime": 1793590972.067216,
-    "seen": 1793591735.646697,
-    "ast_hash": "049e376f0f90f781bcf7c07144d65f65",
+  "PHASE_3_3_5_FINAL_REPORT.md": {
+    "mtime": 1793592001.251967,
+    "seen": 1793592016.648747,
+    "ast_hash": "703a15d506784141e3c118a5252b60c5",
     "semantic_hash": ""
   },
-  "workspace_sandbox/artifacts/report_2cf0933f.md": {
-    "mtime": 1793591028.6690676,
-    "seen": 1793591735.646698,
-    "ast_hash": "049e376f0f90f781bcf7c07144d65f65",
+  "PHASE_3_3_5_IMPLEMENTATION_REPORT.md": {
+    "mtime": 1793591778.6972442,
+    "seen": 1793592016.648748,
+    "ast_hash": "61389c4fec12e1024e67d2bfb13680a5",
     "semantic_hash": ""
   },
-  "workspace_sandbox/artifacts/report_61d0f347.md": {
-    "mtime": 1793591019.1417677,
-    "seen": 1793591735.646699,
-    "ast_hash": "049e376f0f90f781bcf7c07144d65f65",
+  "PHASE_3_3_5_SECURITY_AUDIT.md": {
+    "mtime": 1793591949.953188,
+    "seen": 1793592016.64875,
+    "ast_hash": "55f69f27f2dba498358372d8a2708ffb",
     "semantic_hash": ""
   },
-  "workspace_sandbox/artifacts/report_636ae037.md": {
-    "mtime": 1793591671.0933414,
-    "seen": 1793591735.646699,
-    "ast_hash": "049e376f0f90f781bcf7c07144d65f65",
-    "semantic_hash": ""
-  },
-  "workspace_sandbox/artifacts/report_a85eee23.md": {
-    "mtime": 1793590983.206931,
-    "seen": 1793591735.6467001,
-    "ast_hash": "049e376f0f90f781bcf7c07144d65f65",
-    "semantic_hash": ""
-  },
-  "workspace_sandbox/artifacts/report_ac19fde2.md": {
-    "mtime": 1793590951.915379,
-    "seen": 1793591735.646701,
-    "ast_hash": "049e376f0f90f781bcf7c07144d65f65",
-    "semantic_hash": ""
-  },
-  "workspace_sandbox/artifacts/report_c0bc44e7.md": {
-    "mtime": 1793591003.119091,
-    "seen": 1793591735.646702,
-    "ast_hash": "049e376f0f90f781bcf7c07144d65f65",
-    "semantic_hash": ""
-  },
-  "workspace_sandbox/reports/crash_test_27e3f4bc.txt": {
-    "mtime": 1793590653.461966,
-    "seen": 1793591735.6467059,
-    "ast_hash": "8f3ea5009ae8bd75d9db54448ef15091",
+  "PHASE_3_3_5_STRESS_TEST_REPORT.md": {
+    "mtime": 1793591918.8388267,
+    "seen": 1793592016.648751,
+    "ast_hash": "438bc8bb1adf2cac9d0707a73675df00",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

@@ -3,7 +3,7 @@ import time
 import logging
 from typing import Dict, Any, List, Optional, Set
 from backend.app.agent_runtime.tools.base import (
-    Tool, ToolResult, ToolPermissionLevel, ToolCategory, SideEffectLevel,
+    Tool, ToolResult, ToolPermissionLevel, ToolCategory, SideEffectLevel, ToolExecutionSemantics,
     ToolMetadata, ToolExecutionStatus, sanitize_for_audit
 )
 from backend.app.agent_runtime.tools.workspace.workspace_list import WorkspaceListTool
@@ -87,6 +87,13 @@ class ToolRegistry:
             category=getattr(tool, "category", ToolCategory.WORKSPACE),
             permission_level=tool.permission_level,
             side_effect_level=getattr(tool, "side_effect_level", SideEffectLevel.READ_ONLY),
+            execution_semantics=getattr(
+                tool,
+                "execution_semantics",
+                ToolExecutionSemantics.EFFECTIVELY_ONCE
+                if getattr(tool, "side_effect_level", SideEffectLevel.READ_ONLY) == SideEffectLevel.READ_ONLY
+                else ToolExecutionSemantics.AT_LEAST_ONCE
+            ),
             requires_approval=getattr(tool, "requires_approval", False),
             is_enabled=self.is_enabled(tool.name),
             is_healthy=getattr(tool, "is_healthy", True),

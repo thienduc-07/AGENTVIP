@@ -28,6 +28,7 @@ class TaskModel(Base):
         index=True
     )
     idempotency_key = Column(String(64), nullable=True, index=True)
+    lease_token = Column(String(64), nullable=True, index=True)
     
     dependencies_json = Column(JSON, nullable=True) # list of subtask IDs
     input_data_json = Column(JSON, nullable=True)
@@ -66,6 +67,7 @@ class TaskModel(Base):
         return {
             "id": self.id,
             "idempotency_key": self.idempotency_key,
+            "lease_token": self.lease_token,
             "parent_task_id": self.parent_task_id,
             "title": self.title,
             "description": self.description,
@@ -87,6 +89,7 @@ class TaskModel(Base):
         return {
             "id": self.id,
             "idempotency_key": self.idempotency_key,
+            "lease_token": self.lease_token,
             "title": self.title,
             "description": self.description,
             "task_type": self.task_type,
