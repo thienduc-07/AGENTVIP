@@ -26,7 +26,11 @@ from backend.app.services.event_service import (
     TOOL_CALL_FAILED,
 )
 from backend.app.websocket_manager import ws_manager
-from backend.app.agent_runtime.llm.base import redact_secrets
+from backend.app.core.security_sanitizer import (
+    redact_secrets,
+    sanitize_terminal_text,
+    sanitize_file_path,
+)
 
 logger = logging.getLogger("grandline.services.workstation_execution")
 
@@ -115,8 +119,8 @@ class WorkstationExecutionService:
             logger.warning(f"Cannot append terminal line: Execution '{execution_id}' not found.")
             return None
 
-        # Sanitize and bound content to avoid unbounded single-record bloat
-        clean_content = redact_secrets(content or "")[:4000]
+        # Sanitize and bound content to avoid unbounded single-record bloat and terminal injection
+        clean_content = sanitize_terminal_text(content or "", max_length=4000)
 
         execution.total_lines = (execution.total_lines or 0) + 1
         line_num = execution.total_lines
@@ -450,6 +454,8 @@ class WorkstationExecutionService:
         if not execution:
             return
 
+        clean_path = sanitize_file_path(file_path)
+
         execution.files_count = (execution.files_count or 0) + 1
         commit_with_retry(db)
 
@@ -457,8 +463,8 @@ class WorkstationExecutionService:
             db=db,
             execution_id=execution_id,
             stream="stdout",
-            content=f"[FILE] {operation.upper()}: {file_path}" + (f" ({size_bytes} bytes)" if size_bytes else ""),
-            metadata={"file_path": file_path, "operation": operation.upper(), "size_bytes": size_bytes},
+            content=f"[FILE] {operation.upper()}: {clean_path}" + (f" ({size_bytes} bytes)" if size_bytes else ""),
+            metadata={"file_path": clean_path, "operation": operation.upper(), "size_bytes": size_bytes},
             broadcast=True,
         )
 
@@ -471,7 +477,7 @@ class WorkstationExecutionService:
             execution_id=execution_id,
             payload={
                 "execution_id": execution_id,
-                "file_path": file_path,
+                "file_path": clean_path,
                 "operation": operation.upper(),
                 "size_bytes": size_bytes,
                 "metadata": metadata or {},

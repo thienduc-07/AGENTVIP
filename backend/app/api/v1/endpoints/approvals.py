@@ -1,11 +1,12 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
 from backend.app.core.auth import (
     get_current_user,
     get_current_tenant_org,
     UserContext,
+    PERM_DECIDE_APPROVAL,
 )
 from backend.app.schemas.approval import ApprovalResponse, ApprovalDecisionRequest
 from backend.app.services.approval_service import approval_service
@@ -44,10 +45,16 @@ def decide_approval(
     db: Session = Depends(get_db)
 ):
     """Applies approval or rejection decision with strict tenant ownership validation."""
+    if not user.has_permission(tenant_org, PERM_DECIDE_APPROVAL):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Permission denied: Action requires '{PERM_DECIDE_APPROVAL}' clearance in organization '{tenant_org}'",
+        )
     return approval_service.decide_approval(
         db=db,
         approval_id=approval_id,
         decision=req.decision,
         reason=req.reason,
-        organization_id=tenant_org
+        organization_id=tenant_org,
+        user_id=user.user_id,
     )

@@ -262,18 +262,43 @@ class WebSocketManager:
 
     async def handle_incoming_message(self, websocket: WebSocket, text_data: str) -> None:
         """
-        Handles incoming client control messages (ping, replay, resync).
-        Enforces maximum frame size and prevents untrusted client state modification.
+        Handles incoming client control messages (ping, replay, resync, subscribe).
+        Enforces maximum frame size, rate limits, active session validity, and tenant-scoped subscription authorization.
         """
         if len(text_data) > MAX_FRAME_SIZE_BYTES:
             logger.warning(f"Client sent oversized frame ({len(text_data)} bytes). Dropping.")
-            await websocket.send_text(json.dumps({"error": "PAYLOAD_TOO_LARGE"}))
+            await websocket.send_text(json.dumps({
+                "message_type": "error",
+                "code": "PAYLOAD_TOO_LARGE",
+                "error": "PAYLOAD_TOO_LARGE"
+            }))
             return
+
+        meta = self.connection_metadata.get(websocket)
+        if meta:
+            # Enforce message rate limiting (max 30 messages per second per connection)
+            now_ts = datetime.utcnow().timestamp()
+            history = meta.setdefault("msg_history", [])
+            history = [t for t in history if now_ts - t < 1.0]
+            if len(history) >= 30:
+                logger.warning(f"Rate limit exceeded for client [user={meta.get('user_id')}].")
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "detail": "Client message rate limit exceeded (max 30 msgs/sec)"
+                }))
+                return
+            history.append(now_ts)
+            meta["msg_history"] = history
 
         try:
             msg = json.loads(text_data)
         except json.JSONDecodeError:
-            await websocket.send_text(json.dumps({"error": "INVALID_JSON"}))
+            await websocket.send_text(json.dumps({
+                "message_type": "error",
+                "code": "INVALID_JSON",
+                "error": "INVALID_JSON"
+            }))
             return
 
         action = msg.get("action")
@@ -284,6 +309,95 @@ class WebSocketManager:
                 "message_type": "pong",
                 "timestamp": payload.get("timestamp") or msg.get("timestamp"),
             }))
+
+        elif action == "subscribe_agent":
+            if not meta or (not meta.get("is_superadmin") and not meta.get("organization_id")):
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "FORBIDDEN",
+                    "detail": "Tenant organization identity is required for subscription"
+                }))
+                return
+
+            agent_id = payload.get("agent_id") or msg.get("agent_id")
+            if not agent_id:
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "BAD_REQUEST",
+                    "detail": "agent_id is required for agent subscription"
+                }))
+                return
+
+            conn_org = meta.get("organization_id")
+            is_superadmin = bool(meta.get("is_superadmin", False))
+            db = SessionLocal()
+            try:
+                from backend.app.models.agent import AgentModel
+                q = db.query(AgentModel).filter(AgentModel.id == agent_id)
+                if not is_superadmin:
+                    q = q.filter(AgentModel.organization_id == conn_org)
+                agent = q.first()
+                if not agent:
+                    await websocket.send_text(json.dumps({
+                        "message_type": "error",
+                        "code": "UNAUTHORIZED_TARGET",
+                        "detail": f"Agent '{agent_id}' does not exist or access denied"
+                    }))
+                    return
+                # Register authorized subscription
+                subs = meta.setdefault("subscribed_agents", set())
+                subs.add(agent_id)
+                await websocket.send_text(json.dumps({
+                    "message_type": "subscribed",
+                    "target_type": "agent",
+                    "agent_id": agent_id,
+                }))
+            finally:
+                db.close()
+
+        elif action == "subscribe_execution":
+            if not meta or (not meta.get("is_superadmin") and not meta.get("organization_id")):
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "FORBIDDEN",
+                    "detail": "Tenant organization identity is required for subscription"
+                }))
+                return
+
+            exec_id = payload.get("execution_id") or msg.get("execution_id")
+            if not exec_id:
+                await websocket.send_text(json.dumps({
+                    "message_type": "error",
+                    "code": "BAD_REQUEST",
+                    "detail": "execution_id is required for execution subscription"
+                }))
+                return
+
+            conn_org = meta.get("organization_id")
+            is_superadmin = bool(meta.get("is_superadmin", False))
+            db = SessionLocal()
+            try:
+                from backend.app.models.execution import ExecutionModel
+                q = db.query(ExecutionModel).filter(ExecutionModel.id == exec_id)
+                if not is_superadmin:
+                    q = q.filter(ExecutionModel.organization_id == conn_org)
+                execution = q.first()
+                if not execution:
+                    await websocket.send_text(json.dumps({
+                        "message_type": "error",
+                        "code": "UNAUTHORIZED_TARGET",
+                        "detail": f"Execution '{exec_id}' does not exist or access denied"
+                    }))
+                    return
+                subs = meta.setdefault("subscribed_executions", set())
+                subs.add(exec_id)
+                await websocket.send_text(json.dumps({
+                    "message_type": "subscribed",
+                    "target_type": "execution",
+                    "execution_id": exec_id,
+                }))
+            finally:
+                db.close()
 
         elif action == "resync":
             meta = self.connection_metadata.get(websocket)
@@ -298,9 +412,18 @@ class WebSocketManager:
 
             conn_org = meta.get("organization_id")
             is_superadmin = bool(meta.get("is_superadmin", False))
+            user_id = meta.get("user_id")
             logger.info(f"Client requested authoritative resync [org={conn_org}, superadmin={is_superadmin}].")
             db = SessionLocal()
             try:
+                if user_id:
+                    from backend.app.models.auth import UserModel
+                    u = db.query(UserModel).filter(UserModel.id == user_id).first()
+                    if u is not None and not u.is_active:
+                        logger.warning(f"Closing websocket: User '{user_id}' inactive or revoked.")
+                        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                        return
+
                 snapshot = build_initial_snapshot(
                     db,
                     organization_id=conn_org,
@@ -349,6 +472,15 @@ class WebSocketManager:
             logger.info(f"Client requested event replay after sequence_id: {last_seq_int} [org={conn_org}, superadmin={is_superadmin}]")
             db = SessionLocal()
             try:
+                user_id = meta.get("user_id")
+                if user_id:
+                    from backend.app.models.auth import UserModel
+                    u = db.query(UserModel).filter(UserModel.id == user_id).first()
+                    if u is not None and not u.is_active:
+                        logger.warning(f"Closing websocket during replay: User '{user_id}' inactive or revoked.")
+                        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                        return
+
                 missed_events = get_events_after(
                     db=db,
                     last_sequence_id=last_seq_int,

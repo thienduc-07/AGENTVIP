@@ -17,6 +17,7 @@ class ApprovalModel(Base):
     status = Column(String(32), nullable=False, default="pending", index=True) # pending, approved, rejected, expired
     requested_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
     resolved_at = Column(DateTime, nullable=True)
+    resolved_by_user_id = Column(String(64), nullable=True)
     decision_reason = Column(Text, nullable=True)
 
     task = relationship("TaskModel", back_populates="approvals")

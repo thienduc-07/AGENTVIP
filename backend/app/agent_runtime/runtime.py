@@ -1,7 +1,11 @@
 import logging
 from sqlalchemy.orm import Session
 from backend.app.agent_runtime.dispatcher.dispatcher import task_dispatcher
-from backend.app.agent_runtime.dispatcher.crash_recovery import recover_abandoned_tasks
+from backend.app.agent_runtime.dispatcher.crash_recovery import (
+    recover_abandoned_tasks,
+    recover_abandoned_meetings,
+    recover_abandoned_executions,
+)
 from backend.app.agent_runtime.heartbeat.ceo_heartbeat import ceo_heartbeat
 from backend.app.agent_runtime.tools.registry import default_tool_registry
 from backend.app.agent_runtime.policies.engine import policy_engine
@@ -23,10 +27,18 @@ class AgentRuntime:
 
     def on_startup(self, db: Session) -> None:
         logger.info("Initializing Agent Runtime lifecycle...")
-        # 1. Run crash recovery for orphaned tasks
+        # 1. Run crash recovery for orphaned tasks, meetings, and executions
         recovered = recover_abandoned_tasks(db)
         if recovered > 0:
             logger.info(f"Agent Runtime startup: safely resolved {recovered} abandoned tasks.")
+
+        recovered_meetings = recover_abandoned_meetings(db)
+        if recovered_meetings > 0:
+            logger.info(f"Agent Runtime startup: safely reconciled {recovered_meetings} abandoned meetings.")
+
+        recovered_execs = recover_abandoned_executions(db)
+        if recovered_execs > 0:
+            logger.info(f"Agent Runtime startup: safely reconciled {recovered_execs} abandoned executions.")
 
         # 2. Restore active recruited specialist workforce with pinned versions
         try:

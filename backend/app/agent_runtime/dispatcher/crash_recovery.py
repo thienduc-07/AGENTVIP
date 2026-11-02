@@ -339,3 +339,34 @@ def recover_abandoned_meetings(db: Session) -> int:
 
     return recovered_count
 
+
+def recover_abandoned_executions(db: Session) -> int:
+    """
+    Scans for workstation executions left in 'running' state due to unexpected worker
+    or server restarts. Finalizes them to 'failed', appends an explanatory terminal log,
+    and records an audit event.
+    """
+    from backend.app.models.execution import ExecutionModel
+    from backend.app.services.workstation_execution_service import workstation_execution_service
+
+    interrupted_executions = (
+        db.query(ExecutionModel)
+        .filter(ExecutionModel.status == "running")
+        .all()
+    )
+
+    recovered_count = 0
+    for execution in interrupted_executions:
+        logger.warning(
+            f"Recovering abandoned execution '{execution.id}' (was in status 'running') after restart"
+        )
+        workstation_execution_service.complete_execution(
+            db=db,
+            execution_id=execution.id,
+            status="failed",
+            error="Execution interrupted due to unexpected worker termination or process crash",
+        )
+        recovered_count += 1
+
+    return recovered_count
+

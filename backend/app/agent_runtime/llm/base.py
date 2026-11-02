@@ -50,30 +50,7 @@ class LLMUnsupportedCapabilityError(LLMResponseError):
     pass
 
 
-# Regex patterns for redacting API keys and bearer tokens from logs/errors
-_SECRET_PATTERNS = [
-    re.compile(r"(Bearer\s+)[A-Za-z0-9\-._~+/]+=*", re.IGNORECASE),
-    re.compile(r"\bsk-[A-Za-z0-9\-_]{8,}\b"),
-    re.compile(r"\bgsk_[A-Za-z0-9\-_]{8,}\b"),
-    re.compile(r"\bAIza[0-9A-Za-z\-_]{12,}\b"),
-    re.compile(r"((?:api[_-]?key|token|secret)\s*[:=]\s*['\"]?)[A-Za-z0-9\-._~+/]{8,}(['\"]?)", re.IGNORECASE),
-]
-
-
-def redact_secrets(text: Optional[str]) -> str:
-    """
-    Scrubs API keys, Bearer tokens, and secret credentials from strings
-    before logging, persisting to database events, or returning error details.
-    """
-    if not text:
-        return ""
-    sanitized = str(text)
-    sanitized = _SECRET_PATTERNS[0].sub(r"\1[REDACTED]", sanitized)
-    sanitized = _SECRET_PATTERNS[1].sub("sk-[REDACTED]", sanitized)
-    sanitized = _SECRET_PATTERNS[2].sub("gsk_[REDACTED]", sanitized)
-    sanitized = _SECRET_PATTERNS[3].sub("AIza[REDACTED]", sanitized)
-    sanitized = _SECRET_PATTERNS[4].sub(r"\1[REDACTED]\2", sanitized)
-    return sanitized
+from backend.app.core.security_sanitizer import redact_secrets
 
 
 # Per-1M token pricing table (USD) for supported cloud models

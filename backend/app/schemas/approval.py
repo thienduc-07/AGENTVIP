@@ -12,6 +12,7 @@ class ApprovalResponse(BaseModel):
     status: ApprovalStatusType
     requested_at: datetime
     resolved_at: Optional[datetime] = None
+    resolved_by_user_id: Optional[str] = None
     decision_reason: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

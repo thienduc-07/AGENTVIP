@@ -52,7 +52,8 @@ class ApprovalService:
         approval_id: str,
         decision: str,
         reason: Optional[str] = None,
-        organization_id: Optional[str] = None
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
     ) -> ApprovalModel:
         # 1. Fetch approval with strict tenant ownership validation (via TaskModel join)
         approval = ApprovalService.get_approval_by_id(db, approval_id, organization_id=organization_id)
@@ -86,6 +87,7 @@ class ApprovalService:
         now = datetime.utcnow()
         approval.status = decision  # "approved", "rejected", "expired", "cancelled"
         approval.resolved_at = now
+        approval.resolved_by_user_id = user_id
         approval.decision_reason = reason
 
         # 5. Handle Decision Behaviors
