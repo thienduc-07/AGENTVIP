@@ -282,3 +282,60 @@ def detect_and_reclaim_stale_leases(db: Session, lease_timeout_seconds: float = 
         db.commit()
         logger.info(f"Stale lease reclamation complete: Reclaimed {reclaimed_count} stalled tasks.")
     return reclaimed_count
+
+
+def recover_abandoned_meetings(db: Session) -> int:
+    """
+    Scans for meetings left in 'IN_PROGRESS' or 'INITIALIZING' states due to unexpected worker
+    or server restarts. Reconciles their status to 'PAUSED', sets participant statuses,
+    records recovery metadata, and broadcasts the meeting.paused event.
+    """
+    from backend.app.models.meeting import MeetingModel, MeetingParticipantModel
+    from backend.app.websocket_manager import ws_manager
+
+    interrupted_meetings = (
+        db.query(MeetingModel)
+        .filter(MeetingModel.status.in_(["IN_PROGRESS", "INITIALIZING"]))
+        .all()
+    )
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    recovered_count = 0
+
+    for meeting in interrupted_meetings:
+        logger.warning(
+            f"Recovering abandoned meeting '{meeting.id}' (was in status '{meeting.status}') after restart"
+        )
+        meeting.status = "PAUSED"
+        meeting.updated_at = now
+        meta = dict(meeting.metadata_json or {})
+        meta["reconciled_after_restart"] = True
+        meta["pause_reason"] = "Server rebooted during active meeting session"
+        meta["paused_at"] = now.isoformat()
+        meeting.metadata_json = meta
+
+        # Set any speaking participant back to LISTENING
+        for part in meeting.participants:
+            if part.participation_status == "SPEAKING":
+                part.participation_status = "LISTENING"
+
+        ev = event_service.create_event(
+            db=db,
+            event_type="meeting.paused",
+            agent_id=meeting.moderator_agent_id,
+            organization_id=meeting.organization_id,
+            payload={
+                "meeting_id": meeting.id,
+                "reason": "Reconciled to PAUSED following server restart",
+                "reconciled_after_restart": True,
+            },
+            commit=False,
+        )
+        recovered_count += 1
+
+    if recovered_count > 0:
+        db.commit()
+        logger.info(f"Meeting recovery complete: Reconciled {recovered_count} active meetings to PAUSED.")
+
+    return recovered_count
+

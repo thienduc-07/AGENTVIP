@@ -10,6 +10,15 @@ from backend.app.models.specialist import SpecialistDefinitionModel, SpecialistV
 from backend.app.models.recruitment import RecruitmentRecordModel, AgentPerformanceModel
 from backend.app.models.workstation import WorkstationAllocationModel
 from backend.app.models.auth import UserModel, OrganizationModel, OrganizationMemberModel
+from backend.app.models.meeting import (
+    MeetingModel,
+    MeetingParticipantModel,
+    MeetingMessageModel,
+    MeetingDecisionModel,
+    MeetingVoteModel,
+    MeetingActionItemModel,
+    MeetingTranscriptModel,
+)
 
 __all__ = [
     "AgentModel",
@@ -30,5 +39,12 @@ __all__ = [
     "UserModel",
     "OrganizationModel",
     "OrganizationMemberModel",
+    "MeetingModel",
+    "MeetingParticipantModel",
+    "MeetingMessageModel",
+    "MeetingDecisionModel",
+    "MeetingVoteModel",
+    "MeetingActionItemModel",
+    "MeetingTranscriptModel",
 ]
 
