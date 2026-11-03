@@ -244,12 +244,19 @@ def seed_database():
                 updated_at=datetime.utcnow(),
             ))
 
-        # Preserve recruited specialists: only delete orphan non-corporate, non-recruited agents
+        # Preserve recruited specialists: only delete orphan non-corporate, non-recruited agents within default company
         from backend.app.models.recruitment import RecruitmentRecordModel
         valid_ids = [a["id"] for a in CORPORATE_AGENTS]
         recruited_agent_ids = [r[0] for r in db.query(RecruitmentRecordModel.agent_id).all()]
         protected_ids = set(valid_ids) | set(recruited_agent_ids)
-        db.query(AgentModel).filter(~AgentModel.id.in_(protected_ids)).delete(synchronize_session=False)
+        try:
+            db.query(AgentModel).filter(
+                ~AgentModel.id.in_(protected_ids),
+                AgentModel.organization_id == "org_default_company",
+            ).delete(synchronize_session=False)
+            db.commit()
+        except Exception:
+            db.rollback()
 
         for agent_data in CORPORATE_AGENTS:
             agent = db.query(AgentModel).filter(AgentModel.id == agent_data["id"]).first()

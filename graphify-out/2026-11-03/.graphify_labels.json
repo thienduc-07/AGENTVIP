@@ -1,6 +1,5 @@
 {
   "14": "apiClient",
-  "16": "package.json",
   "31": "agent-skills/skills/slack-gif-creator/core/easing.py",
   "32": "agent_runtime/skills/slack-gif-creator/core/easing.py",
   "33": "external_skills/skills/slack-gif-creator/core/easing.py",
@@ -22,7 +21,6 @@
   "115": "RedliningValidator",
   "118": "RedliningValidator",
   "122": "SkillLoader",
-  "124": "ToolCenterModal.tsx",
   "148": "SandboxExecutor",
   "153": "test_v1_tasks.py",
   "186": ".call_tool",

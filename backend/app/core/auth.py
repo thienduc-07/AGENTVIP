@@ -191,15 +191,24 @@ def decode_jwt_token(token: str) -> Dict[str, Any]:
 def revoke_user_tokens(db: Session, user_id: str) -> int:
     """
     Invalidates all outstanding tokens for a user by incrementing their token_version.
+    Uses resilient retries on SQLite database contention.
     """
+    import time
     from backend.app.models.auth import UserModel
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
-    if not user:
-        raise ValueError(f"User {user_id} not found")
-    user.token_version += 1
-    db.commit()
-    db.refresh(user)
-    return user.token_version
+    for attempt in range(5):
+        try:
+            user = db.query(UserModel).filter(UserModel.id == user_id).first()
+            if not user:
+                raise ValueError(f"User {user_id} not found")
+            user.token_version += 1
+            db.commit()
+            db.refresh(user)
+            return user.token_version
+        except Exception:
+            db.rollback()
+            if attempt == 4:
+                raise
+            time.sleep(0.05 * (attempt + 1))
 
 @dataclass
 class UserContext:

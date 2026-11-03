@@ -12,6 +12,7 @@ from backend.app.core.auth import (
     create_jwt_token,
     get_current_user,
     UserContext,
+    revoke_user_tokens,
 )
 
 router = APIRouter()
@@ -99,3 +100,19 @@ def get_current_user_profile(
         "is_superadmin": user.is_superadmin,
         "org_roles": user.org_roles,
     }
+
+@router.post("/logout")
+def logout(
+    user: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Revoke current user's session tokens by incrementing token_version.
+    """
+    new_version = revoke_user_tokens(db, user.user_id)
+    return {
+        "status": "success",
+        "detail": "Logged out successfully. All active sessions revoked.",
+        "token_version": new_version,
+    }
+

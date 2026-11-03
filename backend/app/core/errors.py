@@ -31,9 +31,10 @@ class PermissionDeniedError(ForbiddenError):
     def __init__(self, message: str = "Permission denied", code: str = "PERMISSION_DENIED"):
         super().__init__(message=message, code=code)
 
-def format_error_response(code: str, message: str, status_code: int) -> JSONResponse:
+def format_error_response(code: str, message: str, status_code: int, headers: Optional[Dict[str, str]] = None) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
+        headers=headers,
         content={
             "error": {
                 "code": code,
@@ -64,7 +65,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
     }
     code = code_map.get(exc.status_code, "ERROR")
     message = str(exc.detail) if exc.detail else "An HTTP error occurred"
-    return format_error_response(code=code, message=message, status_code=exc.status_code)
+    return format_error_response(code=code, message=message, status_code=exc.status_code, headers=getattr(exc, "headers", None))
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     return format_error_response(

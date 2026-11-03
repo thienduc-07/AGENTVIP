@@ -48,7 +48,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'cd .. && DATABASE_URL=sqlite:///$(pwd)/e2e_agency.db backend/venv/bin/uvicorn backend.app.main:app --host 127.0.0.1 --port 8000',
+      command: 'cd .. && DATABASE_URL=sqlite:///$(pwd)/e2e_agency.db DISPATCHER_ENABLED=false backend/venv/bin/uvicorn backend.app.main:app --host 127.0.0.1 --port 8000',
       url: 'http://127.0.0.1:8000/docs',
       reuseExistingServer: !process.env.CI,
       timeout: 30000,
