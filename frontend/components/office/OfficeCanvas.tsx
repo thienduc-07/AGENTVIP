@@ -66,8 +66,8 @@ export default function OfficeCanvas({
     selection.type === "workstation"
       ? selection.id
       : selection.type === "agent"
-      ? Object.values(workstations).find((w) => w.assigned_employee === selection.id)?.workstation_id ?? null
-      : null;
+        ? Object.values(workstations).find((w) => w.assigned_employee === selection.id)?.workstation_id ?? null
+        : null;
   const selectedDeptName = selection.type === "department" ? selection.id : null;
 
   // Resolve dynamic avatar state overlaying meeting participation
@@ -92,8 +92,8 @@ export default function OfficeCanvas({
           currentSpeakerId === agentId
             ? "SPEAKING"
             : presentationMode === "VOTING"
-            ? "VOTING"
-            : "LISTENING";
+              ? "VOTING"
+              : "LISTENING";
 
         if (existing) {
           result[agentId] = {
