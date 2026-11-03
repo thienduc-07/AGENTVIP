@@ -13,10 +13,18 @@ import InteractiveMissionTerminal from "@/components/hud/InteractiveMissionTermi
 import { useWorldStore } from "@/store/worldStore";
 import { PendingAction, Task, EventLog } from "@/types";
 import { getAgents } from "@/lib/api/agents";
+import { createTask } from "@/lib/api/tasks";
 import { syncManager } from "@/lib/websocket/syncManager";
 import { stateBridge } from "@/lib/stateBridge";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+const AGENT_MAPPING: Record<string, string> = {
+  leo: "agent-eng-lead",
+  mina: "agent-fin-controller",
+  hana: "agent-mkt-growth",
+  victor: "agent-exec-ceo",
+};
 
 export default function CorporateHQ3DWorldPage() {
   const syncAgentsFromBackend = useWorldStore((s) => s.syncAgentsFromBackend);
@@ -127,29 +135,24 @@ export default function CorporateHQ3DWorldPage() {
     };
   }, [applySnapshot, applyEvent, setLiveConnected, setBackendStatus]);
 
-  // 3. User Task Submission via Authoritative REST API
+  // 3. User Task Submission via Authoritative REST API with apiClient Auth
   const handleSubmitTask = async (agentId: string, promptText: string) => {
     setIsLoadingTask(true);
     setEvents([]);
 
+    const backendAgentId = AGENT_MAPPING[agentId] || agentId;
+
     try {
-      const res = await fetch(`${API_BASE}/api/v1/tasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: promptText.slice(0, 60),
-          description: promptText,
-          assigned_agent_id: agentId,
-          priority: "high",
-        }),
+      const created = await createTask({
+        title: promptText.slice(0, 60),
+        description: promptText,
+        assigned_agent_id: backendAgentId,
+        priority: "high",
       });
 
-      if (res.ok) {
-        const created: any = await res.json();
-        setActiveTask(created);
-      } else {
-        setIsLoadingTask(false);
-      }
+      setActiveTask(created as any);
+      setIsLoadingTask(false);
+      return created;
     } catch (e) {
       console.warn("Task dispatch note:", e);
       setIsLoadingTask(false);
@@ -183,7 +186,10 @@ export default function CorporateHQ3DWorldPage() {
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#070b14]">
       {/* 3D Diorama Multi-Floor HQ with Instant 1:1 Camera, Elevator & Smart Auto-Router Chat */}
-      <MyOfficeDiorama onSubmitTask={handleSubmitTask} />
+      <MyOfficeDiorama
+        onSubmitTask={handleSubmitTask}
+        backendStatus={backendConnection}
+      />
 
       {/* Realtime 3D Mission Terminal with Anthropic Skills, Chat & Artifacts */}
       <InteractiveMissionTerminal />

@@ -188,13 +188,15 @@ interface ChatItem {
 }
 
 interface MyOfficeDioramaProps {
-  onSubmitTask?: (agentId: string, promptText: string) => Promise<void>;
+  onSubmitTask?: (agentId: string, promptText: string) => Promise<any>;
   apiKey?: string;
+  backendStatus?: string;
 }
 
 export default function MyOfficeDiorama({
   onSubmitTask,
-  apiKey = ""
+  apiKey = "",
+  backendStatus = "connected"
 }: MyOfficeDioramaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1213,9 +1215,9 @@ export default function MyOfficeDiorama({
   }, [selectedChatTarget]);
 
   // Handle Chat Submit
-  const handleChatSubmit = async (e?: React.FormEvent, promptOverride?: string) => {
+  const handleChatSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const text = (promptOverride || chatInputText).trim();
+    const text = chatInputText.trim();
     if (!text || isAiResponding) return;
     setChatInputText("");
 
@@ -1352,6 +1354,14 @@ export default function MyOfficeDiorama({
               <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 {fpsValue} FPS
               </span>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1.5 ${
+                backendStatus === "connected"
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${backendStatus === "connected" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`}></span>
+                <span>{backendStatus === "connected" ? "Backend: Đã kết nối" : "Backend: Đang kết nối..."}</span>
+              </span>
             </div>
             <p className="text-xs text-amber-300 font-medium">
               Tầng {currentFloor} ({FLOORS[currentFloor]?.code}) • {FLOORS[currentFloor]?.name}
@@ -1369,11 +1379,10 @@ export default function MyOfficeDiorama({
                 <button
                   key={f}
                   onClick={() => useElevatorToFloor(f)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    isCurrent
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${isCurrent
                       ? "bg-amber-500 text-slate-950 shadow"
                       : "bg-slate-800/90 text-slate-300 hover:bg-slate-700"
-                  }`}
+                    }`}
                 >
                   {cfg.code} {cfg.name.split("&")[0].trim()}
                 </button>
@@ -1439,11 +1448,10 @@ export default function MyOfficeDiorama({
                     useElevatorToFloor(ag.floor);
                     setSelectedChatTarget(ag.id);
                   }}
-                  className={`flex items-center justify-between p-2 rounded-xl border text-left transition ${
-                    isHere
+                  className={`flex items-center justify-between p-2 rounded-xl border text-left transition ${isHere
                       ? "bg-slate-800/95 border-amber-400/60 text-white"
                       : "bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800/60"
-                  }`}
+                    }`}
                 >
                   <div className="truncate pr-1">
                     <div className="text-xs font-bold text-white flex items-center gap-1">
@@ -1511,9 +1519,8 @@ export default function MyOfficeDiorama({
                     className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-600/60 transition group"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className={`w-8 h-8 rounded-full bg-slate-900 border-2 flex items-center justify-center font-mono font-extrabold text-sm ${
-                        isSelected ? "border-amber-400 text-amber-400" : "border-slate-500 text-white group-hover:border-amber-400"
-                      }`}>
+                      <span className={`w-8 h-8 rounded-full bg-slate-900 border-2 flex items-center justify-center font-mono font-extrabold text-sm ${isSelected ? "border-amber-400 text-amber-400" : "border-slate-500 text-white group-hover:border-amber-400"
+                        }`}>
                         {f}
                       </span>
                       <div className="text-left">
@@ -1577,41 +1584,36 @@ export default function MyOfficeDiorama({
           <div className="px-3 py-2 bg-slate-950/60 border-b border-slate-800/80 flex items-center gap-1 overflow-x-auto">
             <button
               onClick={() => setSelectedChatTarget("auto")}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition ${
-                selectedChatTarget === "auto" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
-              }`}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition ${selectedChatTarget === "auto" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
+                }`}
             >
               ⚡ Tự động nhận diện
             </button>
             <button
               onClick={() => setSelectedChatTarget("leo")}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${
-                selectedChatTarget === "leo" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
-              }`}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${selectedChatTarget === "leo" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
+                }`}
             >
               💻 Leo (1F Code)
             </button>
             <button
               onClick={() => setSelectedChatTarget("mina")}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${
-                selectedChatTarget === "mina" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
-              }`}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${selectedChatTarget === "mina" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
+                }`}
             >
               📊 Mina (2F Tài chính)
             </button>
             <button
               onClick={() => setSelectedChatTarget("hana")}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${
-                selectedChatTarget === "hana" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
-              }`}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${selectedChatTarget === "hana" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
+                }`}
             >
               🎨 Hana (3F Thiết kế)
             </button>
             <button
               onClick={() => setSelectedChatTarget("victor")}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${
-                selectedChatTarget === "victor" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
-              }`}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold shrink-0 transition ${selectedChatTarget === "victor" ? "bg-indigo-600 text-white shadow" : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
+                }`}
             >
               🚀 Victor (4F Họp)
             </button>
@@ -1674,7 +1676,7 @@ export default function MyOfficeDiorama({
           <div className="px-3 py-2 bg-slate-950/50 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto">
             <button
               onClick={() => {
-                handleChatSubmit(undefined, "Lập bảng dự toán ngân sách Q4 và tính ROI cho dự án AI");
+                setChatInputText("Lập bảng dự toán ngân sách Q4 và tính ROI cho dự án AI");
               }}
               className="shrink-0 text-[11px] bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-full transition"
             >
@@ -1682,7 +1684,7 @@ export default function MyOfficeDiorama({
             </button>
             <button
               onClick={() => {
-                handleChatSubmit(undefined, "Tối ưu hiệu năng WebGL Three.js đạt 120FPS và sửa lỗi database");
+                setChatInputText("Tối ưu hiệu năng WebGL Three.js đạt 120FPS và sửa lỗi database");
               }}
               className="shrink-0 text-[11px] bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 px-2.5 py-1 rounded-full transition"
             >
@@ -1690,7 +1692,7 @@ export default function MyOfficeDiorama({
             </button>
             <button
               onClick={() => {
-                handleChatSubmit(undefined, "Thiết kế bộ nhận diện thương hiệu và giao diện game Chibi ấm cúng");
+                setChatInputText("Thiết kế bộ nhận diện thương hiệu và giao diện game Chibi ấm cúng");
               }}
               className="shrink-0 text-[11px] bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 px-2.5 py-1 rounded-full transition"
             >
@@ -1698,7 +1700,7 @@ export default function MyOfficeDiorama({
             </button>
             <button
               onClick={() => {
-                handleChatSubmit(undefined, "Chuẩn bị slide thuyết trình gọi vốn vòng Seed trên màn hình phòng họp");
+                setChatInputText("Chuẩn bị slide thuyết trình gọi vốn vòng Seed trên màn hình phòng họp");
               }}
               className="shrink-0 text-[11px] bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full transition"
             >
@@ -1745,4 +1747,3 @@ export default function MyOfficeDiorama({
     </div>
   );
 }
-
