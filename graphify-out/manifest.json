@@ -1622,9 +1622,9 @@
     "semantic_hash": ""
   },
   "backend/app/services/event_service.py": {
-    "mtime": 1793641366.1077693,
-    "seen": 1793642717.2423759,
-    "ast_hash": "ca11e4d3675830475d763f0bf8963872",
+    "mtime": 1793676641.4317272,
+    "seen": 1793677207.0591779,
+    "ast_hash": "78f82032c51c521e5ae720ee00c3df32",
     "semantic_hash": ""
   },
   "backend/app/services/memory_service.py": {
@@ -1808,9 +1808,9 @@
     "semantic_hash": ""
   },
   "backend/app/websocket_manager.py": {
-    "mtime": 1793645758.9886422,
-    "seen": 1793645901.034297,
-    "ast_hash": "52eb68fb8666b2fc77c23bb109998882",
+    "mtime": 1793676628.823575,
+    "seen": 1793677207.059267,
+    "ast_hash": "796d9ef85dfd6da2ebea684ad56b358b",
     "semantic_hash": ""
   },
   "external_skills/.claude-plugin/marketplace.json": {
@@ -8290,6 +8290,96 @@
     "mtime": 1793675350.9918675,
     "seen": 1793675764.989237,
     "ast_hash": "332a2b2d28032742c30044779e355d18",
+    "semantic_hash": ""
+  },
+  "backend/app/scripts/backup.py": {
+    "mtime": 1793677023.0234342,
+    "seen": 1793677207.059169,
+    "ast_hash": "b2029f1511feec345281697666ae492a",
+    "semantic_hash": ""
+  },
+  "backend/app/tests/test_phase4_3_8_backup_restore.py": {
+    "mtime": 1793677150.2439227,
+    "seen": 1793677207.0592399,
+    "ast_hash": "b082eab3b4abb8cc83c3e067c0e8ed07",
+    "semantic_hash": ""
+  },
+  "backend/app/tests/test_phase4_3_8_recovery.py": {
+    "mtime": 1793676850.8503773,
+    "seen": 1793677207.059242,
+    "ast_hash": "14f4ad0997b9605447a68d6e98ac8954",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/agent_city.spec.ts": {
+    "mtime": 1793675923.6789134,
+    "seen": 1793677207.059402,
+    "ast_hash": "91572874138d09cadce0e5caf4f9cbc3",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/approval.spec.ts": {
+    "mtime": 1793676362.99967,
+    "seen": 1793677207.059403,
+    "ast_hash": "007f3d786620c0cb2cf9540baac8a796",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/meeting.spec.ts": {
+    "mtime": 1793676048.0994132,
+    "seen": 1793677207.059405,
+    "ast_hash": "4faad5760f2724d63a1746d0a6d76ff4",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/websocket.spec.ts": {
+    "mtime": 1793676663.2949474,
+    "seen": 1793677207.059406,
+    "ast_hash": "2e2f6d568fce5e5fe1642e16f49f0e37",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/workstation_terminal.spec.ts": {
+    "mtime": 1793676215.490401,
+    "seen": 1793677207.059407,
+    "ast_hash": "2c040354fe4c28c885bb65bed9a99d5e",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_AGENT_CITY_E2E_REPORT.md": {
+    "mtime": 1793675969.4214075,
+    "seen": 1793677207.0596108,
+    "ast_hash": "63f8ee132a650c922eef9798dca4d56a",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_APPROVAL_E2E_REPORT.md": {
+    "mtime": 1793676394.7528367,
+    "seen": 1793677207.0596118,
+    "ast_hash": "7fb0860ca02bbccfd39390fcb113e28f",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_BACKUP_RESTORE_REPORT.md": {
+    "mtime": 1793677191.5449357,
+    "seen": 1793677207.059614,
+    "ast_hash": "378d6e83121ca2c8372e50168e2855da",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_MEETING_E2E_REPORT.md": {
+    "mtime": 1793676077.3106134,
+    "seen": 1793677207.059616,
+    "ast_hash": "e304e48097fef5c5448c5e58902870f9",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_RECOVERY_REPORT.md": {
+    "mtime": 1793676974.4423022,
+    "seen": 1793677207.059645,
+    "ast_hash": "4fce1a00e0cdec1cfb70560c8a6e9cb0",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_WEBSOCKET_E2E_REPORT.md": {
+    "mtime": 1793676712.4107957,
+    "seen": 1793677207.059645,
+    "ast_hash": "40826e97f00e5238da9010a686cc19d0",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_WORKSTATION_E2E_REPORT.md": {
+    "mtime": 1793676247.833011,
+    "seen": 1793677207.059646,
+    "ast_hash": "b0b0e0b89a34cd5fa404cf9f9a4237c0",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {
