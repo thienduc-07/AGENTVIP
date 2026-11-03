@@ -99,7 +99,7 @@ class WebSocketManager:
             user_orgs = {m.organization_id: m.role for m in memberships}
 
             if user.is_superadmin:
-                tenant_org = req_org
+                tenant_org = req_org or "org_default_company"
             else:
                 if req_org:
                     if req_org not in user_orgs:
@@ -301,7 +301,7 @@ class WebSocketManager:
             }))
             return
 
-        action = msg.get("action")
+        action = msg.get("action") or msg.get("type")
         payload = msg.get("payload", {})
 
         if action == "ping":

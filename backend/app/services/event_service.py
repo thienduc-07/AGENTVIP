@@ -615,6 +615,9 @@ class EventService:
         elif organization_id:
             agent_query = agent_query.filter(AgentModel.organization_id == organization_id)
             task_query = task_query.filter(TaskModel.organization_id == organization_id)
+        else:
+            agent_query = agent_query.filter(AgentModel.organization_id == "org_default_company")
+            task_query = task_query.filter(TaskModel.organization_id == "org_default_company")
 
         # Acquire authoritative sequence watermark prior to reading entity snapshots
         # This guarantees that any event emitted during snapshot construction will have sequence_id > max_seq
