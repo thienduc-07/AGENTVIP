@@ -63,7 +63,7 @@ export default function DepartmentZone({
 
   return (
     <group
-      position={[data.base_x, 0, data.base_z]}
+      position={[data.base_x, data.base_y || 0, data.base_z]}
       onClick={handleClick}
       onPointerOver={(e) => {
         e.stopPropagation();

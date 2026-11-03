@@ -188,3 +188,4 @@ backend/app/tests/test_event_ownership_and_retention.py::test_23_empty_replay_re
 3. **Fail-Closed on Missing Tenant**: Connections lacking verified tenant membership are terminated immediately with `WebSocketDisconnect`.
 4. **Non-Repudiation**: Superadmin audit trails accurately distinguish between scoped tenant actions and unscoped global operations.
 5. **Database Immutability**: Production `agency.db` remains 100% byte-for-byte identical to baseline `ba515d4`.
+

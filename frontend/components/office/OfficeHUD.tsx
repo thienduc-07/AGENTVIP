@@ -11,6 +11,10 @@ interface OfficeHUDProps {
   activeTasksCount: number;
   totalWorkstations: number;
   occupiedWorkstations: number;
+  activeFloor?: number;
+  isFloorIsolated?: boolean;
+  onSelectFloor?: (floor: number) => void;
+  onToggleIsolation?: () => void;
   onResetCamera: () => void;
   onFocusCEO: () => void;
   onFocusMeetingRoom?: () => void;
@@ -30,6 +34,10 @@ export default function OfficeHUD({
   activeTasksCount,
   totalWorkstations,
   occupiedWorkstations,
+  activeFloor = 0,
+  isFloorIsolated = false,
+  onSelectFloor,
+  onToggleIsolation,
   onResetCamera,
   onFocusCEO,
   onFocusMeetingRoom,
@@ -210,6 +218,62 @@ export default function OfficeHUD({
             </button>
           )}
         </div>
+      </div>
+
+      {/* 4. Floor Navigation Bar (Multi-Story Skyscraper Controller) */}
+      <div className="absolute top-18 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-1 p-1 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl backdrop-blur-md max-w-[96vw] overflow-x-auto">
+        <button
+          onClick={() => onSelectFloor?.(0)}
+          className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+            activeFloor === 0
+              ? "bg-sky-600 text-white shadow-md shadow-sky-500/30"
+              : "text-slate-300 hover:text-white hover:bg-slate-800"
+          }`}
+        >
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Toàn Cảnh</span>
+        </button>
+
+        {[
+          { f: 1, label: "T1: Lễ Tân & Ops", color: "#06b6d4" },
+          { f: 2, label: "T2: Thiết Kế", color: "#ec4899" },
+          { f: 3, label: "T3: Marketing", color: "#f59e0b" },
+          { f: 4, label: "T4: Nghiên Cứu", color: "#8b5cf6" },
+          { f: 5, label: "T5: Kỹ Thuật", color: "#10b981" },
+          { f: 6, label: "T6: Điều Hành", color: "#38bdf8" },
+        ].map((item) => (
+          <button
+            key={item.f}
+            onClick={() => onSelectFloor?.(item.f)}
+            className={`px-2 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              activeFloor === item.f
+                ? "bg-sky-600 text-white shadow-md shadow-sky-500/30"
+                : "text-slate-300 hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: item.color }}
+            />
+            <span>{item.label}</span>
+          </button>
+        ))}
+
+        {onToggleIsolation && (
+          <div className="ml-1 pl-1.5 border-l border-slate-700/60 flex items-center">
+            <button
+              onClick={onToggleIsolation}
+              title={isFloorIsolated ? "Hủy cô lập tầng (hiện toàn bộ toà nhà)" : "Cô lập tầng hiện tại (làm mờ các tầng khác)"}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                isFloorIsolated
+                  ? "bg-amber-600/30 text-amber-300 border border-amber-500/40"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+              }`}
+            >
+              {isFloorIsolated ? "⚡ Đang Cô Lập" : "🔍 Cô Lập Tầng"}
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

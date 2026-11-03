@@ -165,6 +165,7 @@ export type OfficeSelection =
   | { type: "workstation"; id: string }
   | { type: "workstation_screen"; id: string; agentId?: string }
   | { type: "department"; id: string }
+  | { type: "floor"; id: string }
   | { type: "meeting_room" }
   | { type: "meeting_display" };
 

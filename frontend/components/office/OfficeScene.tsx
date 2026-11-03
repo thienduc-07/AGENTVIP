@@ -23,8 +23,15 @@ interface OfficeSceneProps {
   onOpenRecruitmentModal?: () => void;
 }
 
-const TACTICAL_OVERVIEW_POS: [number, number, number] = [0, 26, 32];
-const TACTICAL_OVERVIEW_LOOK: [number, number, number] = [0, 0, 4];
+export const FLOOR_CAMERA_PRESETS: Record<number, { pos: [number, number, number]; look: [number, number, number] }> = {
+  0: { pos: [0, 24, 46], look: [0, 16, 0] },       // Overview (All 6 Floors Dollhouse Cutaway)
+  1: { pos: [0, 5.5, 20], look: [0, 1.5, 0] },     // Floor 1: Reception & Operations
+  2: { pos: [0, 11.5, 20], look: [0, 7.5, 0] },    // Floor 2: Design & Creative
+  3: { pos: [0, 17.5, 20], look: [0, 13.5, 0] },   // Floor 3: Marketing & Growth
+  4: { pos: [0, 23.5, 20], look: [0, 19.5, 0] },   // Floor 4: Research & Data Science
+  5: { pos: [0, 29.5, 20], look: [0, 25.5, 0] },   // Floor 5: Engineering & Architecture
+  6: { pos: [0, 35.5, 20], look: [0, 31.5, 0] },   // Floor 6: Executive Penthouse & Boardroom
+};
 
 export default function OfficeScene({
   initialOrgId = "org_default_company",
@@ -54,12 +61,31 @@ export default function OfficeScene({
   const isWorkstationScreenOpen = useWorkstationStore((s) => s.isWorkstationScreenOpen);
 
   const [selection, setSelection] = useState<OfficeSelection>({ type: "none" });
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(TACTICAL_OVERVIEW_POS);
-  const [cameraTarget, setCameraTarget] = useState<[number, number, number]>(TACTICAL_OVERVIEW_LOOK);
+  const [activeFloor, setActiveFloor] = useState<number>(0);
+  const [isFloorIsolated, setIsFloorIsolated] = useState<boolean>(false);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>(FLOOR_CAMERA_PRESETS[0].pos);
+  const [cameraTarget, setCameraTarget] = useState<[number, number, number]>(FLOOR_CAMERA_PRESETS[0].look);
   const [isMeetingDiscoveryOpen, setIsMeetingDiscoveryOpen] = useState(false);
   const [isMeetingViewActive, setMeetingViewActive] = useState(false);
 
-  // 1. Selection Handlers
+  // 1. Floor Navigation Handlers
+  const handleSelectFloor = useCallback((floorNum: number) => {
+    setActiveFloor(floorNum);
+    const preset = FLOOR_CAMERA_PRESETS[floorNum] || FLOOR_CAMERA_PRESETS[0];
+    setCameraPosition(preset.pos);
+    setCameraTarget(preset.look);
+    if (floorNum === 0) {
+      setSelection({ type: "none" });
+    } else {
+      setSelection({ type: "floor", id: `floor_${floorNum}` });
+    }
+  }, []);
+
+  const handleToggleIsolation = useCallback(() => {
+    setIsFloorIsolated((prev) => !prev);
+  }, []);
+
+  // 2. Selection Handlers
   const handleSelectAgent = useCallback(
     (agentId: string) => {
       const agent = agents[agentId];
@@ -78,16 +104,17 @@ export default function OfficeScene({
       const ws = workstations[workstationId];
       if (!ws) return;
 
+      const wsElevation = ws.pos_y || 0;
       if (ws.assigned_employee) {
         // Occupied workstation: select corresponding agent to open the Agent Inspection HUD
         setSelection({ type: "agent", id: ws.assigned_employee });
-        setCameraTarget([ws.pos_x, 0.8, ws.pos_z]);
-        setCameraPosition([ws.pos_x + 3.8, 3.2, ws.pos_z + 4.8]);
+        setCameraTarget([ws.pos_x, wsElevation + 0.8, ws.pos_z]);
+        setCameraPosition([ws.pos_x + 3.8, wsElevation + 3.2, ws.pos_z + 4.8]);
       } else {
         // Unoccupied workstation: view workstation without fabricating an agent
         setSelection({ type: "workstation", id: workstationId });
-        setCameraTarget([ws.pos_x, 0.8, ws.pos_z]);
-        setCameraPosition([ws.pos_x + 3.8, 3.2, ws.pos_z + 4.8]);
+        setCameraTarget([ws.pos_x, wsElevation + 0.8, ws.pos_z]);
+        setCameraPosition([ws.pos_x + 3.8, wsElevation + 3.2, ws.pos_z + 4.8]);
       }
     },
     [workstations]
@@ -97,8 +124,9 @@ export default function OfficeScene({
     (workstationId: string) => {
       const ws = workstations[workstationId];
       if (!ws) return;
-      setCameraTarget([ws.pos_x, 0.8, ws.pos_z]);
-      setCameraPosition([ws.pos_x + 3.8, 3.2, ws.pos_z + 4.8]);
+      const wsElevation = ws.pos_y || 0;
+      setCameraTarget([ws.pos_x, wsElevation + 0.8, ws.pos_z]);
+      setCameraPosition([ws.pos_x + 3.8, wsElevation + 3.2, ws.pos_z + 4.8]);
     },
     [workstations]
   );
@@ -108,9 +136,10 @@ export default function OfficeScene({
       const dept = departments[deptName];
       if (!dept) return;
 
+      const deptElevation = dept.base_y || 0;
       setSelection({ type: "department", id: deptName });
-      setCameraTarget([dept.base_x, 0.5, dept.base_z]);
-      setCameraPosition([dept.base_x, 14, dept.base_z + 12]);
+      setCameraTarget([dept.base_x, deptElevation + 0.5, dept.base_z]);
+      setCameraPosition([dept.base_x, deptElevation + 10, dept.base_z + 10]);
     },
     [departments]
   );
@@ -118,15 +147,17 @@ export default function OfficeScene({
   const handleResetCamera = useCallback(() => {
     setSelection({ type: "none" });
     setMeetingViewActive(false);
-    setCameraPosition(TACTICAL_OVERVIEW_POS);
-    setCameraTarget(TACTICAL_OVERVIEW_LOOK);
+    setActiveFloor(0);
+    setCameraPosition(FLOOR_CAMERA_PRESETS[0].pos);
+    setCameraTarget(FLOOR_CAMERA_PRESETS[0].look);
   }, []);
 
   const handleFocusCEO = useCallback(() => {
-    // Focus on Executive Suite at (0, 1.2, -12)
+    // Focus on Executive Penthouse CEO Suite on Floor 6 at (-9, 31.2, -3)
     setMeetingViewActive(false);
-    setCameraTarget([0, 1.2, -12]);
-    setCameraPosition([0, 7.5, -4]);
+    setActiveFloor(6);
+    setCameraTarget([-9.0, 31.2, -3.0]);
+    setCameraPosition([-9.0, 33.5, 4.5]);
   }, []);
 
   // Phase 4.3.5: Meeting Camera Navigation
@@ -134,23 +165,25 @@ export default function OfficeScene({
     setSelection({ type: "meeting_room" });
     setMeetingViewActive(true);
     setMeetingHUDOpen(true);
-    setCameraTarget([0, 1.3, 3.5]);
-    setCameraPosition([0, 4.2, 8.4]);
+    setActiveFloor(6);
+    setCameraTarget([4.5, 31.3, 0]);
+    setCameraPosition([4.5, 34.2, 8.4]);
   }, [setMeetingHUDOpen]);
 
   const handleExitMeetingView = useCallback(() => {
     setSelection({ type: "none" });
     setMeetingViewActive(false);
-    setCameraPosition(TACTICAL_OVERVIEW_POS);
-    setCameraTarget(TACTICAL_OVERVIEW_LOOK);
+    setCameraPosition(FLOOR_CAMERA_PRESETS[0].pos);
+    setCameraTarget(FLOOR_CAMERA_PRESETS[0].look);
   }, []);
 
   const handleFocusMeetingDisplay = useCallback(() => {
     setSelection({ type: "meeting_display" });
     setMeetingViewActive(true);
     setMeetingHUDOpen(true);
-    setCameraTarget([0, 1.85, 0.5]);
-    setCameraPosition([0, 2.3, 3.2]);
+    setActiveFloor(6);
+    setCameraTarget([4.5, 31.85, -3.8]);
+    setCameraPosition([4.5, 32.3, -1.0]);
   }, [setMeetingHUDOpen]);
 
   const handleSelectMeetingChair = useCallback(
@@ -182,6 +215,10 @@ export default function OfficeScene({
         activeTasksCount={activeTasksCount}
         totalWorkstations={totalWorkstations}
         occupiedWorkstations={occupiedWorkstations}
+        activeFloor={activeFloor}
+        isFloorIsolated={isFloorIsolated}
+        onSelectFloor={handleSelectFloor}
+        onToggleIsolation={handleToggleIsolation}
         onResetCamera={handleResetCamera}
         onFocusCEO={handleFocusCEO}
         onFocusMeetingRoom={handleEnterMeetingView}
@@ -199,11 +236,14 @@ export default function OfficeScene({
         workstations={workstations}
         agents={agents}
         selection={selection}
+        activeFloor={activeFloor}
+        isFloorIsolated={isFloorIsolated}
         cameraPosition={cameraPosition}
         cameraTarget={cameraTarget}
         onSelectAgent={handleSelectAgent}
         onSelectWorkstation={handleSelectWorkstation}
         onSelectDepartment={handleSelectDepartment}
+        onSelectFloor={handleSelectFloor}
         onPointerMissed={handleResetCamera}
         onEnterMeetingView={handleEnterMeetingView}
         onSelectMeetingChair={handleSelectMeetingChair}

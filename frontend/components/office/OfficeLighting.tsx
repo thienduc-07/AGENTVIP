@@ -13,48 +13,42 @@ export default function OfficeLighting() {
         args={["#f0f9ff", "#0f172a", 0.65]}
       />
 
-      {/* 2. Key Sun Directional Light with Soft Shadows */}
+      {/* 2. Key Sun Directional Light with Soft Shadows covering 36m height */}
       <directionalLight
         ref={dirLightRef}
-        position={[24, 38, -18]}
-        intensity={1.25}
+        position={[28, 54, 32]}
+        intensity={1.35}
         color="#fffbeb"
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         shadow-camera-near={1}
-        shadow-camera-far={95}
+        shadow-camera-far={120}
         shadow-camera-left={-28}
         shadow-camera-right={28}
-        shadow-camera-top={28}
-        shadow-camera-bottom={-28}
-        shadow-bias={-0.0004}
+        shadow-camera-top={42}
+        shadow-camera-bottom={-10}
+        shadow-bias={-0.0003}
       />
 
-      {/* 3. Soft Opposite Daylight Fill (Prevents Harsh Dark Shadows) */}
+      {/* 3. Soft Opposite Daylight Fill */}
       <directionalLight
-        position={[-22, 24, 26]}
-        intensity={0.42}
+        position={[-24, 32, -26]}
+        intensity={0.5}
         color="#e0f2fe"
       />
 
-      {/* 4. Executive Suite Overhead Soft Downlight */}
-      <pointLight
-        position={[0, 6.5, -12]}
-        intensity={0.8}
-        distance={18}
-        decay={2}
-        color="#38bdf8"
-      />
-
-      {/* 5. Central Hub Overhead Downlight */}
-      <pointLight
-        position={[0, 7.5, 4]}
-        intensity={0.65}
-        distance={22}
-        decay={2}
-        color="#f8fafc"
-      />
+      {/* 4. Multi-Floor Vertical Fill Lights */}
+      {[3.0, 9.0, 15.0, 21.0, 27.0, 33.0].map((ly, idx) => (
+        <pointLight
+          key={`floor-light-${idx}`}
+          position={[0, ly, 4.0]}
+          intensity={0.45}
+          distance={24}
+          decay={2}
+          color="#f8fafc"
+        />
+      ))}
     </group>
   );
 }

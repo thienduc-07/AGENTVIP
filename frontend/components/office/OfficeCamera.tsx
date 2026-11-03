@@ -46,8 +46,8 @@ export default function OfficeCamera({
       enableDamping
       dampingFactor={0.08}
       minDistance={3.5}
-      maxDistance={75}
-      maxPolarAngle={Math.PI / 2 - 0.06} // Disallow looking from below floor
+      maxDistance={160}
+      maxPolarAngle={Math.PI / 2 - 0.04} // Disallow looking from below floor
       minPolarAngle={0.15}
     />
   );

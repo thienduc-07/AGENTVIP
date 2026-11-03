@@ -35,6 +35,21 @@ const DEFAULT_ZONE_SPACING: Record<string, { x: number; z: number }> = {
   "Customer Success": { x: 2.0, z: 1.8 },
 };
 
+export function getDepartmentFloor(dept?: string): number {
+  if (!dept) return 1;
+  const d = dept.toLowerCase();
+  if (d.includes("exec") || d.includes("ceo") || d.includes("leadership")) return 6;
+  if (d.includes("eng") || d.includes("dev") || d.includes("software") || d.includes("architect")) return 5;
+  if (d.includes("research") || d.includes("data") || d.includes("science") || d.includes("ai")) return 4;
+  if (d.includes("market") || d.includes("sale") || d.includes("growth") || d.includes("media")) return 3;
+  if (d.includes("design") || d.includes("creative") || d.includes("product") || d.includes("ui") || d.includes("ux")) return 2;
+  return 1; // Operations, Finance, Support, HR, Reception
+}
+
+export function getFloorElevation(floor: number): number {
+  return (floor - 1) * 6.0;
+}
+
 export function useOfficeSync(initialOrgId: string = "org_default_company"): OfficeSyncState {
   const [organizationId, setOrganizationId] = useState(initialOrgId);
   const [departments, setDepartments] = useState<Record<string, DepartmentZoneData>>({});
@@ -98,14 +113,36 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
           const coords = (item as any).position || item.spatial_coordinates;
           const targetCoords = (item as any).target_position || item.target_coordinates;
 
+          const floor = getDepartmentFloor(item.department);
+          const floorElev = getFloorElevation(floor);
+
+          let px = coords?.x ?? 0;
+          let py = coords?.y ?? 1;
+          let pz = coords?.z ?? 0;
+
+          // Align vertical coordinate with multi-floor architectural elevation
+          if (py < 2.0) {
+            py = floorElev + 0.05;
+          }
+
+          // Natural layout positioning if at world origin
+          if (Math.abs(px) < 0.2 && Math.abs(pz) < 0.2) {
+            if (floor === 6) { px = -9.0; pz = -3.0; }
+            else if (floor === 5) { px = -10.0; pz = -5.0; }
+            else if (floor === 4) { px = -10.0; pz = -5.0; }
+            else if (floor === 3) { px = -10.0; pz = -5.0; }
+            else if (floor === 2) { px = -8.0; pz = -4.0; }
+            else { px = -10.0; pz = -4.0; }
+          }
+
           loadedAgents[item.employee_id] = {
             id: item.employee_id,
             name: item.name,
             role: item.role,
             department: item.department,
-            position: [coords?.x ?? 0, coords?.y ?? 1, coords?.z ?? 0],
+            position: [px, py, pz],
             targetPosition: targetCoords
-              ? [targetCoords.x, targetCoords.y, targetCoords.z]
+              ? [targetCoords.x, targetCoords.y < 2.0 ? floorElev + 0.05 : targetCoords.y, targetCoords.z]
               : null,
             behavioralState: bState,
             operationalStatus: item.operational_status,
@@ -117,15 +154,20 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
 
         // Map snapshot workstations if present
         (snap.workstations || []).forEach((ws) => {
+          const wsFloor = getDepartmentFloor(ws.zone);
+          const wsElev = getFloorElevation(wsFloor);
+          let wsY = ws.spatial_coordinates?.y ?? 1;
+          if (wsY < 2.0) wsY = wsElev + 0.05;
+
           loadedWorkstations[ws.workstation_id] = {
             workstation_id: ws.workstation_id,
             zone: ws.zone,
             label: ws.label || ws.workstation_id,
             department: ws.zone,
             desk_number: null,
-            pos_x: ws.spatial_coordinates.x ?? 0,
-            pos_y: ws.spatial_coordinates.y ?? 1,
-            pos_z: ws.spatial_coordinates.z ?? 0,
+            pos_x: ws.spatial_coordinates?.x ?? 0,
+            pos_y: wsY,
+            pos_z: ws.spatial_coordinates?.z ?? 0,
             occupancy_status: ws.occupancy_status || "vacant",
             assigned_employee: ws.assigned_employee,
             is_virtual: ws.is_virtual ?? false,
@@ -143,6 +185,13 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
         allocations.forEach((alloc: WorkstationAllocation) => {
           const occupant = loadedAgents[alloc.agent_id];
           const wsKey = alloc.logical_workstation_id || alloc.id;
+          const wsFloor = getDepartmentFloor(alloc.department || alloc.office_zone);
+          const wsElev = getFloorElevation(wsFloor);
+
+          let wsY = alloc.pos_y ?? 1.0;
+          if (wsY < 2.0) {
+            wsY = wsElev + 0.05;
+          }
 
           loadedWorkstations[wsKey] = {
             workstation_id: wsKey,
@@ -151,7 +200,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
             department: alloc.department,
             desk_number: alloc.desk_number,
             pos_x: alloc.pos_x ?? 0,
-            pos_y: alloc.pos_y ?? 1,
+            pos_y: wsY,
             pos_z: alloc.pos_z ?? 0,
             occupancy_status: alloc.allocation_status === "ASSIGNED" ? "occupied" : "vacant",
             assigned_employee: alloc.agent_id,
@@ -171,6 +220,8 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
         zones.forEach((zone: ZoneConfig) => {
           const deptName = zone.department;
           const spacing = DEFAULT_ZONE_SPACING[deptName] || { x: zone.desk_spacing_x || 2.2, z: zone.desk_spacing_z || 2.0 };
+          const deptFloor = getDepartmentFloor(deptName);
+          const deptElev = getFloorElevation(deptFloor);
 
           // Gather workstations belonging to this department
           const deptWorkstations = Object.values(loadedWorkstations).filter(
@@ -181,7 +232,7 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
             department: deptName,
             zone: zone.zone,
             base_x: zone.base_x,
-            base_y: zone.base_y,
+            base_y: deptElev,
             base_z: zone.base_z,
             max_physical_desks: zone.max_physical_desks || 8,
             desk_spacing_x: spacing.x,

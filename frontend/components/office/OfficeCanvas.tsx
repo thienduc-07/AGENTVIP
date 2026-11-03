@@ -10,6 +10,8 @@ import OfficeCamera from "./OfficeCamera";
 import DepartmentZone, { DepartmentZoneData } from "./DepartmentZone";
 import AgentAvatar, { AgentAvatarData } from "./AgentAvatar";
 import MeetingRoom from "./MeetingRoom";
+import CorporateBuilding from "./CorporateBuilding";
+import FloorInteriors from "./FloorInteriors";
 import { WorkstationData } from "./Workstation";
 import { OfficeSelection } from "@/types/office";
 import { useMeetingStore } from "@/store/meetingStore";
@@ -19,11 +21,14 @@ interface OfficeCanvasProps {
   workstations: Record<string, WorkstationData>;
   agents: Record<string, AgentAvatarData>;
   selection: OfficeSelection;
+  activeFloor?: number;
+  isFloorIsolated?: boolean;
   cameraTarget?: [number, number, number];
   cameraPosition?: [number, number, number];
   onSelectAgent: (id: string) => void;
   onSelectWorkstation: (id: string) => void;
   onSelectDepartment: (name: string) => void;
+  onSelectFloor?: (floor: number) => void;
   onPointerMissed: () => void;
   onEnterMeetingView?: () => void;
   onSelectMeetingChair?: (seatIndex: number, agentId?: string) => void;
@@ -35,11 +40,14 @@ export default function OfficeCanvas({
   workstations,
   agents,
   selection,
-  cameraTarget = [0, 0, 4],
-  cameraPosition = [0, 26, 32],
+  activeFloor = 0,
+  isFloorIsolated = false,
+  cameraTarget = [0, 16, 0],
+  cameraPosition = [0, 24, 46],
   onSelectAgent,
   onSelectWorkstation,
   onSelectDepartment,
+  onSelectFloor,
   onPointerMissed,
   onEnterMeetingView,
   onSelectMeetingChair,
@@ -73,9 +81,9 @@ export default function OfficeCanvas({
       Object.entries(seatAssignments).forEach(([agentId, seat]) => {
         const existing = result[agentId];
         const seatedWorldPos: [number, number, number] = [
-          seat.position[0],
-          seat.position[1] + 0.38,
-          seat.position[2] + 3.5,
+          seat.position[0] + 4.5,
+          seat.position[1] + 30.0 + 0.38,
+          seat.position[2],
         ];
         const mState =
           currentSpeakerId === agentId
@@ -121,7 +129,7 @@ export default function OfficeCanvas({
           position: cameraPosition,
           fov: 46,
           near: 0.5,
-          far: 250,
+          far: 450,
         }}
         gl={{
           antialias: true,
@@ -134,17 +142,28 @@ export default function OfficeCanvas({
         className="w-full h-full cursor-grab active:cursor-grabbing"
       >
         <color attach="background" args={["#090d16"]} />
-        <fog attach="fog" args={["#090d16", 45, 160]} />
+        <fog attach="fog" args={["#090d16", 75, 260]} />
 
         <Suspense fallback={null}>
           {/* Architectural Lighting Setup */}
           <OfficeLighting />
 
-          {/* Panoramic Skyline & Perimeter Walls */}
+          {/* Panoramic Skyline & Ground Plaza */}
           <OfficeEnvironment />
-
-          {/* Luxury Terrazzo Architectural Floor & Corridors */}
           <OfficeFloor />
+
+          {/* 6-Floor Multi-Story Architectural Headquarters */}
+          <CorporateBuilding
+            activeFloor={activeFloor}
+            isFloorIsolated={isFloorIsolated}
+            onSelectFloor={onSelectFloor}
+          />
+
+          {/* Architectural Interior Furniture, Partitions & Zone Features */}
+          <FloorInteriors
+            activeFloor={activeFloor}
+            isFloorIsolated={isFloorIsolated}
+          />
 
           {/* Dynamic Department Zones with Child Workstations */}
           {Object.values(departments).map((dept) => (
@@ -158,9 +177,9 @@ export default function OfficeCanvas({
             />
           ))}
 
-          {/* 3D Glass Conference Pavilion & Meeting Room */}
+          {/* 3D Glass Grand Executive Boardroom on Floor 6 */}
           <MeetingRoom
-            position={[0, 0, 3.5]}
+            position={[4.5, 30.0, 0]}
             onEnterMeetingView={onEnterMeetingView}
             onSelectChair={onSelectMeetingChair}
             onSelectDisplay={onSelectMeetingDisplay}
