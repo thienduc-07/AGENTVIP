@@ -8400,6 +8400,24 @@
     "ast_hash": "4dc559d3ad564d1685443d91e9afd494",
     "semantic_hash": ""
   },
+  "backend/app/scripts/benchmark_performance.py": {
+    "mtime": 1793677547.0982378,
+    "seen": 1793677775.989686,
+    "ast_hash": "68931b00a86dd6bbfcfba9811b37f6ff",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/performance.spec.ts": {
+    "mtime": 1793677727.9326916,
+    "seen": 1793677775.989931,
+    "ast_hash": "c57b04dd40c1b62358d9d4b6663b2c82",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_PERFORMANCE_REPORT.md": {
+    "mtime": 1793677756.6639895,
+    "seen": 1793677775.990175,
+    "ast_hash": "f64a969119305b00177bda0c0e11453b",
+    "semantic_hash": ""
+  },
   "frontend/package-lock.json": {
     "mtime": 1793675206.9747841,
     "seen": 1793675764.989932,
