@@ -126,7 +126,7 @@ export default function OfficeCanvas({
 
   return (
     <div
-      className="relative w-full h-full bg-slate-950 overflow-hidden"
+      className="relative w-full h-full bg-sky-950 overflow-hidden"
       onContextMenu={(e) => e.preventDefault()}
     >
       <Canvas
@@ -135,20 +135,20 @@ export default function OfficeCanvas({
           position: cameraPosition,
           fov: 46,
           near: 0.5,
-          far: 450,
+          far: 500,
         }}
         gl={{
           antialias: true,
           alpha: false,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.15,
+          toneMappingExposure: 1.25,
         }}
         onPointerMissed={onPointerMissed}
         className="w-full h-full cursor-grab active:cursor-grabbing"
       >
-        <color attach="background" args={["#090d16"]} />
-        <fog attach="fog" args={["#090d16", 75, 260]} />
+        <color attach="background" args={["#7dd3fc"]} />
+        <fog attach="fog" args={["#cbe5f7", 100, 380]} />
 
         <Suspense fallback={null}>
           {/* Architectural Lighting Setup */}

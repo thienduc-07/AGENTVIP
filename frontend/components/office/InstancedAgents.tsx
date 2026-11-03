@@ -30,14 +30,14 @@ const SHOE_GEOMETRY = new THREE.BoxGeometry(0.1, 0.07, 0.22);
 const RING_GEOMETRY = new THREE.RingGeometry(0.45, 0.58, 24);
 
 // Shared Avatar Materials (Singletons)
-const PELVIS_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.6 });
-const TORSO_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.5 });
-const SHIRT_MATERIAL = new THREE.MeshStandardMaterial({ color: "#f8fafc", roughness: 0.3 });
-const SKIN_MATERIAL = new THREE.MeshStandardMaterial({ color: "#fed7aa", roughness: 0.6 });
-const HAIR_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.4 });
-const SUIT_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.5 });
-const PANTS_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.7 });
-const SHOE_MATERIAL = new THREE.MeshStandardMaterial({ color: "#090d16", roughness: 0.3, metalness: 0.4 });
+const PELVIS_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.5 });
+const TORSO_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.45 });
+const SHIRT_MATERIAL = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.25 });
+const SKIN_MATERIAL = new THREE.MeshStandardMaterial({ color: "#fed7aa", roughness: 0.55 });
+const HAIR_MATERIAL = new THREE.MeshStandardMaterial({ color: "#171717", roughness: 0.4 });
+const SUIT_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.45 });
+const PANTS_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.6 });
+const SHOE_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0a0a0a", roughness: 0.25, metalness: 0.5 });
 
 // Dynamic instanced materials supporting per-instance vertex colors
 const TIE_BASE_MATERIAL = new THREE.MeshStandardMaterial({
@@ -147,9 +147,12 @@ export default function InstancedAgents({
       }
 
       const heading = agentHeadings.current[i];
+      const phase = i * 0.618;
 
-      // Vertical bounce / breathing
-      const bounceY = isMoving ? Math.abs(Math.sin(t * 9.0)) * 0.05 : Math.sin(t * 1.8) * 0.015;
+      // Vertical bounce / breathing with per-agent phase offset to eliminate lockstep
+      const bounceY = isMoving
+        ? Math.abs(Math.sin((t + phase) * 9.0)) * 0.05
+        : Math.sin((t + phase) * 1.8) * 0.015;
       const rootY = pos.y + bounceY;
 
       // Parent transform for the agent root
@@ -197,7 +200,9 @@ export default function InstancedAgents({
       setPart(neckRef, [0, 1.25, 0]);
 
       // 7. Head [0, 1.39, 0]
-      const headNod = isMoving ? Math.sin(t * 9.0) * 0.03 : Math.sin(t * 1.5) * 0.02;
+      const headNod = isMoving
+        ? Math.sin((t + phase) * 9.0) * 0.03
+        : Math.sin((t + phase) * 1.5) * 0.02;
       setPart(headRef, [0, 1.39, 0], [headNod, 0, 0]);
 
       // 8. Hair [0, 1.48, 0]
@@ -207,11 +212,11 @@ export default function InstancedAgents({
       let armSwingL = 0;
       let armSwingR = 0;
       if (isMoving) {
-        armSwingL = Math.sin(t * 9.0) * 0.45;
-        armSwingR = -Math.sin(t * 9.0) * 0.45;
+        armSwingL = Math.sin((t + phase) * 9.0) * 0.45;
+        armSwingR = -Math.sin((t + phase) * 9.0) * 0.45;
       } else if (isSeated) {
-        armSwingL = 0.85 + Math.sin(t * 12.0) * 0.06; // Typing animation
-        armSwingR = 0.85 + Math.cos(t * 12.0) * 0.06;
+        armSwingL = 0.85 + Math.sin((t + phase) * 12.0) * 0.06; // Typing animation
+        armSwingR = 0.85 + Math.cos((t + phase) * 12.0) * 0.06;
       }
       setPart(leftArmRef, [-0.25, 1.02, 0], [armSwingL, 0, 0]);
       setPart(rightArmRef, [0.25, 1.02, 0], [armSwingR, 0, 0]);

@@ -24,7 +24,7 @@ interface OfficeSceneProps {
 }
 
 export const FLOOR_CAMERA_PRESETS: Record<number, { pos: [number, number, number]; look: [number, number, number] }> = {
-  0: { pos: [0, 24, 46], look: [0, 16, 0] },       // Overview (All 6 Floors Dollhouse Cutaway)
+  0: { pos: [0, 20.0, 58.0], look: [0, 18.0, 0] },       // Overview (All 6 Floors Dollhouse Cutaway)
   1: { pos: [0, 5.5, 20], look: [0, 1.5, 0] },     // Floor 1: Reception & Operations
   2: { pos: [0, 11.5, 20], look: [0, 7.5, 0] },    // Floor 2: Design & Creative
   3: { pos: [0, 17.5, 20], look: [0, 13.5, 0] },   // Floor 3: Marketing & Growth

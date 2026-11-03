@@ -34,12 +34,12 @@ const HALO_GEOMETRY = new THREE.PlaneGeometry(2.7, 2.2);
 
 // Shared Workstation Materials (Singletons)
 const DESK_WOOD_MATERIAL = new THREE.MeshStandardMaterial({
-  color: "#d4a373",
-  roughness: 0.4,
-  metalness: 0.05,
+  color: "#f8fafc",
+  roughness: 0.25,
+  metalness: 0.08,
 });
 const STEEL_FRAME_MATERIAL = new THREE.MeshStandardMaterial({
-  color: "#0f172a",
+  color: "#cbd5e1",
   metalness: 0.85,
   roughness: 0.2,
 });
@@ -48,16 +48,16 @@ const SCREEN_MATERIAL = new THREE.MeshStandardMaterial({
   roughness: 0.2,
 });
 const CHAIR_POLE_MATERIAL = new THREE.MeshStandardMaterial({
-  color: "#334155",
-  metalness: 0.8,
+  color: "#94a3b8",
+  metalness: 0.85,
 });
 const CHAIR_CUSHION_MATERIAL = new THREE.MeshStandardMaterial({
-  color: "#1e293b",
-  roughness: 0.7,
+  color: "#334155",
+  roughness: 0.6,
 });
 const CHAIR_BACKREST_MATERIAL = new THREE.MeshStandardMaterial({
-  color: "#0f172a",
-  roughness: 0.6,
+  color: "#1e293b",
+  roughness: 0.5,
 });
 const HALO_MATERIAL = new THREE.MeshBasicMaterial({
   color: "#38bdf8",

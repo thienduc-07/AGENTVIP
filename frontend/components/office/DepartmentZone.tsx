@@ -73,54 +73,54 @@ function DepartmentZone({
       }}
       onPointerOut={() => setIsHovered(false)}
     >
-      {/* 1. Department Floor Carpet Accent */}
+      {/* 1. Department Floor Light Carpet Accent (Warm Travertine / Slate) */}
       <mesh receiveShadow position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[carpetWidth, carpetDepth]} />
         <meshStandardMaterial
-          color="#0f172a"
-          roughness={0.75}
-          metalness={0.08}
+          color="#f8fafc"
+          roughness={0.4}
+          metalness={0.05}
         />
       </mesh>
 
-      {/* 2. Department Boundary Glow Line */}
+      {/* 2. Department Boundary Subtle Accent Line */}
       <mesh position={[0, 0.007, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[carpetWidth + 0.12, carpetDepth + 0.12]} />
         <meshBasicMaterial
           color={isSelected ? "#38bdf8" : deptColor}
           transparent
-          opacity={isSelected ? 0.8 : isHovered ? 0.45 : 0.22}
+          opacity={isSelected ? 0.75 : isHovered ? 0.4 : 0.15}
           wireframe
         />
       </mesh>
 
-      {/* 3. Floating Department Overhead Label */}
-      <Html position={[0, 3.2, -carpetDepth / 2 + 0.5]} center distanceFactor={18}>
-        <div
-          className={`px-3 py-1 rounded-full backdrop-blur-md border text-xs font-semibold whitespace-nowrap cursor-pointer transition-all duration-150 flex items-center gap-1.5 shadow-md ${
-            isSelected
-              ? "bg-sky-950/90 border-sky-400 text-sky-200 ring-2 ring-sky-400/40"
-              : isHovered
-              ? "bg-slate-900/90 border-slate-600 text-slate-100"
-              : "bg-slate-950/75 border-slate-800 text-slate-300"
-          }`}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onSelectDepartment) onSelectDepartment(data.department);
-          }}
-        >
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: deptColor }}
-          />
-          <span>{data.department}</span>
-          <span className="text-[10px] text-slate-400 font-normal">
-            ({data.workstations.filter((w) => w.assigned_employee).length}/{data.max_physical_desks} Bàn)
-          </span>
-        </div>
-      </Html>
+      {/* 3. Floating Department Overhead Label (Only shown on hover or when department is selected) */}
+      {(isSelected || isHovered) && (
+        <Html position={[0, 3.2, -carpetDepth / 2 + 0.5]} center distanceFactor={18}>
+          <div
+            className={`px-3 py-1 rounded-full backdrop-blur-md border text-xs font-semibold whitespace-nowrap cursor-pointer transition-all duration-150 flex items-center gap-1.5 shadow-md ${
+              isSelected
+                ? "bg-sky-950/90 border-sky-400 text-sky-200 ring-2 ring-sky-400/40"
+                : "bg-slate-900/90 border-slate-600 text-slate-100"
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onSelectDepartment) onSelectDepartment(data.department);
+            }}
+          >
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: deptColor }}
+            />
+            <span>{data.department}</span>
+            <span className="text-[10px] text-slate-400 font-normal">
+              ({data.workstations.filter((w) => w.assigned_employee).length}/{data.max_physical_desks} Bàn)
+            </span>
+          </div>
+        </Html>
+      )}
 
-      {/* 4. Child Workstation Array within this Department Zone (Optional non-instanced fallback) */}
+      {/* 4. Child Workstation Array within this Department Zone */}
       {renderWorkstations &&
         data.workstations.map((ws) => (
           <Workstation
@@ -150,4 +150,3 @@ export default React.memo(DepartmentZone, (prev, next) => {
     prev.data.workstations === next.data.workstations
   );
 });
-

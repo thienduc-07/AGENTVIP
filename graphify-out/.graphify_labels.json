@@ -6,7 +6,6 @@
   "44": "ProviderStepResponse",
   "46": "agent-skills/skills/mcp-builder/scripts/connections.py",
   "54": "agent_runtime/skills/mcp-builder/scripts/connections.py",
-  "55": "tools.py",
   "57": "external_skills/skills/mcp-builder/scripts/connections.py",
   "60": "test_tools.py",
   "61": "agent-skills/skills/algorithmic-art/templates/generator_template.js",

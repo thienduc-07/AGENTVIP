@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import * as THREE from "three";
 import { Html } from "@react-three/drei";
-import { Monitor, Cpu, ShieldCheck, Database, Palette, Users, Sparkles } from "lucide-react";
 
 export interface FloorInteriorsProps {
   activeFloor?: number;
@@ -17,132 +16,136 @@ function FloorInteriors({
   return (
     <group>
       {/* =========================================================================
-          FLOOR 1: RECEPTION, LOBBY, OPERATIONS & FINANCE (Y = 0.0m)
+          FLOOR 1: GRAND RECEPTION, VIP LOUNGE & OPERATIONS (Y = 0.0m)
           ========================================================================= */}
       <group position={[0, 0, 0]} visible={!isFloorIsolated || activeFloor === 0 || activeFloor === 1}>
-        {/* Main Curved Reception Desk at [0, 0, 4.0] */}
-        <group position={[0, 0, 4.0]}>
-          {/* Curved Counter Top */}
+        {/* Center Back Wall: Warm Vertical Wood Slat Feature Wall with Illuminated "PROVIPAGENT" Logo */}
+        <group position={[0, 2.6, -5.2]}>
+          {/* Wood Feature Panel */}
+          <mesh receiveShadow>
+            <boxGeometry args={[14.0, 4.2, 0.15]} />
+            <meshStandardMaterial color="#78350f" roughness={0.65} metalness={0.05} />
+          </mesh>
+          {/* Thin Vertical Wood Slats */}
+          {[-6, -4.5, -3, -1.5, 0, 1.5, 3, 4.5, 6].map((sx) => (
+            <mesh key={`slat-${sx}`} position={[sx, 0, 0.09]}>
+              <boxGeometry args={[0.08, 4.2, 0.04]} />
+              <meshStandardMaterial color="#451a03" roughness={0.5} />
+            </mesh>
+          ))}
+          {/* Warm Halo Backlight */}
+          <pointLight color="#fef08a" intensity={0.9} distance={8} position={[0, 0.5, 0.5]} />
+
+          {/* Crisp Illuminated Brand Signage */}
+          <Html position={[0, 0.4, 0.12]} center distanceFactor={18} className="select-none pointer-events-none">
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-950/80 border border-sky-400/40 shadow-2xl backdrop-blur-md">
+                <div className="w-5 h-5 rounded-lg bg-sky-500 flex items-center justify-center font-black text-white text-[11px] shadow-md shadow-sky-500/50">
+                  P
+                </div>
+                <span className="font-extrabold text-sm tracking-widest text-white uppercase drop-shadow-md">
+                  PROVIPAGENT
+                </span>
+              </div>
+            </div>
+          </Html>
+        </group>
+
+        {/* Grand Curved Reception Desk at [0, 0, 1.8] */}
+        <group position={[0, 0, 1.8]}>
+          {/* Curved Counter Top (White Marble) */}
           <mesh castShadow receiveShadow position={[0, 1.05, 0]}>
-            <cylinderGeometry args={[3.2, 3.2, 0.12, 32, 1, false, Math.PI * 0.15, Math.PI * 0.7]} />
+            <cylinderGeometry args={[3.4, 3.4, 0.12, 32, 1, false, Math.PI * 0.15, Math.PI * 0.7]} />
             <meshStandardMaterial color="#f8fafc" roughness={0.15} metalness={0.1} />
           </mesh>
-          {/* Wood Slat Desk Base */}
+          {/* Champagne Metallic Desk Base */}
           <mesh castShadow position={[0, 0.5, 0]}>
-            <cylinderGeometry args={[3.0, 3.0, 1.0, 32, 1, false, Math.PI * 0.15, Math.PI * 0.7]} />
-            <meshStandardMaterial color="#78350f" roughness={0.6} metalness={0.05} />
+            <cylinderGeometry args={[3.2, 3.2, 1.0, 32, 1, false, Math.PI * 0.15, Math.PI * 0.7]} />
+            <meshStandardMaterial color="#e2e8f0" roughness={0.3} metalness={0.4} />
           </mesh>
           {/* LED Backlit Counter Trim */}
           <mesh position={[0, 0.08, 0]}>
-            <cylinderGeometry args={[3.05, 3.05, 0.08, 32, 1, false, Math.PI * 0.15, Math.PI * 0.7]} />
-            <meshBasicMaterial color="#06b6d4" />
+            <cylinderGeometry args={[3.25, 3.25, 0.08, 32, 1, false, Math.PI * 0.15, Math.PI * 0.7]} />
+            <meshBasicMaterial color="#38bdf8" />
           </mesh>
-          {/* Receptionist Computer Screen */}
-          <mesh position={[0, 1.35, -0.6]} rotation={[0, Math.PI, 0]}>
-            <boxGeometry args={[0.9, 0.55, 0.04]} />
-            <meshStandardMaterial color="#0f172a" />
-          </mesh>
-          {/* Receptionist Ergonomic Chair */}
-          <mesh position={[0, 0.5, -1.2]}>
-            <cylinderGeometry args={[0.3, 0.35, 0.8, 16]} />
-            <meshStandardMaterial color="#1e293b" metalness={0.6} />
-          </mesh>
-
-          {/* Floating Holographic Agency Emblem above Reception */}
-          <group position={[0, 2.5, 0]}>
-            <mesh rotation={[0, 0, Math.PI / 4]}>
-              <boxGeometry args={[0.5, 0.5, 0.5]} />
-              <meshStandardMaterial
-                color="#06b6d4"
-                emissive="#0891b2"
-                emissiveIntensity={0.8}
-                wireframe
-              />
+          {/* Receptionist Computer Screens */}
+          {[-0.6, 0.6].map((rx, idx) => (
+            <mesh key={`rec-mon-${idx}`} position={[rx, 1.35, -0.6]} rotation={[0, Math.PI, 0]}>
+              <boxGeometry args={[0.7, 0.45, 0.04]} />
+              <meshStandardMaterial color="#0f172a" />
             </mesh>
-            <pointLight color="#06b6d4" intensity={1.2} distance={6} />
-          </group>
-        </group>
-
-        {/* Lobby Waiting Lounge at [-8.0, 0, 6.0] */}
-        <group position={[-8.0, 0, 6.0]}>
-          {/* Luxury Modern Sofa 1 (Facing East) */}
-          <mesh castShadow receiveShadow position={[0, 0.42, 0]}>
-            <boxGeometry args={[1.1, 0.84, 3.2]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.7} />
-          </mesh>
-          {/* Luxury Modern Sofa 2 (Facing West) */}
-          <mesh castShadow receiveShadow position={[3.2, 0.42, 0]}>
-            <boxGeometry args={[1.1, 0.84, 3.2]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.7} />
-          </mesh>
-          {/* Dark Glass Coffee Table in Center */}
-          <mesh castShadow receiveShadow position={[1.6, 0.32, 0]}>
-            <boxGeometry args={[1.4, 0.3, 2.2]} />
-            <meshStandardMaterial color="#020617" roughness={0.1} metalness={0.9} />
-          </mesh>
-          {/* Indoor Planter with Greenery */}
-          <group position={[-1.6, 0, 2.4]}>
-            <mesh castShadow position={[0, 0.4, 0]}>
-              <cylinderGeometry args={[0.45, 0.35, 0.8, 16]} />
-              <meshStandardMaterial color="#ffffff" roughness={0.3} />
-            </mesh>
-            <mesh castShadow position={[0, 1.1, 0]}>
-              <sphereGeometry args={[0.65, 12, 12]} />
-              <meshStandardMaterial color="#15803d" roughness={0.8} />
-            </mesh>
-          </group>
-        </group>
-
-        {/* Visitor Refreshment & Coffee Bar at [12.0, 0, 6.0] */}
-        <group position={[12.0, 0, 6.0]}>
-          <mesh castShadow receiveShadow position={[0, 0.55, 0]}>
-            <boxGeometry args={[3.4, 1.1, 1.2]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.4} metalness={0.2} />
-          </mesh>
-          <mesh position={[0, 1.12, 0]}>
-            <boxGeometry args={[3.5, 0.05, 1.25]} />
-            <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.1} />
-          </mesh>
-          {/* Espresso Machine */}
-          <mesh castShadow position={[-0.8, 1.35, 0]}>
-            <boxGeometry args={[0.5, 0.45, 0.4]} />
-            <meshStandardMaterial color="#e2e8f0" metalness={0.9} roughness={0.1} />
-          </mesh>
-          {/* Bar Stools */}
-          {[-1.0, 0, 1.0].map((bx, idx) => (
-            <mesh key={`stool-${idx}`} position={[bx, 0.4, 1.0]}>
-              <cylinderGeometry args={[0.22, 0.22, 0.8, 16]} />
-              <meshStandardMaterial color="#d97706" roughness={0.5} />
+          ))}
+          {/* Receptionist Chairs */}
+          {[-0.6, 0.6].map((rx, idx) => (
+            <mesh key={`rec-chair-${idx}`} position={[rx, 0.5, -1.2]}>
+              <cylinderGeometry args={[0.28, 0.32, 0.8, 16]} />
+              <meshStandardMaterial color="#334155" metalness={0.6} />
             </mesh>
           ))}
         </group>
 
-        {/* Operations Hub Signboard at [-11.0, 0, -4.0] */}
-        <group position={[-11.0, 0, -4.0]}>
-          {/* Glass Partition Wall */}
-          <mesh position={[0, 1.6, -2.5]}>
-            <boxGeometry args={[9.5, 3.2, 0.08]} />
-            <meshPhysicalMaterial color="#94a3b8" transmission={0.9} transparent opacity={0.4} roughness={0.1} />
+        {/* Left VIP Lounge: Emerald Green & Mustard Yellow Velvet Armchairs at [-9.0, 0, 4.0] */}
+        <group position={[-9.0, 0, 4.0]}>
+          {/* Emerald Green Velvet Sofa */}
+          <mesh castShadow receiveShadow position={[0, 0.45, 0]}>
+            <boxGeometry args={[1.2, 0.85, 3.2]} />
+            <meshStandardMaterial color="#065f46" roughness={0.65} />
           </mesh>
-          {/* Operations Dispatch Terminal Rack */}
-          <mesh castShadow position={[-4.0, 1.2, 1.0]}>
-            <boxGeometry args={[0.5, 2.4, 1.2]} />
-            <meshStandardMaterial color="#1e293b" metalness={0.7} />
+          {/* Mustard Yellow Velvet Armchairs */}
+          {[-1.2, 1.2].map((az, idx) => (
+            <mesh key={`mustard-chair-${idx}`} castShadow receiveShadow position={[2.4, 0.45, az]}>
+              <boxGeometry args={[0.9, 0.85, 0.9]} />
+              <meshStandardMaterial color="#d97706" roughness={0.65} />
+            </mesh>
+          ))}
+          {/* White Marble Circular Coffee Table */}
+          <mesh castShadow receiveShadow position={[1.2, 0.35, 0]}>
+            <cylinderGeometry args={[0.8, 0.8, 0.3, 24]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.2} />
           </mesh>
+          {/* Indoor Potted Ficus Palm in White Ceramic Pot */}
+          <group position={[-1.8, 0, 2.5]}>
+            <mesh castShadow position={[0, 0.5, 0]}>
+              <cylinderGeometry args={[0.5, 0.4, 1.0, 16]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.2} />
+            </mesh>
+            <mesh castShadow position={[0, 1.6, 0]}>
+              <sphereGeometry args={[0.85, 12, 12]} />
+              <meshStandardMaterial color="#16a34a" roughness={0.7} />
+            </mesh>
+          </group>
         </group>
 
-        {/* Finance & Treasury Wing at [11.0, 0, -4.0] */}
-        <group position={[11.0, 0, -4.0]}>
-          {/* Glass Partition Wall */}
-          <mesh position={[0, 1.6, -2.5]}>
-            <boxGeometry args={[9.5, 3.2, 0.08]} />
-            <meshPhysicalMaterial color="#94a3b8" transmission={0.9} transparent opacity={0.4} roughness={0.1} />
+        {/* Right Lounge: Coffee Bar & Meeting Breakout at [9.0, 0, 4.0] */}
+        <group position={[9.0, 0, 4.0]}>
+          {/* Modern Cream Leather Sofa */}
+          <mesh castShadow receiveShadow position={[0, 0.45, 0]}>
+            <boxGeometry args={[1.2, 0.85, 3.2]} />
+            <meshStandardMaterial color="#e2e8f0" roughness={0.6} />
           </mesh>
-          {/* Secure Financial Vault / Server Display */}
-          <mesh castShadow position={[4.0, 1.2, -1.0]}>
-            <boxGeometry args={[0.6, 2.2, 1.4]} />
-            <meshStandardMaterial color="#020617" metalness={0.9} roughness={0.1} />
+          {/* Teal Velvet Armchairs */}
+          {[-1.2, 1.2].map((az, idx) => (
+            <mesh key={`teal-chair-${idx}`} castShadow receiveShadow position={[-2.4, 0.45, az]}>
+              <boxGeometry args={[0.9, 0.85, 0.9]} />
+              <meshStandardMaterial color="#0e7490" roughness={0.65} />
+            </mesh>
+          ))}
+          {/* Coffee Table */}
+          <mesh castShadow receiveShadow position={[-1.2, 0.35, 0]}>
+            <cylinderGeometry args={[0.8, 0.8, 0.3, 24]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.2} />
           </mesh>
+          {/* Indoor Tree */}
+          <group position={[1.8, 0, 2.5]}>
+            <mesh castShadow position={[0, 0.5, 0]}>
+              <cylinderGeometry args={[0.5, 0.4, 1.0, 16]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.2} />
+            </mesh>
+            <mesh castShadow position={[0, 1.6, 0]}>
+              <sphereGeometry args={[0.85, 12, 12]} />
+              <meshStandardMaterial color="#16a34a" roughness={0.7} />
+            </mesh>
+          </group>
         </group>
       </group>
 
@@ -150,43 +153,74 @@ function FloorInteriors({
           FLOOR 2: DESIGN & CREATIVE STUDIO (Y = 6.0m)
           ========================================================================= */}
       <group position={[0, 6.0, 0]} visible={!isFloorIsolated || activeFloor === 0 || activeFloor === 2}>
-        {/* Collaborative Design Prototype Showcase Table at [0, 0, 2.0] */}
-        <group position={[0, 0, 2.0]}>
+        {/* Back Wall Signage */}
+        <group position={[-9.0, 3.2, -5.2]}>
+          <Html position={[0, 0, 0.1]} center distanceFactor={20} className="select-none pointer-events-none">
+            <div className="px-3 py-1 rounded-lg bg-pink-950/80 border border-pink-400/40 text-pink-200 font-bold text-xs tracking-wider uppercase shadow-lg">
+              DESIGN STUDIO & CREATIVE
+            </div>
+          </Html>
+        </group>
+
+        {/* Central Design Collaboration Table with Colorful Designer Chairs at [0, 0, 3.0] */}
+        <group position={[0, 0, 3.0]}>
+          {/* Large Round White Collaboration Table */}
+          <mesh castShadow receiveShadow position={[0, 0.74, 0]}>
+            <cylinderGeometry args={[2.2, 2.2, 0.08, 32]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.1} />
+          </mesh>
+          <mesh position={[0, 0.35, 0]}>
+            <cylinderGeometry args={[0.3, 0.45, 0.7, 16]} />
+            <meshStandardMaterial color="#cbd5e1" metalness={0.8} />
+          </mesh>
+          {/* Laptops on Table */}
+          {[0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((ang, idx) => (
+            <mesh key={`laptop-${idx}`} position={[Math.sin(ang) * 1.3, 0.8, Math.cos(ang) * 1.3]} rotation={[0, ang + Math.PI, 0]}>
+              <boxGeometry args={[0.35, 0.02, 0.25]} />
+              <meshStandardMaterial color="#cbd5e1" metalness={0.9} />
+            </mesh>
+          ))}
+          {/* 4 Colorful Designer Chairs (Mustard, Teal, Coral, Violet) */}
+          {[
+            { a: 0, c: "#f59e0b" },
+            { a: Math.PI / 2, c: "#06b6d4" },
+            { a: Math.PI, c: "#f43f5e" },
+            { a: (3 * Math.PI) / 2, c: "#8b5cf6" },
+          ].map((item, idx) => (
+            <group key={`des-chair-${idx}`} position={[Math.sin(item.a) * 2.0, 0.45, Math.cos(item.a) * 2.0]} rotation={[0, item.a + Math.PI, 0]}>
+              <mesh castShadow>
+                <boxGeometry args={[0.5, 0.8, 0.5]} />
+                <meshStandardMaterial color={item.c} roughness={0.5} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+
+        {/* Mobile Architectural Moodboards & Wireframe Pinup Boards at [-5.0, 0, 1.5] */}
+        <group position={[-5.0, 1.4, 1.5]} rotation={[0, 0.2, 0]}>
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[3.2, 1.8, 0.08]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.3} />
+          </mesh>
+          {/* Color Palettes & Wireframe Swatches */}
+          {[-1.0, -0.3, 0.4, 1.1].map((px, idx) => (
+            <mesh key={`swatch-${idx}`} position={[px, 0.2, 0.05]}>
+              <planeGeometry args={[0.55, 0.8]} />
+              <meshBasicMaterial color={["#ec4899", "#8b5cf6", "#06b6d4", "#10b981"][idx]} />
+            </mesh>
+          ))}
+        </group>
+
+        {/* Right Creative Lounge at [8.5, 0, 4.0] */}
+        <group position={[8.5, 0, 4.0]}>
           <mesh castShadow receiveShadow position={[0, 0.45, 0]}>
-            <cylinderGeometry args={[2.0, 2.0, 0.9, 32]} />
-            <meshStandardMaterial color="#f1f5f9" roughness={0.3} metalness={0.1} />
+            <boxGeometry args={[1.2, 0.85, 3.0]} />
+            <meshStandardMaterial color="#1e293b" roughness={0.6} />
           </mesh>
-          {/* 3D Wireframe Hologram of Next-Gen UI Component */}
-          <mesh position={[0, 1.4, 0]} rotation={[0.4, 0.4, 0]}>
-            <torusKnotGeometry args={[0.35, 0.1, 64, 16]} />
-            <meshStandardMaterial color="#ec4899" emissive="#db2777" emissiveIntensity={0.6} wireframe />
+          <mesh castShadow position={[-1.2, 0.35, 0]}>
+            <boxGeometry args={[0.8, 0.3, 1.8]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.2} />
           </mesh>
-          <pointLight color="#ec4899" intensity={0.8} distance={5} position={[0, 1.4, 0]} />
-        </group>
-
-        {/* Design System Pinup / Mood Wall along West Wall at X = -16.5 */}
-        <group position={[-16.5, 1.8, 0]}>
-          <mesh receiveShadow>
-            <boxGeometry args={[0.1, 3.2, 16.0]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.6} />
-          </mesh>
-          {/* Color Palettes and Layout Swatches */}
-          {[-6, -3, 0, 3, 6].map((mz, idx) => (
-            <mesh key={`mood-${idx}`} position={[0.08, 0, mz]}>
-              <planeGeometry args={[0.02, 1.8]} />
-              <meshBasicMaterial color={["#ec4899", "#8b5cf6", "#38bdf8", "#10b981", "#f59e0b"][idx]} />
-            </mesh>
-          ))}
-        </group>
-
-        {/* Creative Brainstorming Lounge with Round Ottomans at [-2.0, 0, 7.5] */}
-        <group position={[-2.0, 0, 7.5]}>
-          {[-1.2, 0, 1.2].map((ox, idx) => (
-            <mesh key={`ottoman-${idx}`} castShadow position={[ox, 0.22, 0]}>
-              <cylinderGeometry args={[0.45, 0.45, 0.44, 24]} />
-              <meshStandardMaterial color={["#ec4899", "#a855f7", "#06b6d4"][idx]} roughness={0.7} />
-            </mesh>
-          ))}
         </group>
       </group>
 
@@ -194,179 +228,138 @@ function FloorInteriors({
           FLOOR 3: MARKETING & GROWTH (Y = 12.0m)
           ========================================================================= */}
       <group position={[0, 12.0, 0]} visible={!isFloorIsolated || activeFloor === 0 || activeFloor === 3}>
-        {/* VP Marketing Private Corner Glass Office at [-11.0, 0, -5.0] */}
-        <group position={[-11.0, 0, -5.0]}>
-          {/* Glass Partition Enclosure */}
-          <mesh position={[0, 1.6, 2.5]}>
-            <boxGeometry args={[9.5, 3.2, 0.08]} />
-            <meshPhysicalMaterial color="#94a3b8" transmission={0.9} transparent opacity={0.4} roughness={0.1} />
-          </mesh>
-          <mesh position={[4.7, 1.6, 0]}>
-            <boxGeometry args={[0.08, 3.2, 5.0]} />
-            <meshPhysicalMaterial color="#94a3b8" transmission={0.9} transparent opacity={0.4} roughness={0.1} />
-          </mesh>
-          {/* Marketing Whiteboard */}
-          <mesh position={[0, 1.6, -2.4]}>
-            <boxGeometry args={[4.2, 1.8, 0.05]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.1} />
-          </mesh>
+        {/* Back Wall Signage */}
+        <group position={[9.0, 3.2, -5.2]}>
+          <Html position={[0, 0, 0.1]} center distanceFactor={20} className="select-none pointer-events-none">
+            <div className="px-3 py-1 rounded-lg bg-amber-950/80 border border-amber-400/40 text-amber-200 font-bold text-xs tracking-wider uppercase shadow-lg">
+              MARKETING & GROWTH
+            </div>
+          </Html>
         </group>
 
-        {/* Enterprise Sales Bullpen & Revenue Ticker Wall at [14.0, 1.8, -2.0] */}
-        <group position={[14.0, 1.8, -2.0]}>
-          {/* Revenue Ticker Display */}
-          <mesh>
-            <boxGeometry args={[0.08, 1.2, 6.5]} />
-            <meshStandardMaterial color="#020617" />
+        {/* Center Marketing Collaboration Island at [0, 0, 2.5] */}
+        <group position={[0, 0, 2.5]}>
+          <mesh castShadow receiveShadow position={[0, 0.74, 0]}>
+            <boxGeometry args={[4.5, 0.08, 1.8]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.25} metalness={0.1} />
           </mesh>
-          <mesh position={[-0.05, 0, 0]}>
-            <planeGeometry args={[6.3, 1.0]} />
+          {[-1.8, 1.8].map((lx, idx) => (
+            <mesh key={`mkt-leg-${idx}`} position={[lx, 0.35, 0]}>
+              <boxGeometry args={[0.1, 0.7, 1.6]} />
+              <meshStandardMaterial color="#cbd5e1" metalness={0.8} />
+            </mesh>
+          ))}
+          {/* Growth Analytics Display Screen */}
+          <mesh position={[0, 1.5, -0.6]} rotation={[0, 0, 0]}>
+            <boxGeometry args={[2.4, 1.2, 0.06]} />
+            <meshStandardMaterial color="#0f172a" />
+          </mesh>
+          <mesh position={[0, 1.5, -0.56]}>
+            <planeGeometry args={[2.3, 1.1]} />
             <meshBasicMaterial color="#10b981" />
           </mesh>
         </group>
 
-        {/* Sales Pitch Conference Pod at [0, 0, 5.5] */}
-        <group position={[0, 0, 5.5]}>
-          {/* Glass Pod Walls */}
-          <mesh position={[0, 1.6, 0]}>
-            <boxGeometry args={[6.5, 3.2, 4.5]} />
-            <meshPhysicalMaterial color="#94a3b8" transmission={0.92} transparent opacity={0.35} roughness={0.08} />
+        {/* Right Breakout Lounge with Pastel Sofas at [9.0, 0, 4.0] */}
+        <group position={[9.0, 0, 4.0]}>
+          <mesh castShadow receiveShadow position={[0, 0.45, 0]}>
+            <boxGeometry args={[1.2, 0.85, 3.2]} />
+            <meshStandardMaterial color="#0284c7" roughness={0.65} />
           </mesh>
-          {/* Pitch Table & 4 Chairs */}
-          <mesh castShadow receiveShadow position={[0, 0.73, 0]}>
-            <cylinderGeometry args={[1.4, 1.4, 0.06, 32]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.3} metalness={0.4} />
-          </mesh>
-          {[-1.0, 1.0].map((cx, idx) => (
-            <React.Fragment key={`chair-pod-${idx}`}>
-              <mesh position={[cx, 0.45, 0]}>
-                <boxGeometry args={[0.45, 0.85, 0.45]} />
-                <meshStandardMaterial color="#334155" />
-              </mesh>
-              <mesh position={[0, 0.45, cx]}>
-                <boxGeometry args={[0.45, 0.85, 0.45]} />
-                <meshStandardMaterial color="#334155" />
-              </mesh>
-            </React.Fragment>
-          ))}
-          {/* Pitch Display Screen */}
-          <mesh position={[0, 1.6, -2.15]}>
-            <boxGeometry args={[2.2, 1.2, 0.06]} />
-            <meshStandardMaterial color="#0f172a" />
+          <mesh castShadow position={[-1.4, 0.35, 0]}>
+            <boxGeometry args={[1.0, 0.3, 2.0]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.2} />
           </mesh>
         </group>
       </group>
 
       {/* =========================================================================
-          FLOOR 4: RESEARCH & DATA SCIENCE (Y = 18.0m)
+          FLOOR 4: BANKING, FINANCE & AI RESEARCH (Y = 18.0m)
           ========================================================================= */}
       <group position={[0, 18.0, 0]} visible={!isFloorIsolated || activeFloor === 0 || activeFloor === 4}>
-        {/* Chief AI Scientist Suite at [-11.0, 0, -5.0] */}
-        <group position={[-11.0, 0, -5.0]}>
-          <mesh position={[0, 1.6, 2.5]}>
-            <boxGeometry args={[9.5, 3.2, 0.08]} />
-            <meshPhysicalMaterial color="#94a3b8" transmission={0.9} transparent opacity={0.4} roughness={0.1} />
-          </mesh>
-          {/* Scientific Research Hologram */}
-          <mesh position={[0, 1.5, 0]}>
-            <icosahedronGeometry args={[0.4, 1]} />
-            <meshStandardMaterial color="#8b5cf6" emissive="#7c3aed" emissiveIntensity={0.8} wireframe />
-          </mesh>
-          <pointLight color="#8b5cf6" intensity={1.0} distance={6} position={[0, 1.5, 0]} />
+        {/* Back Wall Signage: "BANKING & FINANCE" */}
+        <group position={[-9.0, 3.2, -5.2]}>
+          <Html position={[0, 0, 0.1]} center distanceFactor={20} className="select-none pointer-events-none">
+            <div className="px-3 py-1 rounded-lg bg-indigo-950/80 border border-indigo-400/40 text-indigo-200 font-bold text-xs tracking-wider uppercase shadow-lg">
+              BANKING & FINANCE
+            </div>
+          </Html>
         </group>
 
-        {/* High-Density GPU Server Room at [10.0, 0, -5.0] */}
-        <group position={[10.0, 0, -5.0]}>
-          {/* Dark Glass Server Room Enclosure */}
-          <mesh position={[0, 1.6, 0]}>
-            <boxGeometry args={[7.5, 3.2, 5.0]} />
-            <meshPhysicalMaterial color="#1e1b4b" transmission={0.85} transparent opacity={0.5} roughness={0.1} />
+        {/* Left Side: Financial Analytics Trading Screens & Charts */}
+        <group position={[-11.0, 1.8, -2.5]}>
+          <mesh castShadow>
+            <boxGeometry args={[0.08, 1.6, 6.0]} />
+            <meshStandardMaterial color="#0f172a" />
           </mesh>
-          {/* 4 Tall GPU Server Racks with Blinking Blue/Cyan LED Strips */}
-          {[-2.2, -0.7, 0.8, 2.3].map((rx, idx) => (
-            <group key={`server-${idx}`} position={[rx, 1.35, 0]}>
+          {/* Glowing Green/Red Financial Candlestick Chart */}
+          <mesh position={[0.05, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+            <planeGeometry args={[5.8, 1.4]} />
+            <meshBasicMaterial color="#059669" />
+          </mesh>
+        </group>
+
+        {/* High-Density AI Server Racks on Right Side at [11.0, 0, -2.5] */}
+        <group position={[11.0, 0, -2.5]}>
+          {[-1.5, 0, 1.5].map((rz, idx) => (
+            <group key={`fin-server-${idx}`} position={[0, 1.35, rz]}>
               <mesh castShadow>
-                <boxGeometry args={[0.9, 2.7, 1.1]} />
-                <meshStandardMaterial color="#020617" metalness={0.95} roughness={0.1} />
+                <boxGeometry args={[0.9, 2.7, 1.0]} />
+                <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.15} />
               </mesh>
               {/* Pulsing Status LEDs */}
-              {Array.from({ length: 8 }).map((_, lIdx) => (
-                <mesh key={`led-${lIdx}`} position={[0, lIdx * 0.3 - 1.0, 0.56]}>
-                  <boxGeometry args={[0.75, 0.04, 0.02]} />
-                  <meshStandardMaterial
-                    color="#38bdf8"
-                    emissive="#0284c7"
-                    emissiveIntensity={0.9}
-                  />
+              {Array.from({ length: 6 }).map((_, lIdx) => (
+                <mesh key={`fin-led-${lIdx}`} position={[-0.46, lIdx * 0.35 - 0.9, 0]}>
+                  <boxGeometry args={[0.02, 0.04, 0.7]} />
+                  <meshBasicMaterial color="#38bdf8" />
                 </mesh>
               ))}
             </group>
           ))}
-          <pointLight color="#38bdf8" intensity={1.5} distance={7} position={[0, 2.0, 0]} />
-        </group>
-
-        {/* Strategy War Room at [0, 0, 5.5] */}
-        <group position={[0, 0, 5.5]}>
-          {/* Round Glass Conference Table */}
-          <mesh castShadow receiveShadow position={[0, 0.74, 0]}>
-            <cylinderGeometry args={[1.8, 1.8, 0.06, 32]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.2} metalness={0.6} />
-          </mesh>
-          {/* Center Holographic Data Globe */}
-          <mesh position={[0, 1.3, 0]}>
-            <sphereGeometry args={[0.35, 16, 16]} />
-            <meshStandardMaterial color="#a855f7" emissive="#9333ea" emissiveIntensity={0.8} wireframe />
-          </mesh>
+          <pointLight color="#38bdf8" intensity={1.2} distance={6} position={[-0.8, 1.8, 0]} />
         </group>
       </group>
 
       {/* =========================================================================
-          FLOOR 5: ENGINEERING & ARCHITECTURE (Y = 24.0m)
+          FLOOR 5: ENGINEERING INNOVATION & ARCHITECTURE (Y = 24.0m)
           ========================================================================= */}
       <group position={[0, 24.0, 0]} visible={!isFloorIsolated || activeFloor === 0 || activeFloor === 5}>
-        {/* Principal Architect Suite at [-11.0, 0, -5.0] */}
-        <group position={[-11.0, 0, -5.0]}>
-          <mesh position={[0, 1.6, 2.5]}>
-            <boxGeometry args={[9.5, 3.2, 0.08]} />
-            <meshPhysicalMaterial color="#94a3b8" transmission={0.9} transparent opacity={0.4} roughness={0.1} />
-          </mesh>
-          {/* Architecture Topology Wall Board */}
-          <mesh position={[0, 1.6, -2.4]}>
-            <boxGeometry args={[4.5, 1.8, 0.05]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.2} />
-          </mesh>
+        {/* Back Wall Signage: "ENGINEERING INNOVATION" */}
+        <group position={[-9.0, 3.2, -5.2]}>
+          <Html position={[0, 0, 0.1]} center distanceFactor={20} className="select-none pointer-events-none">
+            <div className="px-3 py-1 rounded-lg bg-emerald-950/80 border border-emerald-400/40 text-emerald-200 font-bold text-xs tracking-wider uppercase shadow-lg">
+              ENGINEERING INNOVATION
+            </div>
+          </Html>
         </group>
 
-        {/* Large DevOps & CI/CD Telemetry Screen at [15.0, 1.8, -4.0] */}
-        <group position={[15.0, 1.8, -4.0]}>
-          <mesh>
-            <boxGeometry args={[0.08, 1.8, 5.5]} />
-            <meshStandardMaterial color="#020617" />
+        {/* Large Microservice Topology & Node Architecture Wall Screen at [0, 2.2, -5.1] */}
+        <group position={[0, 2.2, -5.1]}>
+          <mesh receiveShadow>
+            <boxGeometry args={[8.0, 2.4, 0.08]} />
+            <meshStandardMaterial color="#020617" roughness={0.2} metalness={0.8} />
           </mesh>
-          <mesh position={[-0.05, 0, 0]}>
-            <planeGeometry args={[5.3, 1.6]} />
-            <meshBasicMaterial color="#10b981" />
+          {/* Illuminated Cyan Network Display Face */}
+          <mesh position={[0, 0, 0.05]}>
+            <planeGeometry args={[7.8, 2.2]} />
+            <meshBasicMaterial color="#0284c7" />
           </mesh>
+          <pointLight color="#38bdf8" intensity={1.5} distance={7} position={[0, 0, 0.5]} />
         </group>
 
-        {/* Agile Standup Zone with Scrum Board at [0, 0, 4.0] */}
-        <group position={[0, 0, 4.0]}>
-          {/* Circular Standup Mat */}
-          <mesh receiveShadow position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[2.5, 32]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.8} />
+        {/* Double-Sided Rolling Sprint / Kanban Board at [5.0, 1.3, 2.0] */}
+        <group position={[5.0, 1.3, 2.0]}>
+          <mesh castShadow>
+            <boxGeometry args={[2.6, 1.6, 0.06]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.1} />
           </mesh>
-          {/* Double-Sided Rolling Whiteboard / Kanban */}
-          <group position={[0, 1.2, -2.0]}>
-            <mesh castShadow>
-              <boxGeometry args={[2.8, 1.6, 0.08]} />
-              <meshStandardMaterial color="#f8fafc" roughness={0.1} />
+          {/* Post-it / Kanban Task Cards */}
+          {[-0.8, 0, 0.8].map((kx, idx) => (
+            <mesh key={`kanban-${idx}`} position={[kx, 0.2, 0.04]}>
+              <planeGeometry args={[0.55, 0.6]} />
+              <meshBasicMaterial color={["#f59e0b", "#10b981", "#38bdf8"][idx]} />
             </mesh>
-            <mesh position={[0, -0.9, 0]}>
-              <cylinderGeometry args={[0.04, 0.04, 0.8]} />
-              <meshStandardMaterial color="#0f172a" metalness={0.8} />
-            </mesh>
-          </group>
+          ))}
         </group>
       </group>
 
@@ -374,100 +367,101 @@ function FloorInteriors({
           FLOOR 6: EXECUTIVE PENTHOUSE & GRAND BOARDROOM (Y = 30.0m)
           ========================================================================= */}
       <group position={[0, 30.0, 0]} visible={!isFloorIsolated || activeFloor === 0 || activeFloor === 6}>
-        {/* CEO Executive Suite at [-9.0, 0, -3.0] */}
-        <group position={[-9.0, 0, -3.0]}>
-          {/* Luxury Executive Desk (Dark Walnut Finish) */}
-          <mesh castShadow receiveShadow position={[0, 0.74, 0]}>
-            <boxGeometry args={[2.8, 0.08, 1.4]} />
-            <meshStandardMaterial color="#1c1917" roughness={0.3} metalness={0.15} />
+        {/* CEO Office Back Wall Feature: Backlit 3D "CEO" Signage at [-9.0, 2.8, -5.1] */}
+        <group position={[-9.0, 2.8, -5.1]}>
+          <mesh receiveShadow>
+            <boxGeometry args={[8.5, 3.8, 0.15]} />
+            <meshStandardMaterial color="#1c1917" roughness={0.5} metalness={0.2} />
           </mesh>
-          {/* Desk Base Pillars */}
-          {[-1.2, 1.2].map((dx, idx) => (
-            <mesh key={`desk-base-${idx}`} castShadow position={[dx, 0.35, 0]}>
-              <boxGeometry args={[0.25, 0.7, 1.2]} />
-              <meshStandardMaterial color="#0c0a09" metalness={0.9} roughness={0.1} />
+          {/* Fluted Vertical Dark Walnut Strips */}
+          {[-3.5, -2, -0.5, 1, 2.5].map((wx) => (
+            <mesh key={`ceo-slat-${wx}`} position={[wx, 0, 0.09]}>
+              <boxGeometry args={[0.08, 3.8, 0.03]} />
+              <meshStandardMaterial color="#0c0a09" roughness={0.4} />
             </mesh>
           ))}
-          {/* Executive High-Back Leather Chair */}
-          <group position={[0, 0.55, -0.9]}>
-            <mesh castShadow>
-              <boxGeometry args={[0.65, 0.95, 0.55]} />
-              <meshStandardMaterial color="#0a0a0a" roughness={0.6} />
-            </mesh>
-            <mesh position={[0, -0.3, 0]}>
-              <cylinderGeometry args={[0.3, 0.3, 0.4, 16]} />
-              <meshStandardMaterial color="#f59e0b" metalness={0.9} roughness={0.1} />
-            </mesh>
-          </group>
-          {/* Executive Visitor Armchairs */}
-          {[-0.8, 0.8].map((vx, idx) => (
-            <mesh key={`vis-armchair-${idx}`} castShadow position={[vx, 0.45, 1.1]}>
-              <boxGeometry args={[0.55, 0.75, 0.55]} />
-              <meshStandardMaterial color="#292524" roughness={0.7} />
-            </mesh>
-          ))}
-          {/* Executive Credenza & Trophy Archive */}
-          <mesh castShadow position={[-1.2, 0.55, -2.2]}>
-            <boxGeometry args={[2.2, 1.1, 0.6]} />
-            <meshStandardMaterial color="#1c1917" roughness={0.4} />
-          </mesh>
-          {/* Corporate Flag / Insignia Mast */}
-          <group position={[-2.4, 1.5, -2.0]}>
-            <mesh>
-              <cylinderGeometry args={[0.04, 0.04, 3.0]} />
-              <meshStandardMaterial color="#f59e0b" metalness={0.95} />
-            </mesh>
-            <mesh position={[0.4, 1.0, 0]}>
-              <boxGeometry args={[0.7, 0.5, 0.02]} />
-              <meshStandardMaterial color="#38bdf8" roughness={0.4} />
-            </mesh>
-          </group>
+          {/* Backlit Golden CEO Signage */}
+          <Html position={[0, 0.4, 0.12]} center distanceFactor={18} className="select-none pointer-events-none">
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-950/80 border border-amber-400/50 shadow-2xl backdrop-blur-md">
+              <span className="font-black text-base tracking-widest text-amber-300 uppercase drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
+                CEO
+              </span>
+            </div>
+          </Html>
+          <pointLight color="#f59e0b" intensity={1.2} distance={6} position={[0, 0.4, 0.5]} />
         </group>
 
-        {/* Private CEO Lounge at [-11.0, 0, 5.0] */}
-        <group position={[-11.0, 0, 5.0]}>
-          <mesh castShadow receiveShadow position={[0, 0.42, 0]}>
-            <boxGeometry args={[1.2, 0.84, 3.0]} />
-            <meshStandardMaterial color="#0c0a09" roughness={0.7} />
+        {/* Luxury CEO Executive Desk at [-9.0, 0, -2.5] */}
+        <group position={[-9.0, 0, -2.5]}>
+          <mesh castShadow receiveShadow position={[0, 0.74, 0]}>
+            <boxGeometry args={[3.2, 0.08, 1.5]} />
+            <meshStandardMaterial color="#292524" roughness={0.25} metalness={0.2} />
           </mesh>
-          <mesh castShadow position={[1.4, 0.3, 0]}>
-            <boxGeometry args={[1.0, 0.28, 1.6]} />
+          {/* Brushed Brass Leg Pillars */}
+          {[-1.4, 1.4].map((dx, idx) => (
+            <mesh key={`ceo-leg-${idx}`} position={[dx, 0.35, 0]}>
+              <boxGeometry args={[0.15, 0.7, 1.3]} />
+              <meshStandardMaterial color="#d97706" metalness={0.9} roughness={0.15} />
+            </mesh>
+          ))}
+          {/* Executive Dual Monitors */}
+          <mesh position={[0, 1.25, -0.4]}>
+            <boxGeometry args={[1.5, 0.55, 0.04]} />
+            <meshStandardMaterial color="#0f172a" />
+          </mesh>
+          {/* Executive Leather High-Back Chair */}
+          <mesh position={[0, 0.65, -1.0]}>
+            <boxGeometry args={[0.7, 1.0, 0.6]} />
+            <meshStandardMaterial color="#0a0a0a" roughness={0.5} />
+          </mesh>
+        </group>
+
+        {/* Private CEO Lounge: Cream Leather Sectional Sofa at [-10.5, 0, 3.5] */}
+        <group position={[-10.5, 0, 3.5]}>
+          <mesh castShadow receiveShadow position={[0, 0.45, 0]}>
+            <boxGeometry args={[1.2, 0.85, 3.2]} />
+            <meshStandardMaterial color="#f8fafc" roughness={0.5} />
+          </mesh>
+          <mesh castShadow position={[1.4, 0.35, 0]}>
+            <boxGeometry args={[1.0, 0.3, 2.0]} />
             <meshStandardMaterial color="#1c1917" roughness={0.2} metalness={0.8} />
           </mesh>
         </group>
 
-        {/* Rooftop Observation Deck & Terrace at [0, 0, 8.5] */}
-        <group position={[0, 0, 8.5]}>
-          {/* Teak Wood Decking */}
-          <mesh receiveShadow position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[12.0, 5.0]} />
-            <meshStandardMaterial color="#78350f" roughness={0.65} metalness={0.05} />
+        {/* Executive 3D Boardroom (Right Wing) at [8.5, 0, 0] */}
+        <group position={[8.5, 0, 0]}>
+          {/* Glass Partition Wall */}
+          <mesh position={[-4.5, 1.6, 0]}>
+            <boxGeometry args={[0.08, 3.2, 10.0]} />
+            <meshPhysicalMaterial color="#e0f2fe" transmission={0.95} transparent opacity={0.35} roughness={0.05} />
           </mesh>
-          {/* Outdoor Architectural Planters */}
-          {[-5.0, 5.0].map((px, idx) => (
-            <mesh key={`terrace-plant-${idx}`} castShadow position={[px, 0.5, 0]}>
-              <boxGeometry args={[1.2, 1.0, 1.2]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.3} />
-            </mesh>
+          {/* Grand Boardroom Table (Smoked Glass & Brass) */}
+          <mesh castShadow receiveShadow position={[0, 0.74, 0]}>
+            <boxGeometry args={[6.2, 0.08, 2.2]} />
+            <meshPhysicalMaterial color="#1e293b" transmission={0.4} roughness={0.1} metalness={0.7} />
+          </mesh>
+          {/* Executive Leather Boardroom Chairs */}
+          {[-2.2, -0.7, 0.7, 2.2].map((cx, idx) => (
+            <React.Fragment key={`bd-chair-${idx}`}>
+              <mesh position={[cx, 0.55, 1.4]} rotation={[0, Math.PI, 0]}>
+                <boxGeometry args={[0.55, 0.85, 0.55]} />
+                <meshStandardMaterial color="#0f172a" roughness={0.5} />
+              </mesh>
+              <mesh position={[cx, 0.55, -1.4]}>
+                <boxGeometry args={[0.55, 0.85, 0.55]} />
+                <meshStandardMaterial color="#0f172a" roughness={0.5} />
+              </mesh>
+            </React.Fragment>
           ))}
-        </group>
-
-        {/* Central High-Risk Executive Authorization Pedestal at [-2.0, 0, 0] */}
-        <group position={[-2.0, 0, 0]}>
-          <mesh castShadow position={[0, 0.55, 0]}>
-            <cylinderGeometry args={[0.35, 0.45, 1.1, 16]} />
-            <meshStandardMaterial color="#020617" metalness={0.9} roughness={0.2} />
+          {/* Large Presentation Display Screen on East Wall */}
+          <mesh position={[3.8, 1.8, 0]}>
+            <boxGeometry args={[0.06, 1.8, 4.2]} />
+            <meshStandardMaterial color="#020617" />
           </mesh>
-          {/* Glowing Biometric Authorization Scanner Screen */}
-          <mesh position={[0, 1.12, 0]} rotation={[-0.3, 0, 0]}>
-            <cylinderGeometry args={[0.3, 0.3, 0.05, 16]} />
-            <meshStandardMaterial
-              color="#f59e0b"
-              emissive="#d97706"
-              emissiveIntensity={0.8}
-            />
+          <mesh position={[3.75, 1.8, 0]}>
+            <planeGeometry args={[4.0, 1.6]} />
+            <meshBasicMaterial color="#38bdf8" />
           </mesh>
-          <pointLight color="#f59e0b" intensity={0.9} distance={4} position={[0, 1.3, 0]} />
         </group>
       </group>
     </group>

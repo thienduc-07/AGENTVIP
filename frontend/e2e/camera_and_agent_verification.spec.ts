@@ -53,7 +53,9 @@ test.describe('PROVIPAGENT: Camera Drag Persistence & Authentic Agent Visibility
 
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 25000 });
-    await page.waitForTimeout(4000);
+    // Wait for initial hydration loading overlay to clear
+    await expect(page.locator('text=Đang tải không gian văn phòng 3D...')).toBeHidden({ timeout: 20000 }).catch(() => {});
+    await page.waitForTimeout(3000);
 
     const saveScreenshot = makeScreenshotSaver(page);
 
@@ -108,7 +110,9 @@ test.describe('PROVIPAGENT: Camera Drag Persistence & Authentic Agent Visibility
 
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 25000 });
-    await page.waitForTimeout(4000);
+    // Wait for initial hydration loading overlay to clear
+    await expect(page.locator('text=Đang tải không gian văn phòng 3D...')).toBeHidden({ timeout: 20000 }).catch(() => {});
+    await page.waitForTimeout(3000);
 
     const saveScreenshot = makeScreenshotSaver(page);
 

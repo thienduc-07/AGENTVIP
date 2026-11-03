@@ -2487,8 +2487,8 @@
     "semantic_hash": ""
   },
   "frontend/lib/api/client.ts": {
-    "mtime": 1793720141.612687,
-    "seen": 1793720358.848416,
+    "mtime": 1793720663.191476,
+    "seen": 1793723844.6195772,
     "ast_hash": "1f58c29301eb79cee1268af74e37afd8",
     "semantic_hash": ""
   },
@@ -7537,9 +7537,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/DepartmentZone.tsx": {
-    "mtime": 1793719048.197486,
-    "seen": 1793720358.848353,
-    "ast_hash": "0673a7df66e7a279418874c7aa98b300",
+    "mtime": 1793723590.1136594,
+    "seen": 1793723844.619487,
+    "ast_hash": "6e98c6ef1c4948965d68a0b13fa7b029",
     "semantic_hash": ""
   },
   "frontend/components/office/EmptyOfficeState.tsx": {
@@ -7555,27 +7555,27 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeCanvas.tsx": {
-    "mtime": 1793719084.8056889,
-    "seen": 1793720358.848363,
-    "ast_hash": "92ca3c3cb51d3a31b999845b5fce5d6b",
+    "mtime": 1793722637.9372892,
+    "seen": 1793723844.619501,
+    "ast_hash": "cf2b272b44da8ba6feb248b4765e141d",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeEnvironment.tsx": {
-    "mtime": 1793718932.328368,
-    "seen": 1793720358.848364,
-    "ast_hash": "db0ffc0f873e0478494438b1d6f3ea3f",
+    "mtime": 1793723662.7272024,
+    "seen": 1793723844.619502,
+    "ast_hash": "be8ce21e0df9732a1c21b79b4fd659d9",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeFloor.tsx": {
-    "mtime": 1793697340.7914348,
-    "seen": 1793704538.112777,
-    "ast_hash": "a78a4cb73f945f677985adcc63f49760",
+    "mtime": 1793722855.3000264,
+    "seen": 1793723844.619503,
+    "ast_hash": "5b035ef3cf07272fa8105473a5d14d03",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeHUD.tsx": {
-    "mtime": 1793696974.9215453,
-    "seen": 1793704538.112778,
-    "ast_hash": "52bff322cca62e5ce991b99490802967",
+    "mtime": 1793723098.489203,
+    "seen": 1793723844.619505,
+    "ast_hash": "df50a71729b11acc89d3597c41cd9754",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeInspector.tsx": {
@@ -7585,15 +7585,15 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeLighting.tsx": {
-    "mtime": 1793719015.020076,
-    "seen": 1793720358.8483682,
-    "ast_hash": "034849cfc4e2884a371a596badaa920b",
+    "mtime": 1793722649.4658597,
+    "seen": 1793723844.619508,
+    "ast_hash": "a8ec56f739c513a75bc23c2959c3a08d",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeScene.tsx": {
-    "mtime": 1793697341.052931,
-    "seen": 1793704538.112782,
-    "ast_hash": "19e782adc75578a7aa113501d7d6faea",
+    "mtime": 1793723603.6887796,
+    "seen": 1793723844.619509,
+    "ast_hash": "0f53007139fd0d15f8f026b77568f733",
     "semantic_hash": ""
   },
   "frontend/components/office/Workstation.tsx": {
@@ -8425,15 +8425,15 @@
     "semantic_hash": ""
   },
   "frontend/components/office/CorporateBuilding.tsx": {
-    "mtime": 1793719117.8735106,
-    "seen": 1793720358.848352,
-    "ast_hash": "7bb67f8ad879cac5fd145834e2cb22bf",
+    "mtime": 1793722935.797963,
+    "seen": 1793723844.619485,
+    "ast_hash": "3996e1037b656c5fb8b06094738c995e",
     "semantic_hash": ""
   },
   "frontend/components/office/FloorInteriors.tsx": {
-    "mtime": 1793710182.1044564,
-    "seen": 1793713913.0229352,
-    "ast_hash": "de5d36be9d5fbe0aeb98e1cdc179302d",
+    "mtime": 1793722997.0010335,
+    "seen": 1793723844.619489,
+    "ast_hash": "0061afdb8d2818ca623cb5fbbf74c8dc",
     "semantic_hash": ""
   },
   "frontend/e2e/capture_headquarters.spec.ts": {
@@ -8521,9 +8521,9 @@
     "semantic_hash": ""
   },
   "frontend/e2e/camera_and_agent_verification.spec.ts": {
-    "mtime": 1793720195.028905,
-    "seen": 1793720358.848393,
-    "ast_hash": "28a6aa742610b49b4404e6bd5be7b0b5",
+    "mtime": 1793723399.207063,
+    "seen": 1793723844.619543,
+    "ast_hash": "dec3e417900e1171078e8be20b2bc23c",
     "semantic_hash": ""
   },
   "frontend/e2e/performance_optimized.spec.ts": {
@@ -8545,45 +8545,45 @@
     "semantic_hash": ""
   },
   "docs/screenshots/camera_and_agents/screenshot_01_multi_floor_building.png": {
-    "mtime": 1793720222.6935096,
-    "seen": 1793720358.849288,
-    "ast_hash": "1dd193eded4352c2be528509e2e4dafa",
+    "mtime": 1793723649.1666512,
+    "seen": 1793723844.6208498,
+    "ast_hash": "0a8685dcabc1d55f5d8057a28b93a21a",
     "semantic_hash": ""
   },
   "docs/screenshots/camera_and_agents/screenshot_02_floor_with_visible_agents.png": {
-    "mtime": 1793720225.5985892,
-    "seen": 1793720358.849289,
-    "ast_hash": "08d7e603f5202259e443b9be17927ac3",
+    "mtime": 1793723655.2362282,
+    "seen": 1793723844.620852,
+    "ast_hash": "a7303bad8e06570d78b3e0f1ab363284",
     "semantic_hash": ""
   },
   "docs/screenshots/camera_and_agents/screenshot_03_engineering_workstations.png": {
-    "mtime": 1793720230.583558,
-    "seen": 1793720358.84929,
-    "ast_hash": "5b891b1aebd38319028fc03eb1a98b9e",
+    "mtime": 1793723663.3411283,
+    "seen": 1793723844.620853,
+    "ast_hash": "2a9e3710ced0250d10fe3b02eb0e9614",
     "semantic_hash": ""
   },
   "docs/screenshots/camera_and_agents/screenshot_04_executive_floor_ceo.png": {
-    "mtime": 1793720234.2782176,
-    "seen": 1793720358.84929,
-    "ast_hash": "204c9c97ddeb390a273f4fddd6e720a4",
+    "mtime": 1793723672.2851875,
+    "seen": 1793723844.620854,
+    "ast_hash": "74f0f765211437e043567b26071c82c6",
     "semantic_hash": ""
   },
   "docs/screenshots/camera_and_agents/screenshot_05_agent_inspection_hud.png": {
-    "mtime": 1793720237.6356413,
-    "seen": 1793720358.849291,
-    "ast_hash": "19bbc54cadf1653ac5251775c0be82c6",
+    "mtime": 1793723679.9943414,
+    "seen": 1793723844.620856,
+    "ast_hash": "271bc87811e1ca837b358db712822f85",
     "semantic_hash": ""
   },
   "docs/screenshots/camera_and_agents/screenshot_06_camera_drag_rotated.png": {
-    "mtime": 1793720252.8582265,
-    "seen": 1793720358.849292,
-    "ast_hash": "35ec631bb76b66d3bd275ed33bb871af",
+    "mtime": 1793723705.3511014,
+    "seen": 1793723844.620857,
+    "ast_hash": "4a87b4a7170966888a9fcfbe8037617d",
     "semantic_hash": ""
   },
   "docs/screenshots/camera_and_agents/screenshot_07_camera_after_rerender.png": {
-    "mtime": 1793720256.3388565,
-    "seen": 1793720358.849293,
-    "ast_hash": "8c08ca81466cd1abe39ecd6c874390ea",
+    "mtime": 1793723710.8834736,
+    "seen": 1793723844.620859,
+    "ast_hash": "eb5857e80d3e1c9f47439ba12c7bdacc",
     "semantic_hash": ""
   },
   "frontend/e2e/draw_call_inspector.spec.ts": {
@@ -8599,9 +8599,9 @@
     "semantic_hash": ""
   },
   "frontend/e2e/frametime_analysis_raw.json": {
-    "mtime": 1793711797.355587,
-    "seen": 1793713913.023032,
-    "ast_hash": "9a08e7f0be9af91f68f41403ba23e9a7",
+    "mtime": 1793721238.375918,
+    "seen": 1793723844.619549,
+    "ast_hash": "c4a8aac8b297492a5c0696dd8b1d65f9",
     "semantic_hash": ""
   },
   "frontend/e2e/long_duration_stress.spec.ts": {
@@ -8611,9 +8611,9 @@
     "semantic_hash": ""
   },
   "frontend/e2e/profiler_gate_scenarios_raw.json": {
-    "mtime": 1793720301.2232149,
-    "seen": 1793720358.848406,
-    "ast_hash": "b34c4eff831083c7c852e7e8626bdd31",
+    "mtime": 1793723798.1716554,
+    "seen": 1793723844.619562,
+    "ast_hash": "b606fa45f8d8d8a464b86087f10b52b2",
     "semantic_hash": ""
   },
   "frontend/e2e/profiler_stability_gate.spec.ts": {
@@ -8635,21 +8635,33 @@
     "semantic_hash": ""
   },
   "frontend/components/office/InstancedAgents.tsx": {
-    "mtime": 1793719354.3570442,
-    "seen": 1793720358.8483572,
-    "ast_hash": "b6e57b90548edef6e801cb4747c7498f",
+    "mtime": 1793723050.1951635,
+    "seen": 1793723844.619491,
+    "ast_hash": "67ea81c1e801f0973744c37375457557",
     "semantic_hash": ""
   },
   "frontend/components/office/InstancedWorkstations.tsx": {
-    "mtime": 1793718853.1228614,
-    "seen": 1793720358.848358,
-    "ast_hash": "74891b69c9716d78f98fdedbaf653c37",
+    "mtime": 1793723019.1674414,
+    "seen": 1793723844.619492,
+    "ast_hash": "02c69ce28ee442e2aac2bb5068178c4e",
     "semantic_hash": ""
   },
   "frontend/e2e/long_duration_stress_raw.json": {
     "mtime": 1793714590.8735101,
     "seen": 1793720358.8483999,
     "ast_hash": "6a0446cf5f0c601e61f3b75f5a51fa72",
+    "semantic_hash": ""
+  },
+  "AGENT_CITY_GPU_OPTIMIZATION_REPORT.md": {
+    "mtime": 1793720468.124495,
+    "seen": 1793723844.61971,
+    "ast_hash": "eec692cdcd6cbd00d581cc2c2c1e50e8",
+    "semantic_hash": ""
+  },
+  "AGENT_CITY_PHASE_2_INDEPENDENT_CERTIFICATION.md": {
+    "mtime": 1793722485.1069198,
+    "seen": 1793723844.619715,
+    "ast_hash": "2f204e2b2cdc4f619c429d361f000863",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {
