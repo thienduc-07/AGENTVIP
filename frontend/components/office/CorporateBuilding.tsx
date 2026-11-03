@@ -621,13 +621,13 @@ function CorporateBuilding({
 
         return (
           <group key={`floor-level-${floorNum}`} position={[0, elevation, 0]}>
-            {/* Architectural Light Travertine / Oak Floor Slab */}
+            {/* Architectural Cozy Light Oak Floor Slab */}
             <mesh receiveShadow position={[0, -0.22, 0]}>
               <boxGeometry args={[BUILDING_WIDTH, 0.44, BUILDING_DEPTH]} />
               <meshStandardMaterial
-                color="#f8fafc"
-                roughness={0.22}
-                metalness={0.06}
+                color="#ebd9c4"
+                roughness={0.45}
+                metalness={0.02}
                 transparent={isDimmed}
                 opacity={isDimmed ? 0.3 : 1.0}
               />

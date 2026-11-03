@@ -73,13 +73,13 @@ function DepartmentZone({
       }}
       onPointerOut={() => setIsHovered(false)}
     >
-      {/* 1. Department Floor Light Carpet Accent (Warm Travertine / Slate) */}
+      {/* 1. Department Floor Light Carpet Accent (Warm Linen Wool Rug) */}
       <mesh receiveShadow position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[carpetWidth, carpetDepth]} />
         <meshStandardMaterial
-          color="#f8fafc"
-          roughness={0.4}
-          metalness={0.05}
+          color="#f3ebe1"
+          roughness={0.5}
+          metalness={0.02}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

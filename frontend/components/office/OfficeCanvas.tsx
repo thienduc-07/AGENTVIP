@@ -14,6 +14,7 @@ import InstancedAgents from "./InstancedAgents";
 import MeetingRoom from "./MeetingRoom";
 import CorporateBuilding from "./CorporateBuilding";
 import FloorInteriors from "./FloorInteriors";
+import ElevatorSystem from "./ElevatorSystem";
 import { WorkstationData } from "./Workstation";
 import { OfficeSelection } from "@/types/office";
 import { useMeetingStore } from "@/store/meetingStore";
@@ -36,6 +37,7 @@ interface OfficeCanvasProps {
   onEnterMeetingView?: () => void;
   onSelectMeetingChair?: (seatIndex: number, agentId?: string) => void;
   onSelectMeetingDisplay?: () => void;
+  onResetCamera?: () => void;
 }
 
 export default function OfficeCanvas({
@@ -55,6 +57,7 @@ export default function OfficeCanvas({
   onEnterMeetingView,
   onSelectMeetingChair,
   onSelectMeetingDisplay,
+  onResetCamera,
 }: OfficeCanvasProps) {
   const activeMeeting = useMeetingStore((s) => s.activeMeeting);
   const seatAssignments = useMeetingStore((s) => s.seatAssignments);
@@ -238,11 +241,21 @@ export default function OfficeCanvas({
               </group>
             )}
 
+          {/* Interactive 3D Elevator Shaft, Cabin & Sliding Doors */}
+          <ElevatorSystem
+            currentFloor={activeFloor}
+            activeFloor={activeFloor}
+            onSelectFloor={onSelectFloor || (() => {})}
+            isIsolated={isFloorIsolated}
+          />
+
           {/* Smooth Lerp Camera Orbit Controller */}
           <OfficeCamera
             targetPosition={cameraPosition}
             targetLookAt={cameraTarget}
             isTransitioning={selection.type !== "none"}
+            activeFloor={activeFloor}
+            onResetCamera={onResetCamera}
           />
 
           {/* Real-time In-Engine Performance Profiler */}

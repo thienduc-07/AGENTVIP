@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import OfficeCanvas from "./OfficeCanvas";
+import SimulationHUD from "./SimulationHUD";
 import OfficeHUD from "./OfficeHUD";
 import OfficeInspector from "./OfficeInspector";
 import AgentInspectionHUD from "./AgentInspectionHUD";
@@ -9,6 +10,7 @@ import EmptyOfficeState from "./EmptyOfficeState";
 import MeetingHUD from "./MeetingHUD";
 import MeetingDiscoveryModal from "./MeetingDiscoveryModal";
 import WorkstationScreen from "./workstation/WorkstationScreen";
+import AgentChatCommandCenter from "@/components/chat/AgentChatCommandCenter";
 import { useOfficeSync } from "@/hooks/useOfficeSync";
 import { useMeetingSync } from "@/hooks/useMeetingSync";
 import { useMeetingStore } from "@/store/meetingStore";
@@ -21,16 +23,23 @@ interface OfficeSceneProps {
   isMissionDrawerOpen?: boolean;
   onOpenTaskModal?: () => void;
   onOpenRecruitmentModal?: () => void;
+  onSubmitTask?: (agentId: string, promptText: string) => Promise<void>;
+  onSubmitWorkflow?: (title: string, description: string) => Promise<void>;
+  onApprovalDecision?: (actionId: string, decision: "APPROVE" | "REJECT") => Promise<void>;
+  pendingAction?: any;
+  events?: any[];
 }
 
+// Isometric & Floor Camera Presets (Diagonally looking into rooms like My-Office reference)
 export const FLOOR_CAMERA_PRESETS: Record<number, { pos: [number, number, number]; look: [number, number, number] }> = {
-  0: { pos: [0, 20.0, 58.0], look: [0, 18.0, 0] },       // Overview (All 6 Floors Dollhouse Cutaway)
-  1: { pos: [0, 5.5, 20], look: [0, 1.5, 0] },     // Floor 1: Reception & Operations
-  2: { pos: [0, 11.5, 20], look: [0, 7.5, 0] },    // Floor 2: Design & Creative
-  3: { pos: [0, 17.5, 20], look: [0, 13.5, 0] },   // Floor 3: Marketing & Growth
-  4: { pos: [0, 23.5, 20], look: [0, 19.5, 0] },   // Floor 4: Research & Data Science
-  5: { pos: [0, 29.5, 20], look: [0, 25.5, 0] },   // Floor 5: Engineering & Architecture
-  6: { pos: [0, 35.5, 20], look: [0, 31.5, 0] },   // Floor 6: Executive Penthouse & Boardroom
+  0: { pos: [0, 22.0, 56.0], look: [0, 18.0, 0] },          // Overview (Dollhouse Cutaway)
+  1: { pos: [14.0, 10.0, 18.0], look: [0, 1.5, 0] },        // Floor 1: Reception & Executive
+  2: { pos: [14.0, 16.0, 18.0], look: [0, 7.5, 0] },        // Floor 2: Engineering & Architecture
+  3: { pos: [14.0, 22.0, 18.0], look: [0, 13.5, 0] },       // Floor 3: Marketing & Growth
+  4: { pos: [14.0, 28.0, 18.0], look: [0, 19.5, 0] },       // Floor 4: Research & Data Science
+  5: { pos: [14.0, 34.0, 18.0], look: [0, 25.5, 0] },       // Floor 5: Finance & Operations
+  6: { pos: [14.0, 40.0, 18.0], look: [0, 31.5, 0] },       // Floor 6: CEO Suite & Boardroom
+  [-1]: { pos: [14.0, 5.0, 18.0], look: [0, -5.0, 0] },     // Floor B1: Server & Infrastructure
 };
 
 export default function OfficeScene({
@@ -39,6 +48,11 @@ export default function OfficeScene({
   isMissionDrawerOpen,
   onOpenTaskModal,
   onOpenRecruitmentModal,
+  onSubmitTask,
+  onSubmitWorkflow,
+  onApprovalDecision,
+  pendingAction,
+  events = [],
 }: OfficeSceneProps) {
   const {
     organizationId,
@@ -52,7 +66,7 @@ export default function OfficeScene({
     refresh,
   } = useOfficeSync(initialOrgId);
 
-  // Phase 4.3.5: Real-time meeting sync
+  // Real-time meeting sync
   useMeetingSync(organizationId);
 
   const activeMeeting = useMeetingStore((s) => s.activeMeeting);
@@ -67,6 +81,9 @@ export default function OfficeScene({
   const [cameraTarget, setCameraTarget] = useState<[number, number, number]>(FLOOR_CAMERA_PRESETS[0].look);
   const [isMeetingDiscoveryOpen, setIsMeetingDiscoveryOpen] = useState(false);
   const [isMeetingViewActive, setMeetingViewActive] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [qualityMode, setQualityMode] = useState<"LOW" | "BALANCED" | "HIGH">("BALANCED");
+  const [useLegacyHUD, setUseLegacyHUD] = useState(false);
 
   // 1. Floor Navigation Handlers
   const handleSelectFloor = useCallback((floorNum: number) => {
@@ -85,15 +102,14 @@ export default function OfficeScene({
     setIsFloorIsolated((prev) => !prev);
   }, []);
 
-  // 2. Selection Handlers
+  // 2. Selection & Focus Handlers
   const handleSelectAgent = useCallback(
     (agentId: string) => {
       const agent = agents[agentId];
       if (!agent) return;
 
       setSelection({ type: "agent", id: agentId });
-      // Smoothly zoom in on the agent
-      setCameraTarget([agent.position[0], agent.position[1] + 1.0, agent.position[2]]);
+      setCameraTarget([agent.position[0], agent.position[1] + 0.8, agent.position[2]]);
       setCameraPosition([agent.position[0] + 4.5, agent.position[1] + 2.8, agent.position[2] + 5.5]);
     },
     [agents]
@@ -106,12 +122,10 @@ export default function OfficeScene({
 
       const wsElevation = ws.pos_y || 0;
       if (ws.assigned_employee) {
-        // Occupied workstation: select corresponding agent to open the Agent Inspection HUD
         setSelection({ type: "agent", id: ws.assigned_employee });
         setCameraTarget([ws.pos_x, wsElevation + 0.8, ws.pos_z]);
         setCameraPosition([ws.pos_x + 3.8, wsElevation + 3.2, ws.pos_z + 4.8]);
       } else {
-        // Unoccupied workstation: view workstation without fabricating an agent
         setSelection({ type: "workstation", id: workstationId });
         setCameraTarget([ws.pos_x, wsElevation + 0.8, ws.pos_z]);
         setCameraPosition([ws.pos_x + 3.8, wsElevation + 3.2, ws.pos_z + 4.8]);
@@ -153,14 +167,28 @@ export default function OfficeScene({
   }, []);
 
   const handleFocusCEO = useCallback(() => {
-    // Focus on Executive Penthouse CEO Suite on Floor 6 at (-9, 31.2, -3)
     setMeetingViewActive(false);
     setActiveFloor(6);
     setCameraTarget([-9.0, 31.2, -3.0]);
     setCameraPosition([-9.0, 33.5, 4.5]);
   }, []);
 
-  // Phase 4.3.5: Meeting Camera Navigation
+  const handleFocusWorkstations = useCallback(() => {
+    const wsList = Object.values(workstations);
+    if (wsList.length > 0) {
+      const first = wsList[0];
+      setCameraTarget([first.pos_x, (first.pos_y || 0) + 0.8, first.pos_z]);
+      setCameraPosition([first.pos_x + 6.0, (first.pos_y || 0) + 4.5, first.pos_z + 6.0]);
+    }
+  }, [workstations]);
+
+  const handleFocusServerRoom = useCallback(() => {
+    setActiveFloor(4);
+    setCameraTarget([11.0, 19.5, -2.5]);
+    setCameraPosition([11.0 + 4.0, 21.0, -2.5 + 5.0]);
+  }, []);
+
+  // Meeting Navigation
   const handleEnterMeetingView = useCallback(() => {
     setSelection({ type: "meeting_room" });
     setMeetingViewActive(true);
@@ -197,7 +225,6 @@ export default function OfficeScene({
     [handleSelectAgent, handleEnterMeetingView]
   );
 
-  // Compute telemetry metrics
   const totalAgents = Object.keys(agents).length;
   const totalWorkstations = Object.keys(workstations).length;
   const occupiedWorkstations = Object.values(workstations).filter((w) => w.assigned_employee).length;
@@ -206,29 +233,56 @@ export default function OfficeScene({
 
   return (
     <div className="relative w-full h-screen bg-slate-950 overflow-hidden select-none">
-      {/* Top HUD Telemetry Bar */}
-      <OfficeHUD
-        organizationId={organizationId}
-        connectionStatus={connectionStatus}
-        sequenceId={sequenceId}
-        totalAgents={totalAgents}
-        activeTasksCount={activeTasksCount}
-        totalWorkstations={totalWorkstations}
-        occupiedWorkstations={occupiedWorkstations}
-        activeFloor={activeFloor}
-        isFloorIsolated={isFloorIsolated}
-        onSelectFloor={handleSelectFloor}
-        onToggleIsolation={handleToggleIsolation}
-        onResetCamera={handleResetCamera}
-        onFocusCEO={handleFocusCEO}
-        onFocusMeetingRoom={handleEnterMeetingView}
-        onOpenMeetingDiscovery={() => setIsMeetingDiscoveryOpen(true)}
-        onRefreshData={refresh}
-        onToggleMissionDrawer={onToggleMissionDrawer}
-        isMissionDrawerOpen={isMissionDrawerOpen}
-        onOpenTaskModal={onOpenTaskModal}
-        onOpenRecruitmentModal={onOpenRecruitmentModal}
-      />
+      {/* Simulation HUD (My-Office style Left Sessions, Right Activity Stream, Top Bar, Bottom Bar) */}
+      {!useLegacyHUD ? (
+        <SimulationHUD
+          organizationId={organizationId}
+          connectionStatus={connectionStatus}
+          agents={agents}
+          workstations={workstations}
+          activeFloor={activeFloor}
+          isFloorIsolated={isFloorIsolated}
+          onSelectFloor={handleSelectFloor}
+          onToggleIsolation={handleToggleIsolation}
+          onSelectAgent={handleSelectAgent}
+          onResetCamera={handleResetCamera}
+          onFocusWorkstations={handleFocusWorkstations}
+          onFocusMeetingRoom={handleEnterMeetingView}
+          onFocusServerRoom={handleFocusServerRoom}
+          onFocusCEO={handleFocusCEO}
+          onOpenChat={() => setIsChatOpen((prev) => !prev)}
+          isChatOpen={isChatOpen}
+          events={events}
+          pendingAction={pendingAction}
+          onApprovalDecision={onApprovalDecision}
+          qualityMode={qualityMode}
+          onChangeQuality={setQualityMode}
+          onRefreshData={refresh}
+        />
+      ) : (
+        <OfficeHUD
+          organizationId={organizationId}
+          connectionStatus={connectionStatus}
+          sequenceId={sequenceId}
+          totalAgents={totalAgents}
+          activeTasksCount={activeTasksCount}
+          totalWorkstations={totalWorkstations}
+          occupiedWorkstations={occupiedWorkstations}
+          activeFloor={activeFloor}
+          isFloorIsolated={isFloorIsolated}
+          onSelectFloor={handleSelectFloor}
+          onToggleIsolation={handleToggleIsolation}
+          onResetCamera={handleResetCamera}
+          onFocusCEO={handleFocusCEO}
+          onFocusMeetingRoom={handleEnterMeetingView}
+          onOpenMeetingDiscovery={() => setIsMeetingDiscoveryOpen(true)}
+          onRefreshData={refresh}
+          onToggleMissionDrawer={onToggleMissionDrawer}
+          isMissionDrawerOpen={isMissionDrawerOpen}
+          onOpenTaskModal={onOpenTaskModal}
+          onOpenRecruitmentModal={onOpenRecruitmentModal}
+        />
+      )}
 
       {/* 3D WebGL Canvas Viewport */}
       <OfficeCanvas
@@ -248,7 +302,20 @@ export default function OfficeScene({
         onEnterMeetingView={handleEnterMeetingView}
         onSelectMeetingChair={handleSelectMeetingChair}
         onSelectMeetingDisplay={handleFocusMeetingDisplay}
+        onResetCamera={handleResetCamera}
       />
+
+      {/* Persistent ChatGPT-Style AI Command Center */}
+      {isChatOpen && onSubmitTask && onSubmitWorkflow && (
+        <AgentChatCommandCenter
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          onSubmitTask={onSubmitTask}
+          onSubmitWorkflow={onSubmitWorkflow}
+          onApprovalDecision={onApprovalDecision}
+          pendingAction={pendingAction}
+        />
+      )}
 
       {/* Agent Inspection HUD (when an agent is selected) */}
       {selection.type === "agent" && (
@@ -274,7 +341,7 @@ export default function OfficeScene({
       )}
 
       {/* Phase 4.3.5: Interactive Meeting HUD */}
-      {(isMeetingViewActive || selection.type === "meeting_room" || selection.type === "meeting_display" || isMeetingHUDOpen) && (
+      {(isMeetingViewActive || selection.type === "meeting_room" || selection.type === "meeting_display") && isMeetingHUDOpen && (
         <MeetingHUD
           organizationId={organizationId}
           onExitMeetingView={handleExitMeetingView}
@@ -312,9 +379,9 @@ export default function OfficeScene({
       {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-sky-500/20 border-t-sky-400 rounded-full animate-spin" />
-            <p className="text-xs font-semibold text-slate-300 tracking-wider uppercase animate-pulse">
-              Đang tải không gian văn phòng 3D...
+            <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-400 rounded-full animate-spin" />
+            <p className="text-xs font-bold text-slate-200 tracking-wider uppercase animate-pulse">
+              Đang khởi tạo Agent City 5.0 Chibi Simulation...
             </p>
           </div>
         </div>

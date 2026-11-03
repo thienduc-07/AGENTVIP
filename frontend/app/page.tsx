@@ -280,6 +280,11 @@ export default function CorporateHQ3DWorldPage() {
           isMissionDrawerOpen={isMissionDrawerOpen}
           onOpenTaskModal={() => setIsTaskCreateOpen(true)}
           onOpenRecruitmentModal={() => useWorldStore.getState().setIsSpecialistRecruitmentOpen(true)}
+          onSubmitTask={handleSubmitTask}
+          onSubmitWorkflow={handleSubmitWorkflow}
+          onApprovalDecision={handleApprovalDecision}
+          pendingAction={pendingAction}
+          events={events}
         />
       ) : (
         <>

@@ -10,15 +10,19 @@ interface OfficeCameraProps {
   targetPosition?: [number, number, number];
   targetLookAt?: [number, number, number];
   isTransitioning?: boolean;
+  activeFloor?: number;
+  onResetCamera?: () => void;
 }
 
 export default function OfficeCamera({
-  targetPosition = [0, 24, 46],
-  targetLookAt = [0, 16, 0],
+  targetPosition = [0, 22, 56],
+  targetLookAt = [0, 18, 0],
   isTransitioning = false,
+  activeFloor = 0,
+  onResetCamera,
 }: OfficeCameraProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
 
   // Track currently requested coordinates to prevent re-triggering transitions on React re-renders
   const lastRequestedPos = useRef<[number, number, number]>([...targetPosition]);
@@ -30,7 +34,6 @@ export default function OfficeCamera({
   // State flags for transitions vs user interaction
   const isTransitionActiveRef = useRef<boolean>(false);
   const isUserDraggingRef = useRef<boolean>(false);
-
   const isInitialMount = useRef<boolean>(true);
 
   // Detect genuine target coordinate changes
@@ -78,7 +81,7 @@ export default function OfficeCamera({
     const handleStart = () => {
       // User began interacting (mouse drag, trackpad pan/zoom, touch)
       isUserDraggingRef.current = true;
-      // Immediately cancel any in-flight programmatic transition so user has exclusive control
+      // Immediately cancel any in-flight programmatic transition so user has exclusive, immediate control
       isTransitionActiveRef.current = false;
     };
 
@@ -91,35 +94,42 @@ export default function OfficeCamera({
     controls.addEventListener("start", handleStart);
     controls.addEventListener("end", handleEnd);
 
+    // Double click on canvas to reset camera view
+    const domElement = gl.domElement;
+    const handleDoubleClick = () => {
+      onResetCamera?.();
+    };
+    domElement.addEventListener("dblclick", handleDoubleClick);
+
     return () => {
       controls.removeEventListener("start", handleStart);
       controls.removeEventListener("end", handleEnd);
+      domElement.removeEventListener("dblclick", handleDoubleClick);
     };
-  }, []);
+  }, [gl.domElement, onResetCamera]);
 
   useFrame((_, delta) => {
     if (!controlsRef.current) return;
 
-    // If user is actively dragging or no programmatic transition is active, DO NOT LERP.
-    // OrbitControls has full, unhindered authority over camera position and rotation.
+    // Responsive lerp during programmatic transition
     if (isTransitionActiveRef.current && !isUserDraggingRef.current) {
-      const lerpSpeed = Math.min(1, delta * 3.5);
+      const lerpSpeed = Math.min(1.0, delta * 5.0);
 
       camera.position.lerp(desiredPos.current, lerpSpeed);
       controlsRef.current.target.lerp(desiredLook.current, lerpSpeed);
 
-      // Check arrival threshold: once within 0.06 units, snap and finish transition
+      // Check arrival threshold: once within 0.04 units, snap and finish transition
       const distToPos = camera.position.distanceTo(desiredPos.current);
       const distToLook = controlsRef.current.target.distanceTo(desiredLook.current);
 
-      if (distToPos < 0.06 && distToLook < 0.06) {
+      if (distToPos < 0.04 && distToLook < 0.04) {
         camera.position.copy(desiredPos.current);
         controlsRef.current.target.copy(desiredLook.current);
-        isTransitionActiveRef.current = false; // FINISHED! Never lerp again until next explicit button click!
+        isTransitionActiveRef.current = false;
       }
     }
 
-    // Always update damping for smooth deceleration when user releases drag
+    // Update controls with responsive damping
     controlsRef.current.update();
   });
 
@@ -128,11 +138,14 @@ export default function OfficeCamera({
       ref={controlsRef}
       makeDefault
       enableDamping
-      dampingFactor={0.06}
-      minDistance={3.5}
-      maxDistance={160}
-      maxPolarAngle={Math.PI / 2 - 0.04} // Disallow looking from below floor
-      minPolarAngle={0.15}
+      dampingFactor={0.20} // Snappy responsive damping: immediate cursor tracking, no rubber-band lag
+      minDistance={3.0}
+      maxDistance={120}
+      maxPolarAngle={Math.PI / 2 - 0.05} // Do not peek from underground
+      minPolarAngle={0.12}
+      panSpeed={1.0}
+      rotateSpeed={0.85}
+      zoomSpeed={1.1}
     />
   );
 }

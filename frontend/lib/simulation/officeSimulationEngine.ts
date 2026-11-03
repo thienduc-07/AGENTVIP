@@ -1,22 +1,34 @@
 /**
- * AGENT CITY — Real-time Office Employee Simulation Engine
+ * AGENT CITY 5.0 — Real-time Chibi Office Employee Simulation Engine
  *
  * Implements an ultra-lightweight deterministic finite-state machine (FSM)
  * supporting hundreds of independent AI employees with waypoint navigation,
- * collision avoidance, procedural typing, and realistic peer-to-peer conversations.
+ * collision avoidance, procedural typing, realistic peer conversations,
+ * and precise workstation chair positioning.
  */
 
 export type SimulationAgentState =
   | "IDLE"
+  | "WALKING"
+  | "RUNNING"
+  | "STANDING"
+  | "SITTING"
   | "WORKING"
   | "TYPING"
-  | "STANDING"
-  | "WALKING"
+  | "READING"
+  | "THINKING"
+  | "TALKING"
+  | "MEETING"
+  | "PRESENTING"
+  | "USING_COMPUTER"
+  | "DRINKING"
+  | "RESTING"
+  | "CELEBRATING"
+  | "WAITING"
+  | "APPROVAL_REQUESTED"
   | "APPROACHING_AGENT"
   | "CONVERSING"
   | "RETURNING_TO_DESK"
-  | "SITTING"
-  | "MEETING"
   | "PAUSED";
 
 export interface Waypoint {
@@ -39,6 +51,17 @@ export interface FloorNavigationGraph {
   };
 }
 
+export interface ChibiStyle {
+  skinColor: string;
+  hairColor: string;
+  shirtColor: string;
+  pantsColor: string;
+  shoeColor: string;
+  outfit: "suit" | "hoodie" | "shirt";
+  eyeColor: string;
+  hairStyle: "short" | "parted" | "bun" | "curly";
+}
+
 export interface SimulatedAgentData {
   id: string;
   name: string;
@@ -52,6 +75,7 @@ export interface SimulatedAgentData {
   targetHeading: number;
   isSeated: boolean;
   assignedDeskPos: [number, number, number] | null;
+  assignedChairPos: [number, number, number] | null;
   assignedDeskHeading: number;
   interactionPartnerId: string | null;
   path: [number, number, number][];
@@ -62,12 +86,58 @@ export interface SimulatedAgentData {
   leftArmAngle: number;
   rightArmAngle: number;
   headNodAngle: number;
+  chibiStyle: ChibiStyle;
+  blinkTimer: number;
+  isBlinking: boolean;
+}
+
+const CHIBI_SKIN_PALETTE = ["#fcd34d", "#fde68a", "#fed7aa", "#fbcfe8", "#f5d0b5", "#e7be9d"];
+const CHIBI_HAIR_PALETTE = ["#171717", "#3b2618", "#451a03", "#78350f", "#292524", "#4a2810"];
+const CHIBI_PANTS_PALETTE = ["#1e293b", "#0f172a", "#334155", "#18181b"];
+
+export function generateChibiStyle(id: string, department: string): ChibiStyle {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+    hash |= 0;
+  }
+  const posHash = Math.abs(hash);
+
+  const skinColor = CHIBI_SKIN_PALETTE[posHash % CHIBI_SKIN_PALETTE.length];
+  const hairColor = CHIBI_HAIR_PALETTE[(posHash >> 2) % CHIBI_HAIR_PALETTE.length];
+  const pantsColor = CHIBI_PANTS_PALETTE[(posHash >> 4) % CHIBI_PANTS_PALETTE.length];
+
+  // Department-aligned primary shirt/top color
+  let shirtColor = "#3b82f6";
+  const d = department.toLowerCase();
+  if (d.includes("exec") || d.includes("ceo")) shirtColor = "#d97706";
+  else if (d.includes("eng") || d.includes("tech") || d.includes("dev")) shirtColor = "#10b981";
+  else if (d.includes("ai") || d.includes("data") || d.includes("research")) shirtColor = "#8b5cf6";
+  else if (d.includes("market") || d.includes("creative") || d.includes("growth")) shirtColor = "#ec4899";
+  else if (d.includes("fin") || d.includes("money")) shirtColor = "#0284c7";
+  else if (d.includes("ops") || d.includes("hr")) shirtColor = "#6366f1";
+  else if (d.includes("sales")) shirtColor = "#f59e0b";
+
+  const outfits: Array<"suit" | "hoodie" | "shirt"> = ["suit", "hoodie", "shirt"];
+  const outfit = d.includes("exec") ? "suit" : outfits[posHash % outfits.length];
+
+  const hairStyles: Array<"short" | "parted" | "bun" | "curly"> = ["short", "parted", "bun", "curly"];
+  const hairStyle = hairStyles[(posHash >> 3) % hairStyles.length];
+
+  return {
+    skinColor,
+    hairColor,
+    shirtColor,
+    pantsColor,
+    shoeColor: "#090d16",
+    outfit,
+    eyeColor: "#1e1612",
+    hairStyle,
+  };
 }
 
 /**
  * Procedurally generates an obstacle-aware waypoint navigation graph for a given floor.
- * Floors measure 36m wide (-18 to +18) by 26m deep (-13 to +13).
- * Walkable corridors keep agents clear of exterior walls, glass curtain walls, and central elevator shaft.
  */
 export function buildFloorNavigationGraph(floor: number): FloorNavigationGraph {
   const elevation = (floor - 1) * 6.0 + 0.05;
@@ -94,13 +164,14 @@ export function buildFloorNavigationGraph(floor: number): FloorNavigationGraph {
   addWaypoint("w_west_rear", -8, -4.5, ["w_rear_mid", "w_west_mid", "w_west_desks"]);
   addWaypoint("w_east_rear", 8, -4.5, ["w_rear_mid", "w_east_mid", "w_east_desks"]);
 
-  // Department Breakouts & Lounges
+  // Department Breakouts, Library & Lounges
   addWaypoint("w_west_breakout", -14, 3.5, ["w_west_far"]);
   addWaypoint("w_east_breakout", 14, 3.5, ["w_east_far"]);
   addWaypoint("w_west_lounge", -10, 6.5, ["w_west_front"]);
   addWaypoint("w_east_lounge", 10, 6.5, ["w_east_front"]);
   addWaypoint("w_west_desks", -10, -3.5, ["w_west_rear"]);
   addWaypoint("w_east_desks", 10, -3.5, ["w_east_rear"]);
+  addWaypoint("w_elevator_door", -10.5, 6.0, ["w_west_front", "w_west_lounge"]);
 
   return {
     floor,
@@ -125,7 +196,6 @@ export function findPathOnFloor(
 ): [number, number, number][] {
   const wps = graph.waypoints;
 
-  // Find nearest start and end waypoints
   let closestStart: Waypoint | null = null;
   let minDistStart = Infinity;
   let closestEnd: Waypoint | null = null;
@@ -155,114 +225,124 @@ export function findPathOnFloor(
     return [startPos, [startWp.x, graph.elevation, startWp.z], destPos];
   }
 
-  // Dijkstra / BFS search
   const queue: string[] = [startWp.id];
   const cameFrom: Record<string, string | null> = { [startWp.id]: null };
-  const costSoFar: Record<string, number> = { [startWp.id]: 0 };
 
   while (queue.length > 0) {
-    // Pop lowest cost
-    queue.sort((a, b) => (costSoFar[a] || 0) - (costSoFar[b] || 0));
     const currentId = queue.shift()!;
-
     if (currentId === endWp.id) break;
 
     const currentWp = wps[currentId];
     if (!currentWp) continue;
 
     for (const neighborId of currentWp.neighbors) {
-      const neighbor = wps[neighborId];
-      if (!neighbor) continue;
-
-      const newCost = costSoFar[currentId] + Math.hypot(neighbor.x - currentWp.x, neighbor.z - currentWp.z);
-      if (costSoFar[neighborId] === undefined || newCost < costSoFar[neighborId]) {
-        costSoFar[neighborId] = newCost;
+      if (cameFrom[neighborId] === undefined) {
         cameFrom[neighborId] = currentId;
         queue.push(neighborId);
       }
     }
   }
 
-  // Reconstruct path
-  const path: [number, number, number][] = [];
+  const pathWaypoints: [number, number, number][] = [];
   let curr: string | null = endWp.id;
 
-  if (curr && cameFrom[curr] === undefined && curr !== startWp.id) {
-    // No route found, return direct smoothed path
-    return [startPos, destPos];
-  }
-
-  while (curr) {
-    const wp = wps[curr];
-    if (wp) {
-      path.unshift([wp.x, graph.elevation, wp.z]);
+  if (cameFrom[endWp.id] !== undefined) {
+    while (curr) {
+      const wp = wps[curr];
+      if (wp) {
+        pathWaypoints.unshift([wp.x, graph.elevation, wp.z]);
+      }
+      curr = cameFrom[curr] ?? null;
     }
-    curr = cameFrom[curr] ?? null;
   }
 
-  path.unshift(startPos);
-  path.push(destPos);
-  return path;
+  if (pathWaypoints.length === 0) {
+    return [startPos, [startWp.x, graph.elevation, startWp.z], [endWp.x, graph.elevation, endWp.z], destPos];
+  }
+
+  return [startPos, ...pathWaypoints, destPos];
 }
 
 export class OfficeSimulationEngine {
   private agents: Map<string, SimulatedAgentData> = new Map();
   private floorGraphs: Map<number, FloorNavigationGraph> = new Map();
-  private occupiedDeskReservations: Set<string> = new Set();
   private lastUpdateTime: number = 0;
-  private isSimulationPaused: boolean = false;
 
   constructor() {
-    for (let f = 1; f <= 6; f++) {
-      this.floorGraphs.set(f, buildFloorNavigationGraph(f));
+    for (let f = -1; f <= 6; f++) {
+      if (f !== 0) {
+        this.floorGraphs.set(f, buildFloorNavigationGraph(f));
+      }
     }
   }
 
-  /**
-   * Registers or updates an agent in the simulation engine.
-   */
   public registerAgent(
     id: string,
     name: string,
     department: string,
     floor: number,
     initialPos: [number, number, number],
-    assignedDeskPos: [number, number, number] | null = null,
+    assignedDeskPos: [number, number, number] | null,
     initialState: SimulationAgentState = "WORKING"
   ): void {
-    const existing = this.agents.get(id);
-    const phaseOffset = existing ? existing.phaseOffset : (this.agents.size + 1) * 0.618;
+    if (this.agents.has(id)) {
+      const existing = this.agents.get(id)!;
+      existing.name = name;
+      existing.department = department;
+      existing.floor = floor;
+      if (assignedDeskPos) {
+        existing.assignedDeskPos = [...assignedDeskPos];
+        // Exact chair position: offset +0.55m in Z from desk center
+        existing.assignedChairPos = [assignedDeskPos[0], assignedDeskPos[1], assignedDeskPos[2] + 0.55];
+      }
+      return;
+    }
 
-    const agent: SimulatedAgentData = {
+    const phaseOffset = (initialPos[0] * 3.14 + initialPos[2] * 2.71) % 10.0;
+    const chairPos: [number, number, number] | null = assignedDeskPos
+      ? [assignedDeskPos[0], assignedDeskPos[1], assignedDeskPos[2] + 0.55]
+      : null;
+
+    const spawnPos: [number, number, number] = chairPos
+      ? [...chairPos]
+      : [...initialPos];
+
+    const chibiStyle = generateChibiStyle(id, department);
+
+    this.agents.set(id, {
       id,
       name,
       department,
       floor,
-      state: existing ? existing.state : initialState,
-      stateTimer: existing ? existing.stateTimer : 5 + (phaseOffset % 12),
-      position: existing ? existing.position : [...initialPos],
-      targetPosition: existing ? existing.targetPosition : null,
-      heading: existing ? existing.heading : Math.PI,
-      targetHeading: existing ? existing.targetHeading : Math.PI,
-      isSeated: existing ? existing.isSeated : (initialState === "WORKING" || initialState === "TYPING" || initialState === "SITTING"),
-      assignedDeskPos: assignedDeskPos ? [...assignedDeskPos] : (existing?.assignedDeskPos || null),
+      state: initialState,
+      stateTimer: 8 + (Math.abs(phaseOffset) % 12),
+      position: spawnPos,
+      targetPosition: null,
+      heading: Math.PI,
+      targetHeading: Math.PI,
+      isSeated:
+        initialState === "WORKING" ||
+        initialState === "SITTING" ||
+        initialState === "TYPING" ||
+        initialState === "DRINKING" ||
+        initialState === "READING" ||
+        initialState === "USING_COMPUTER",
+      assignedDeskPos: assignedDeskPos ? [...assignedDeskPos] : null,
+      assignedChairPos: chairPos,
       assignedDeskHeading: Math.PI,
-      interactionPartnerId: existing ? existing.interactionPartnerId : null,
-      path: existing ? existing.path : [],
+      interactionPartnerId: null,
+      path: [],
       pathIndex: 0,
-      speed: 2.2, // ~2.2 m/s natural walking pace
+      speed: 1.4,
       phaseOffset,
-      torsoLean: 0.1,
-      leftArmAngle: 0.85,
-      rightArmAngle: 0.85,
+      torsoLean: initialState === "WORKING" || initialState === "TYPING" ? 0.08 : 0.05,
+      leftArmAngle: 0,
+      rightArmAngle: 0,
       headNodAngle: 0,
-    };
-
-    this.agents.set(id, agent);
-  }
-
-  public setPaused(paused: boolean): void {
-    this.isSimulationPaused = paused;
+      chibiStyle,
+      blinkTimer: 2.0 + (Math.abs(phaseOffset) % 3.0),
+      isBlinking: false,
+    });
   }
 
   public getAgent(id: string): SimulatedAgentData | undefined {
@@ -273,92 +353,166 @@ export class OfficeSimulationEngine {
     return Array.from(this.agents.values());
   }
 
-  /**
-   * Centralized simulation update loop.
-   * Clamps delta to avoid unbounded work spikes after browser tab suspension.
-   */
-  public update(rawDelta: number): void {
-    if (this.isSimulationPaused) return;
+  public update(timeOrDelta: number, maybeDelta?: number): void {
+    let time: number;
+    let dt: number;
 
-    // Strict delta time clamp [0, 0.1s]
-    const dt = Math.max(0.001, Math.min(0.1, rawDelta));
-    this.lastUpdateTime += dt;
+    if (maybeDelta !== undefined) {
+      time = timeOrDelta;
+      dt = Math.min(maybeDelta, 0.1);
+      this.lastUpdateTime = time;
+    } else {
+      dt = Math.min(timeOrDelta, 0.1);
+      this.lastUpdateTime += dt;
+      time = this.lastUpdateTime;
+    }
 
     const agentList = Array.from(this.agents.values());
 
     for (let i = 0; i < agentList.length; i++) {
       const agent = agentList[i];
-      this.updateAgentFSM(agent, dt, agentList);
+      this.updateAgentState(agent, dt, time, agentList);
     }
   }
 
-  private updateAgentFSM(
+  private updateAgentState(
     agent: SimulatedAgentData,
     dt: number,
+    time: number,
     allAgents: SimulatedAgentData[]
   ): void {
     agent.stateTimer -= dt;
 
+    // Blinking eye simulation
+    agent.blinkTimer -= dt;
+    if (agent.blinkTimer <= 0) {
+      agent.isBlinking = !agent.isBlinking;
+      agent.blinkTimer = agent.isBlinking ? 0.15 : 2.5 + (Math.abs(agent.phaseOffset) % 3.5);
+    }
+
     switch (agent.state) {
       case "WORKING":
-      case "TYPING": {
+      case "TYPING":
+      case "USING_COMPUTER": {
         agent.isSeated = true;
-        agent.torsoLean = 0.12; // Slight forward focus towards monitor
-        // Procedural typing arm oscillation
-        const t = this.lastUpdateTime * 14.0 + agent.phaseOffset;
-        agent.leftArmAngle = 0.85 + Math.sin(t) * 0.08;
-        agent.rightArmAngle = 0.85 + Math.cos(t) * 0.08;
-        agent.headNodAngle = Math.sin(t * 0.25) * 0.04;
+        agent.torsoLean = 0.12;
 
-        // Transition: After 15–35s of work, stand up to walk or visit a peer
+        // Ensure agent remains strictly anchored at the chair position facing the desk
+        if (agent.assignedChairPos) {
+          agent.position[0] = agent.assignedChairPos[0];
+          agent.position[2] = agent.assignedChairPos[2];
+          agent.heading = Math.PI;
+        }
+
+        // Procedural typing finger & arm movement
+        const t = time * 16.0 + agent.phaseOffset;
+        agent.leftArmAngle = 0.85 + Math.sin(t) * 0.04;
+        agent.rightArmAngle = 0.85 + Math.cos(t * 0.9) * 0.04;
+        agent.headNodAngle = 0.15 + Math.sin(time * 2.0) * 0.02;
+
         if (agent.stateTimer <= 0) {
-          // Switch between TYPING and WORKING, or STANDING up to take a walk
-          if (agent.state === "WORKING") {
-            agent.state = "TYPING";
-            agent.stateTimer = 10 + (agent.phaseOffset % 10);
-          } else {
+          const roll = Math.random();
+          if (roll < 0.25) {
+            // Take a coffee or relaxation break
+            agent.state = "DRINKING";
+            agent.stateTimer = 6.0;
+          } else if (roll < 0.45) {
+            // Stand up to visit a colleague or library
             agent.state = "STANDING";
-            agent.stateTimer = 1.2;
-            agent.isSeated = false;
+            agent.stateTimer = 1.5;
+          } else {
+            // Continue working
+            agent.state = "WORKING";
+            agent.stateTimer = 12 + (agent.phaseOffset % 10);
           }
         }
         break;
       }
 
-      case "STANDING": {
-        agent.isSeated = false;
-        agent.torsoLean = 0.0;
-        agent.leftArmAngle = 0.0;
-        agent.rightArmAngle = 0.0;
+      case "DRINKING": {
+        agent.isSeated = true;
+        // Raise right arm holding mug
+        agent.rightArmAngle = 1.6 + Math.sin(time * 2.5) * 0.08;
+        agent.leftArmAngle = 0.3;
+        agent.headNodAngle = -0.08;
 
         if (agent.stateTimer <= 0) {
-          // Choose to approach a colleague on the same floor, or take a corridor stroll
-          const peers = allAgents.filter(
-            (p) => p.id !== agent.id && p.floor === agent.floor && p.state !== "MEETING"
-          );
+          agent.state = "WORKING";
+          agent.stateTimer = 15.0;
+        }
+        break;
+      }
 
-          if (peers.length > 0 && (agent.phaseOffset % 3 < 2)) {
-            // Pick a random colleague to converse with
-            const targetPeer = peers[Math.floor(agent.phaseOffset) % peers.length];
-            agent.interactionPartnerId = targetPeer.id;
-            agent.state = "APPROACHING_AGENT";
+      case "READING": {
+        agent.isSeated = true;
+        // Look down at document or tablet
+        agent.headNodAngle = 0.35;
+        agent.leftArmAngle = 0.55;
+        agent.rightArmAngle = 0.55;
 
-            // Find destination near peer
-            const graph = this.floorGraphs.get(agent.floor);
-            if (graph) {
-              const destX = targetPeer.position[0] + (targetPeer.position[0] > 0 ? -1.4 : 1.4);
-              const destZ = targetPeer.position[2] + 0.5;
-              agent.path = findPathOnFloor(graph, agent.position, [destX, graph.elevation, destZ]);
-              agent.pathIndex = 0;
+        if (agent.stateTimer <= 0) {
+          agent.state = "WORKING";
+          agent.stateTimer = 12.0;
+        }
+        break;
+      }
+
+      case "CELEBRATING": {
+        // Joyful jumping and hands raised high
+        agent.isSeated = false;
+        agent.leftArmAngle = -1.6 + Math.sin(time * 8.0) * 0.2;
+        agent.rightArmAngle = -1.6 + Math.cos(time * 8.0) * 0.2;
+        agent.headNodAngle = -0.2;
+
+        if (agent.stateTimer <= 0) {
+          agent.state = "RETURNING_TO_DESK";
+        }
+        break;
+      }
+
+      case "APPROVAL_REQUESTED":
+      case "WAITING": {
+        // Paused in thought or waiting for user confirmation
+        agent.torsoLean = 0.04;
+        agent.rightArmAngle = 0.9;
+        agent.leftArmAngle = 0.1;
+        agent.headNodAngle = Math.sin(time * 1.5) * 0.1;
+        break;
+      }
+
+      case "STANDING": {
+        agent.isSeated = false;
+        agent.torsoLean = 0.02;
+        agent.leftArmAngle = 0.1;
+        agent.rightArmAngle = 0.1;
+
+        if (agent.stateTimer <= 0) {
+          const roll = Math.random();
+          if (roll < 0.5) {
+            // Find nearby colleague on the same floor to chat
+            const peers = allAgents.filter(
+              (a) => a.id !== agent.id && a.floor === agent.floor && a.state !== "MEETING"
+            );
+            if (peers.length > 0) {
+              const targetPeer = peers[Math.floor(Math.random() * peers.length)];
+              agent.state = "APPROACHING_AGENT";
+              agent.interactionPartnerId = targetPeer.id;
+
+              const graph = this.floorGraphs.get(agent.floor);
+              if (graph) {
+                const destX = targetPeer.position[0] + 0.8;
+                const destZ = targetPeer.position[2] + 0.8;
+                agent.path = findPathOnFloor(graph, agent.position, [destX, graph.elevation, destZ]);
+                agent.pathIndex = 0;
+              }
             }
           } else {
-            // General corridor walk
+            // Walk along corridor
             agent.state = "WALKING";
             const graph = this.floorGraphs.get(agent.floor);
             if (graph) {
-              const randomWp = Object.values(graph.waypoints)[
-                Math.floor((agent.phaseOffset * 7) % Object.keys(graph.waypoints).length)
-              ];
+              const wps = Object.values(graph.waypoints);
+              const randomWp = wps[Math.floor((Math.abs(agent.phaseOffset) * 7) % wps.length)];
               if (randomWp) {
                 agent.path = findPathOnFloor(graph, agent.position, [randomWp.x, graph.elevation, randomWp.z]);
                 agent.pathIndex = 0;
@@ -370,17 +524,18 @@ export class OfficeSimulationEngine {
       }
 
       case "WALKING":
+      case "RUNNING":
       case "APPROACHING_AGENT":
       case "RETURNING_TO_DESK": {
         this.stepAgentWalking(agent, dt, allAgents);
         break;
       }
 
-      case "CONVERSING": {
+      case "CONVERSING":
+      case "TALKING": {
         agent.isSeated = false;
-        agent.torsoLean = 0.02;
+        agent.torsoLean = 0.04;
 
-        // Turn towards conversation partner
         if (agent.interactionPartnerId) {
           const partner = this.agents.get(agent.interactionPartnerId);
           if (partner) {
@@ -390,22 +545,19 @@ export class OfficeSimulationEngine {
           }
         }
 
-        // Smooth heading adjustment
         agent.heading = this.lerpAngle(agent.heading, agent.targetHeading, dt * 6.0);
 
-        // Conversational gesticulation
-        const t = this.lastUpdateTime * 3.5 + agent.phaseOffset;
+        const t = time * 3.5 + agent.phaseOffset;
         agent.leftArmAngle = 0.35 + Math.sin(t) * 0.25;
         agent.rightArmAngle = 0.2 + Math.cos(t * 1.2) * 0.2;
         agent.headNodAngle = Math.sin(t * 2.0) * 0.08;
 
-        // After conversation duration (8–18s), return to desk
         if (agent.stateTimer <= 0) {
           agent.interactionPartnerId = null;
           agent.state = "RETURNING_TO_DESK";
           const graph = this.floorGraphs.get(agent.floor);
-          if (graph && agent.assignedDeskPos) {
-            agent.path = findPathOnFloor(graph, agent.position, agent.assignedDeskPos);
+          if (graph && agent.assignedChairPos) {
+            agent.path = findPathOnFloor(graph, agent.position, agent.assignedChairPos);
             agent.pathIndex = 0;
           } else {
             agent.state = "SITTING";
@@ -418,8 +570,10 @@ export class OfficeSimulationEngine {
       case "SITTING": {
         agent.isSeated = true;
         agent.torsoLean = 0.08;
-        if (agent.assignedDeskHeading !== undefined) {
-          agent.heading = this.lerpAngle(agent.heading, agent.assignedDeskHeading, dt * 8.0);
+        if (agent.assignedChairPos) {
+          agent.position[0] = agent.assignedChairPos[0];
+          agent.position[2] = agent.assignedChairPos[2];
+          agent.heading = Math.PI;
         }
         if (agent.stateTimer <= 0) {
           agent.state = "WORKING";
@@ -429,10 +583,17 @@ export class OfficeSimulationEngine {
       }
 
       case "MEETING":
+      case "PRESENTING": {
+        agent.headNodAngle = Math.sin(time * 2.0) * 0.08;
+        if (agent.state === "PRESENTING") {
+          agent.rightArmAngle = -1.2 + Math.sin(time * 2.0) * 0.2;
+        }
+        break;
+      }
+
       case "PAUSED":
       case "IDLE":
       default: {
-        // Keep posture clean
         break;
       }
     }
@@ -444,10 +605,9 @@ export class OfficeSimulationEngine {
     allAgents: SimulatedAgentData[]
   ): void {
     if (!agent.path || agent.path.length === 0 || agent.pathIndex >= agent.path.length) {
-      // Reached destination
       if (agent.state === "APPROACHING_AGENT") {
         agent.state = "CONVERSING";
-        agent.stateTimer = 10 + (agent.phaseOffset % 8);
+        agent.stateTimer = 8 + (agent.phaseOffset % 6);
         if (agent.interactionPartnerId) {
           const partner = this.agents.get(agent.interactionPartnerId);
           if (partner && partner.state !== "MEETING") {
@@ -458,13 +618,17 @@ export class OfficeSimulationEngine {
         }
       } else if (agent.state === "RETURNING_TO_DESK") {
         agent.state = "SITTING";
-        agent.stateTimer = 1.2;
+        agent.stateTimer = 1.0;
+        if (agent.assignedChairPos) {
+          agent.position[0] = agent.assignedChairPos[0];
+          agent.position[2] = agent.assignedChairPos[2];
+          agent.heading = Math.PI;
+        }
       } else {
-        // Wandering completed, return home
         agent.state = "RETURNING_TO_DESK";
         const graph = this.floorGraphs.get(agent.floor);
-        if (graph && agent.assignedDeskPos) {
-          agent.path = findPathOnFloor(graph, agent.position, agent.assignedDeskPos);
+        if (graph && agent.assignedChairPos) {
+          agent.path = findPathOnFloor(graph, agent.position, agent.assignedChairPos);
           agent.pathIndex = 0;
         } else {
           agent.state = "SITTING";
@@ -484,12 +648,11 @@ export class OfficeSimulationEngine {
       return;
     }
 
-    // Direction and heading
     const desiredHeading = Math.atan2(dx, dz);
     agent.targetHeading = desiredHeading;
     agent.heading = this.lerpAngle(agent.heading, desiredHeading, dt * 8.0);
 
-    // Collision avoidance with other moving agents
+    // Lateral collision avoidance with other moving agents
     let avoidX = 0;
     let avoidZ = 0;
     for (let j = 0; j < allAgents.length; j++) {
@@ -501,23 +664,21 @@ export class OfficeSimulationEngine {
       const sepDist = Math.hypot(sepX, sepZ);
 
       if (sepDist < 0.9 && sepDist > 0.01) {
-        // Gentle repulsion
         const factor = (0.9 - sepDist) / 0.9;
         avoidX += (sepX / sepDist) * factor * 0.8;
         avoidZ += (sepZ / sepDist) * factor * 0.8;
       }
     }
 
-    // Move forward
-    const moveDist = agent.speed * dt;
+    const moveDist = (agent.state === "RUNNING" ? agent.speed * 1.6 : agent.speed) * dt;
     const nx = (dx / dist) * moveDist + avoidX * dt;
     const nz = (dz / dist) * moveDist + avoidZ * dt;
 
     agent.position[0] += nx;
     agent.position[2] += nz;
 
-    // Natural arm swing and vertical bounce during walk
-    const walkCycle = this.lastUpdateTime * 9.0 + agent.phaseOffset;
+    // Harmonic leg swing and arm counter-swing during walking
+    const walkCycle = this.lastUpdateTime * (agent.state === "RUNNING" ? 14.0 : 9.0) + agent.phaseOffset;
     agent.leftArmAngle = Math.sin(walkCycle) * 0.45;
     agent.rightArmAngle = -Math.sin(walkCycle) * 0.45;
   }
@@ -530,6 +691,4 @@ export class OfficeSimulationEngine {
   }
 }
 
-// Global simulation engine singleton
 export const officeSimulationEngine = new OfficeSimulationEngine();
-

@@ -17,36 +17,63 @@ interface InstancedAgentsProps {
   onSelectAgent?: (agentId: string) => void;
 }
 
-// Shared Avatar Geometries (Singletons)
-const PELVIS_GEOMETRY = new THREE.BoxGeometry(0.32, 0.14, 0.22);
-const TORSO_GEOMETRY = new THREE.BoxGeometry(0.38, 0.42, 0.24);
-const SHIRT_GEOMETRY = new THREE.PlaneGeometry(0.16, 0.32);
-const TIE_GEOMETRY = new THREE.BoxGeometry(0.04, 0.22, 0.005);
-const NECK_GEOMETRY = new THREE.CylinderGeometry(0.06, 0.07, 0.1, 8);
-const HEAD_GEOMETRY = new THREE.SphereGeometry(0.13, 12, 12);
-const HAIR_GEOMETRY = new THREE.BoxGeometry(0.26, 0.14, 0.26);
-const ARM_GEOMETRY = new THREE.CylinderGeometry(0.05, 0.045, 0.36, 8);
-const LEG_GEOMETRY = new THREE.CylinderGeometry(0.065, 0.055, 0.74, 8);
-const SHOE_GEOMETRY = new THREE.BoxGeometry(0.1, 0.07, 0.22);
-const RING_GEOMETRY = new THREE.RingGeometry(0.45, 0.58, 24);
+// =============================================================================
+// CHIBI CHARACTER GEOMETRIES (PROPORTION ~2.5 HEADS - CUTE EXPRESSIVE CHIBI)
+// =============================================================================
+const HEAD_GEO = new THREE.SphereGeometry(0.22, 20, 16);
+const HAIR_GEO = new THREE.SphereGeometry(0.24, 20, 14);
+const EYE_GEO = new THREE.SphereGeometry(0.038, 12, 10);
+const EYE_PUPIL_GEO = new THREE.SphereGeometry(0.016, 8, 8);
+const TORSO_GEO = new THREE.CylinderGeometry(0.12, 0.16, 0.28, 16);
+const COLLAR_GEO = new THREE.TorusGeometry(0.09, 0.02, 8, 20);
+const ARM_GEO = new THREE.CylinderGeometry(0.042, 0.038, 0.20, 10);
+const HAND_GEO = new THREE.SphereGeometry(0.045, 12, 10);
+const THIGH_GEO = new THREE.CylinderGeometry(0.05, 0.045, 0.16, 10);
+const SHIN_GEO = new THREE.CylinderGeometry(0.045, 0.042, 0.16, 10);
+const SHOE_GEO = new THREE.BoxGeometry(0.10, 0.065, 0.15);
+const RING_GEO = new THREE.RingGeometry(0.40, 0.52, 24);
 
-// Shared Avatar Materials (Singletons)
-const PELVIS_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.5 });
-const TORSO_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.45 });
-const SHIRT_MATERIAL = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.25 });
-const SKIN_MATERIAL = new THREE.MeshStandardMaterial({ color: "#fed7aa", roughness: 0.55 });
-const HAIR_MATERIAL = new THREE.MeshStandardMaterial({ color: "#171717", roughness: 0.4 });
-const SUIT_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.45 });
-const PANTS_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.6 });
-const SHOE_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0a0a0a", roughness: 0.25, metalness: 0.5 });
+// Accessories
+const ACCESSORY_MUG_GEO = new THREE.CylinderGeometry(0.035, 0.03, 0.07, 10);
+const ACCESSORY_BOOK_GEO = new THREE.BoxGeometry(0.18, 0.02, 0.14);
 
-// Dynamic instanced materials supporting per-instance vertex colors
-const TIE_BASE_MATERIAL = new THREE.MeshStandardMaterial({
-  roughness: 0.4,
+// Materials
+const SKIN_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#fed7aa",
+  roughness: 0.5,
+  metalness: 0.05,
+});
+
+const HAIR_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#292524",
+  roughness: 0.35,
   metalness: 0.1,
 });
 
-// Z-Fighting immune activity ring material
+const EYE_MATERIAL = new THREE.MeshBasicMaterial({ color: "#1e1612" });
+const WHITE_MATERIAL = new THREE.MeshBasicMaterial({ color: "#ffffff" });
+
+const TOP_BASE_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#3b82f6",
+  roughness: 0.55,
+  metalness: 0.1,
+});
+
+const PANTS_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#1e293b",
+  roughness: 0.6,
+});
+
+const SHOE_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#0f172a",
+  roughness: 0.3,
+});
+
+const MUG_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#f8fafc",
+  roughness: 0.2,
+});
+
 const RING_BASE_MATERIAL = new THREE.MeshBasicMaterial({
   transparent: true,
   opacity: 0.85,
@@ -57,9 +84,7 @@ const RING_BASE_MATERIAL = new THREE.MeshBasicMaterial({
   polygonOffsetUnits: -2,
 });
 
-// =============================================================================
-// PRE-ALLOCATED ZERO-HEAP STATIC SCRATCH OBJECTS (ZERO ALLOCATION IN USEFRAME)
-// =============================================================================
+// Pre-allocated static scratch objects
 const S_PARENT_MAT = new THREE.Matrix4();
 const S_LOCAL_MAT = new THREE.Matrix4();
 const S_WORLD_MAT = new THREE.Matrix4();
@@ -80,7 +105,6 @@ export default function InstancedAgents({
 }: InstancedAgentsProps) {
   const { camera } = useThree();
 
-  // Filter visible agents
   const visibleAgents = useMemo(() => {
     return Object.values(agents).filter((agent) => {
       const floor = getDepartmentFloor(agent.department);
@@ -90,23 +114,29 @@ export default function InstancedAgents({
 
   const count = visibleAgents.length;
 
-  // Refs for instanced body part meshes
-  const torsoRef = useRef<THREE.InstancedMesh>(null);
-  const pelvisRef = useRef<THREE.InstancedMesh>(null);
+  // Instanced Meshes Refs
   const headRef = useRef<THREE.InstancedMesh>(null);
   const hairRef = useRef<THREE.InstancedMesh>(null);
-  const neckRef = useRef<THREE.InstancedMesh>(null);
-  const shirtRef = useRef<THREE.InstancedMesh>(null);
-  const tieRef = useRef<THREE.InstancedMesh>(null);
-  const leftArmRef = useRef<THREE.InstancedMesh>(null);
-  const rightArmRef = useRef<THREE.InstancedMesh>(null);
-  const leftLegRef = useRef<THREE.InstancedMesh>(null);
-  const rightLegRef = useRef<THREE.InstancedMesh>(null);
-  const leftShoeRef = useRef<THREE.InstancedMesh>(null);
-  const rightShoeRef = useRef<THREE.InstancedMesh>(null);
+  const eyeLRef = useRef<THREE.InstancedMesh>(null);
+  const eyeRRef = useRef<THREE.InstancedMesh>(null);
+  const eyePupilLRef = useRef<THREE.InstancedMesh>(null);
+  const eyePupilRRef = useRef<THREE.InstancedMesh>(null);
+  const torsoRef = useRef<THREE.InstancedMesh>(null);
+  const collarRef = useRef<THREE.InstancedMesh>(null);
+  const armLRef = useRef<THREE.InstancedMesh>(null);
+  const armRRef = useRef<THREE.InstancedMesh>(null);
+  const handLRef = useRef<THREE.InstancedMesh>(null);
+  const handRRef = useRef<THREE.InstancedMesh>(null);
+  const thighLRef = useRef<THREE.InstancedMesh>(null);
+  const thighRRef = useRef<THREE.InstancedMesh>(null);
+  const shinLRef = useRef<THREE.InstancedMesh>(null);
+  const shinRRef = useRef<THREE.InstancedMesh>(null);
+  const shoeLRef = useRef<THREE.InstancedMesh>(null);
+  const shoeRRef = useRef<THREE.InstancedMesh>(null);
   const ringRef = useRef<THREE.InstancedMesh>(null);
+  const mugRef = useRef<THREE.InstancedMesh>(null);
 
-  // Synchronize agents with the OfficeSimulationEngine
+  // Sync with simulation engine
   useEffect(() => {
     visibleAgents.forEach((agent) => {
       const floor = getDepartmentFloor(agent.department);
@@ -120,319 +150,390 @@ export default function InstancedAgents({
         agent.assignedWorkstation ? "WORKING" : "IDLE"
       );
     });
+  }, [visibleAgents]);
 
-    // Initialize per-instance tie and ring colors
+  // Set colors on mount/change
+  useEffect(() => {
     visibleAgents.forEach((agent, i) => {
-      S_COLOR.set(agent.color || "#38bdf8");
-      tieRef.current?.setColorAt(i, S_COLOR);
-
       const state = agent.behavioralState || "IDLE";
       const config = CANONICAL_STATE_CONFIGS[state] || CANONICAL_STATE_CONFIGS.IDLE;
-      S_COLOR.set(config.beaconColor || config.badgeColor || "#38bdf8");
+      const simAgent = officeSimulationEngine.getAgent(agent.id);
+
+      // Top / Shirt color
+      const shirtColor = simAgent?.chibiStyle.shirtColor || agent.color || "#3b82f6";
+      S_COLOR.set(shirtColor);
+      torsoRef.current?.setColorAt(i, S_COLOR);
+      armLRef.current?.setColorAt(i, S_COLOR);
+      armRRef.current?.setColorAt(i, S_COLOR);
+
+      // Hair color
+      const hairColor = simAgent?.chibiStyle.hairColor || "#292524";
+      S_COLOR.set(hairColor);
+      hairRef.current?.setColorAt(i, S_COLOR);
+
+      // Skin color
+      const skinColor = simAgent?.chibiStyle.skinColor || "#fed7aa";
+      S_COLOR.set(skinColor);
+      headRef.current?.setColorAt(i, S_COLOR);
+      handLRef.current?.setColorAt(i, S_COLOR);
+      handRRef.current?.setColorAt(i, S_COLOR);
+
+      // Pants color
+      const pantsColor = simAgent?.chibiStyle.pantsColor || "#1e293b";
+      S_COLOR.set(pantsColor);
+      thighLRef.current?.setColorAt(i, S_COLOR);
+      thighRRef.current?.setColorAt(i, S_COLOR);
+      shinLRef.current?.setColorAt(i, S_COLOR);
+      shinRRef.current?.setColorAt(i, S_COLOR);
+
+      // Ring status color
+      S_COLOR.set(config.beaconColor);
       ringRef.current?.setColorAt(i, S_COLOR);
     });
 
-    if (tieRef.current?.instanceColor) tieRef.current.instanceColor.needsUpdate = true;
+    if (torsoRef.current?.instanceColor) torsoRef.current.instanceColor.needsUpdate = true;
+    if (armLRef.current?.instanceColor) armLRef.current.instanceColor.needsUpdate = true;
+    if (armRRef.current?.instanceColor) armRRef.current.instanceColor.needsUpdate = true;
+    if (hairRef.current?.instanceColor) hairRef.current.instanceColor.needsUpdate = true;
+    if (headRef.current?.instanceColor) headRef.current.instanceColor.needsUpdate = true;
+    if (handLRef.current?.instanceColor) handLRef.current.instanceColor.needsUpdate = true;
+    if (handRRef.current?.instanceColor) handRRef.current.instanceColor.needsUpdate = true;
+    if (thighLRef.current?.instanceColor) thighLRef.current.instanceColor.needsUpdate = true;
+    if (thighRRef.current?.instanceColor) thighRRef.current.instanceColor.needsUpdate = true;
+    if (shinLRef.current?.instanceColor) shinLRef.current.instanceColor.needsUpdate = true;
+    if (shinRRef.current?.instanceColor) shinRRef.current.instanceColor.needsUpdate = true;
     if (ringRef.current?.instanceColor) ringRef.current.instanceColor.needsUpdate = true;
   }, [visibleAgents]);
 
-  // Zero-allocation articulated skeletal simulation loop
-  useFrame(({ clock }, delta) => {
-    if (count === 0) return;
+  const setPart = (
+    ref: React.RefObject<THREE.InstancedMesh | null>,
+    index: number,
+    localX: number,
+    localY: number,
+    localZ: number,
+    rotX: number = 0,
+    rotY: number = 0,
+    rotZ: number = 0,
+    scaleX: number = 1,
+    scaleY: number = 1,
+    scaleZ: number = 1
+  ) => {
+    if (!ref.current) return;
+    S_LOCAL_POS.set(localX, localY, localZ);
+    S_ROT.set(rotX, rotY, rotZ);
+    S_LOCAL_QUAT.setFromEuler(S_ROT);
+    S_SCALE.set(scaleX, scaleY, scaleZ);
+    S_LOCAL_MAT.compose(S_LOCAL_POS, S_LOCAL_QUAT, S_SCALE);
+    S_WORLD_MAT.multiplyMatrices(S_PARENT_MAT, S_LOCAL_MAT);
+    ref.current.setMatrixAt(index, S_WORLD_MAT);
+  };
 
-    // Advance deterministic employee simulation engine
-    officeSimulationEngine.update(delta);
+  useFrame((state, delta) => {
+    officeSimulationEngine.update(state.clock.elapsedTime, delta);
+    const t = state.clock.elapsedTime;
 
-    const t = clock.getElapsedTime();
-
-    // Helper: zero-allocation matrix setter
-    const setPart = (
-      meshRef: React.RefObject<THREE.InstancedMesh | null>,
-      idx: number,
-      lx: number,
-      ly: number,
-      lz: number,
-      rx = 0,
-      ry = 0,
-      rz = 0
-    ) => {
-      S_LOCAL_POS.set(lx, ly, lz);
-      S_ROT.set(rx, ry, rz);
-      S_LOCAL_QUAT.setFromEuler(S_ROT);
-      S_LOCAL_MAT.compose(S_LOCAL_POS, S_LOCAL_QUAT, S_SCALE);
-      S_WORLD_MAT.multiplyMatrices(S_PARENT_MAT, S_LOCAL_MAT);
-      meshRef.current?.setMatrixAt(idx, S_WORLD_MAT);
-    };
-
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < visibleAgents.length; i++) {
       const agent = visibleAgents[i];
-      if (!agent) continue;
-
       const simAgent = officeSimulationEngine.getAgent(agent.id);
 
-      // Extract simulated positions and postures
+      const isSeated = simAgent ? simAgent.isSeated : (agent.isSeated || Boolean(agent.assignedWorkstation));
+      const isMoving = simAgent
+        ? simAgent.state === "WALKING" || simAgent.state === "RUNNING" || simAgent.state === "APPROACHING_AGENT"
+        : agent.isMoving;
+
+      // PRECISE WORKSTATION CHAIR SITTING:
+      // When seated at a workstation, anchor pelvis on chair cushion (Z + 0.55m from desk)
       const posX = simAgent ? simAgent.position[0] : agent.position[0];
       const posY = simAgent ? simAgent.position[1] : agent.position[1];
-      const posZ = simAgent ? simAgent.position[2] : agent.position[2];
-      const heading = simAgent ? simAgent.heading : (agent.headingRadians ?? 0);
-      const isSeated = simAgent ? simAgent.isSeated : (agent.isSeated || Boolean(agent.assignedWorkstation && !agent.isMoving));
-      const isMoving = simAgent ? (simAgent.state === "WALKING" || simAgent.state === "APPROACHING_AGENT" || simAgent.state === "RETURNING_TO_DESK") : agent.isMoving;
+      const posZ = isSeated && !isMoving && agent.assignedWorkstation
+        ? agent.position[2] + 0.55
+        : simAgent ? simAgent.position[2] : agent.position[2];
+
+      const heading = isSeated && !isMoving ? Math.PI : (simAgent ? simAgent.heading : (agent.headingRadians ?? Math.PI));
       const phase = simAgent ? simAgent.phaseOffset : (i * 0.618);
 
-      // Vertical bounce / breathing with per-agent phase offset
+      // Walking bounce vs breathing
       const bounceY = isMoving
         ? Math.abs(Math.sin((t + phase) * 9.0)) * 0.04
         : Math.sin((t + phase) * 1.8) * 0.012;
-      const rootY = posY + bounceY;
 
-      // 1. Activity Ring (Zero-allocation matrix at y = posY + 0.04)
+      // Seated root pelvis sits on chair cushion (y = 0.44 above floor)
+      const rootY = isSeated && !isMoving ? (posY + 0.44) : (posY + bounceY);
+
+      // Activity Ring
       S_POS.set(posX, posY + 0.04, posZ);
       S_ROT.set(-Math.PI / 2, 0, 0);
       S_QUAT.setFromEuler(S_ROT);
       S_LOCAL_MAT.compose(S_POS, S_QUAT, S_SCALE);
       ringRef.current?.setMatrixAt(i, S_LOCAL_MAT);
 
-      // Parent transform for the agent body root
+      // Root Parent Matrix
       S_POS.set(posX, rootY, posZ);
       S_ROT.set(0, heading, 0);
       S_QUAT.setFromEuler(S_ROT);
       S_PARENT_MAT.compose(S_POS, S_QUAT, S_SCALE);
 
-      // 2. Pelvis
-      setPart(pelvisRef, i, 0, 0.74, 0);
+      // 1. Torso & Collar
+      const torsoLean = simAgent ? simAgent.torsoLean : 0.06;
+      setPart(torsoRef, i, 0, 0.22, 0, torsoLean, 0, 0);
+      setPart(collarRef, i, 0, 0.36, 0.01, Math.PI / 2 + torsoLean, 0, 0);
 
-      // 3. Torso (leaning slightly when typing)
-      const torsoLean = simAgent ? simAgent.torsoLean : 0.05;
-      setPart(torsoRef, i, 0, 1.02, 0, torsoLean, 0, 0);
+      // 2. Chibi Head & Styled Hair
+      const headNod = simAgent ? simAgent.headNodAngle : 0.05;
+      setPart(headRef, i, 0, 0.54, 0.02, headNod + torsoLean, 0, 0);
+      setPart(hairRef, i, 0, 0.58, -0.01, headNod + torsoLean, 0, 0, 1.02, 1.04, 1.02);
 
-      // 4. Shirt & Tie
-      setPart(shirtRef, i, 0, 1.04, 0.122, torsoLean, 0, 0);
-      setPart(tieRef, i, 0, 0.98, 0.126, torsoLean, 0, 0);
+      // 3. Expressive Chibi Eyes with Blinking
+      const blinkScaleY = simAgent && simAgent.isBlinking ? 0.1 : 1.0;
+      setPart(eyeLRef, i, -0.075, 0.54, 0.22, headNod + torsoLean, -0.15, 0, 0.85, blinkScaleY, 0.4);
+      setPart(eyeRRef, i, 0.075, 0.54, 0.22, headNod + torsoLean, 0.15, 0, 0.85, blinkScaleY, 0.4);
+      setPart(eyePupilLRef, i, -0.06, 0.555, 0.23, headNod + torsoLean, -0.15, 0, 1, blinkScaleY, 0.5);
+      setPart(eyePupilRRef, i, 0.09, 0.555, 0.23, headNod + torsoLean, 0.15, 0, 1, blinkScaleY, 0.5);
 
-      // 5. Neck & Head
-      setPart(neckRef, i, 0, 1.25, 0);
-      const headNod = simAgent
-        ? simAgent.headNodAngle
-        : isMoving
-        ? Math.sin((t + phase) * 9.0) * 0.03
-        : Math.sin((t + phase) * 1.5) * 0.02;
-      setPart(headRef, i, 0, 1.39, 0, headNod, 0, 0);
-      setPart(hairRef, i, 0, 1.48, 0, headNod, 0, 0);
-
-      // 6. Arms (Procedural Typing, Conversing, or Walking swing)
+      // 4. Arms & Hands (Procedural Typing / Coffee / Walking)
       let armL = simAgent ? simAgent.leftArmAngle : 0;
       let armR = simAgent ? simAgent.rightArmAngle : 0;
-      if (!simAgent) {
-        if (isMoving) {
-          armL = Math.sin((t + phase) * 9.0) * 0.45;
-          armR = -Math.sin((t + phase) * 9.0) * 0.45;
-        } else if (isSeated) {
-          armL = 0.85 + Math.sin((t + phase) * 12.0) * 0.06;
-          armR = 0.85 + Math.cos((t + phase) * 12.0) * 0.06;
-        }
-      }
-      setPart(leftArmRef, i, -0.25, 1.02, 0, armL, 0, 0);
-      setPart(rightArmRef, i, 0.25, 1.02, 0, armR, 0, 0);
 
-      // 7. Legs & Shoes
-      let legL = 0;
-      let legR = 0;
-      if (isSeated) {
-        legL = -1.48; // Seated bent at 90 deg
-        legR = -1.48;
+      if (isSeated && !isMoving) {
+        // Typing motions resting near keyboard
+        armL = 0.85 + Math.sin(t * 16.0 + phase) * 0.04;
+        armR = 0.85 + Math.cos(t * 16.0 + phase) * 0.04;
       } else if (isMoving) {
-        legL = -armL;
-        legR = -armR;
+        armL = Math.sin((t + phase) * 9.0) * 0.45;
+        armR = -Math.sin((t + phase) * 9.0) * 0.45;
       }
-      setPart(leftLegRef, i, -0.11, 0.38, 0, legL, 0, 0);
-      setPart(rightLegRef, i, 0.11, 0.38, 0, legR, 0, 0);
-      setPart(leftShoeRef, i, -0.11, 0.04, 0.05, legL, 0, 0);
-      setPart(rightShoeRef, i, 0.11, 0.04, 0.05, legR, 0, 0);
+
+      setPart(armLRef, i, -0.16, 0.26, 0, armL + torsoLean, 0, 0.15);
+      setPart(armRRef, i, 0.16, 0.26, 0, armR + torsoLean, 0, -0.15);
+      setPart(handLRef, i, -0.16, 0.26 - Math.cos(armL) * 0.18, Math.sin(armL) * 0.18, armL, 0, 0);
+      setPart(handRRef, i, 0.16, 0.26 - Math.cos(armR) * 0.18, Math.sin(armR) * 0.18, armR, 0, 0);
+
+      // 5. Thighs, Shins & Shoes
+      let thighL = 0;
+      let thighR = 0;
+      let shinL = 0;
+      let shinR = 0;
+
+      if (isSeated && !isMoving) {
+        // Seated on chair: thighs extend forward 90 deg, shins drop vertically under desk
+        thighL = -Math.PI / 2 + 0.08;
+        thighR = -Math.PI / 2 + 0.08;
+        shinL = 0;
+        shinR = 0;
+        setPart(thighLRef, i, -0.075, 0.08, 0.08, thighL, 0, 0);
+        setPart(thighRRef, i, 0.075, 0.08, 0.08, thighR, 0, 0);
+        setPart(shinLRef, i, -0.075, -0.02, 0.16, shinL, 0, 0);
+        setPart(shinRRef, i, 0.075, -0.02, 0.16, shinR, 0, 0);
+        setPart(shoeLRef, i, -0.075, -0.12, 0.20, 0, 0, 0);
+        setPart(shoeRRef, i, 0.075, -0.12, 0.20, 0, 0, 0);
+      } else if (isMoving) {
+        thighL = -armL * 0.8;
+        thighR = -armR * 0.8;
+        setPart(thighLRef, i, -0.075, 0.08, 0, thighL, 0, 0);
+        setPart(thighRRef, i, 0.075, 0.08, 0, thighR, 0, 0);
+        setPart(shinLRef, i, -0.075, -0.06, 0, thighL * 0.8, 0, 0);
+        setPart(shinRRef, i, 0.075, -0.06, 0, thighR * 0.8, 0, 0);
+        setPart(shoeLRef, i, -0.075, -0.18, 0.02, 0, 0, 0);
+        setPart(shoeRRef, i, 0.075, -0.18, 0.02, 0, 0, 0);
+      } else {
+        // Upright standing
+        setPart(thighLRef, i, -0.075, 0.08, 0, 0, 0, 0);
+        setPart(thighRRef, i, 0.075, 0.08, 0, 0, 0, 0);
+        setPart(shinLRef, i, -0.075, -0.06, 0, 0, 0, 0);
+        setPart(shinRRef, i, 0.075, -0.06, 0, 0, 0, 0);
+        setPart(shoeLRef, i, -0.075, -0.18, 0.02, 0, 0, 0);
+        setPart(shoeRRef, i, 0.075, -0.18, 0.02, 0, 0, 0);
+      }
+
+      // 6. Coffee Mug (for DRINKING state)
+      if (simAgent?.state === "DRINKING") {
+        setPart(mugRef, i, 0.16, 0.42, 0.14, 0, 0, 0, 1, 1, 1);
+      } else {
+        // Hide mug underground
+        setPart(mugRef, i, 0, -100, 0, 0, 0, 0, 0.001, 0.001, 0.001);
+      }
     }
 
-    // Flag instance matrices for bulk GPU upload
-    if (torsoRef.current) torsoRef.current.instanceMatrix.needsUpdate = true;
-    if (pelvisRef.current) pelvisRef.current.instanceMatrix.needsUpdate = true;
+    // Flag instance matrices for GPU upload
     if (headRef.current) headRef.current.instanceMatrix.needsUpdate = true;
     if (hairRef.current) hairRef.current.instanceMatrix.needsUpdate = true;
-    if (neckRef.current) neckRef.current.instanceMatrix.needsUpdate = true;
-    if (shirtRef.current) shirtRef.current.instanceMatrix.needsUpdate = true;
-    if (tieRef.current) tieRef.current.instanceMatrix.needsUpdate = true;
-    if (leftArmRef.current) leftArmRef.current.instanceMatrix.needsUpdate = true;
-    if (rightArmRef.current) rightArmRef.current.instanceMatrix.needsUpdate = true;
-    if (leftLegRef.current) leftLegRef.current.instanceMatrix.needsUpdate = true;
-    if (rightLegRef.current) rightLegRef.current.instanceMatrix.needsUpdate = true;
-    if (leftShoeRef.current) leftShoeRef.current.instanceMatrix.needsUpdate = true;
-    if (rightShoeRef.current) rightShoeRef.current.instanceMatrix.needsUpdate = true;
+    if (eyeLRef.current) eyeLRef.current.instanceMatrix.needsUpdate = true;
+    if (eyeRRef.current) eyeRRef.current.instanceMatrix.needsUpdate = true;
+    if (eyePupilLRef.current) eyePupilLRef.current.instanceMatrix.needsUpdate = true;
+    if (eyePupilRRef.current) eyePupilRRef.current.instanceMatrix.needsUpdate = true;
+    if (torsoRef.current) torsoRef.current.instanceMatrix.needsUpdate = true;
+    if (collarRef.current) collarRef.current.instanceMatrix.needsUpdate = true;
+    if (armLRef.current) armLRef.current.instanceMatrix.needsUpdate = true;
+    if (armRRef.current) armRRef.current.instanceMatrix.needsUpdate = true;
+    if (handLRef.current) handLRef.current.instanceMatrix.needsUpdate = true;
+    if (handRRef.current) handRRef.current.instanceMatrix.needsUpdate = true;
+    if (thighLRef.current) thighLRef.current.instanceMatrix.needsUpdate = true;
+    if (thighRRef.current) thighRRef.current.instanceMatrix.needsUpdate = true;
+    if (shinLRef.current) shinLRef.current.instanceMatrix.needsUpdate = true;
+    if (shinRRef.current) shinRRef.current.instanceMatrix.needsUpdate = true;
+    if (shoeLRef.current) shoeLRef.current.instanceMatrix.needsUpdate = true;
+    if (shoeRRef.current) shoeRRef.current.instanceMatrix.needsUpdate = true;
     if (ringRef.current) ringRef.current.instanceMatrix.needsUpdate = true;
+    if (mugRef.current) mugRef.current.instanceMatrix.needsUpdate = true;
   });
 
-  // Handle raycast click directly on instanced mesh
-  const handleInstancedClick = (e: any) => {
-    e.stopPropagation();
-    const instId = e.instanceId;
-    if (instId !== undefined && instId !== null && instId >= 0 && instId < visibleAgents.length) {
-      const agent = visibleAgents[instId];
-      if (agent && onSelectAgent) {
-        onSelectAgent(agent.id);
-      }
-    }
-  };
-
-  if (count === 0) return null;
-
-  // Compute camera distance for Level of Detail (LOD)
-  const cameraDist = camera.position.length();
-  const isOverview = cameraDist > 44.0;
-
   return (
-    <group onClick={handleInstancedClick}>
-      {/* 1. Torso: Sole Shadow Caster (Reduces Shadow Passes by 92%) */}
+    <group>
+      {/* 1. Activity Ring */}
+      <instancedMesh
+        ref={ringRef}
+        args={[RING_GEO, RING_BASE_MATERIAL, count]}
+        renderOrder={1}
+      />
+
+      {/* 2. Body Parts */}
       <instancedMesh
         ref={torsoRef}
-        args={[TORSO_GEOMETRY, TORSO_MATERIAL, count]}
+        args={[TORSO_GEO, TOP_BASE_MATERIAL, count]}
         castShadow
         receiveShadow
       />
-
-      {/* 2. Pelvis */}
       <instancedMesh
-        ref={pelvisRef}
-        args={[PELVIS_GEOMETRY, PELVIS_MATERIAL, count]}
+        ref={collarRef}
+        args={[COLLAR_GEO, WHITE_MATERIAL, count]}
       />
-
-      {/* 3. Head & Hair */}
       <instancedMesh
         ref={headRef}
-        args={[HEAD_GEOMETRY, SKIN_MATERIAL, count]}
+        args={[HEAD_GEO, SKIN_MATERIAL, count]}
       />
       <instancedMesh
         ref={hairRef}
-        args={[HAIR_GEOMETRY, HAIR_MATERIAL, count]}
-      />
-      <instancedMesh
-        ref={neckRef}
-        args={[NECK_GEOMETRY, SKIN_MATERIAL, count]}
+        args={[HAIR_GEO, HAIR_MATERIAL, count]}
       />
 
-      {/* 4. Shirt & Colored Ties */}
+      {/* Eyes & Pupils */}
       <instancedMesh
-        ref={shirtRef}
-        args={[SHIRT_GEOMETRY, SHIRT_MATERIAL, count]}
+        ref={eyeLRef}
+        args={[EYE_GEO, EYE_MATERIAL, count]}
       />
       <instancedMesh
-        ref={tieRef}
-        args={[TIE_GEOMETRY, TIE_BASE_MATERIAL, count]}
-      />
-
-      {/* 5. Articulated Limbs */}
-      <instancedMesh
-        ref={leftArmRef}
-        args={[ARM_GEOMETRY, SUIT_MATERIAL, count]}
+        ref={eyeRRef}
+        args={[EYE_GEO, EYE_MATERIAL, count]}
       />
       <instancedMesh
-        ref={rightArmRef}
-        args={[ARM_GEOMETRY, SUIT_MATERIAL, count]}
+        ref={eyePupilLRef}
+        args={[EYE_PUPIL_GEO, WHITE_MATERIAL, count]}
       />
       <instancedMesh
-        ref={leftLegRef}
-        args={[LEG_GEOMETRY, PANTS_MATERIAL, count]}
-      />
-      <instancedMesh
-        ref={rightLegRef}
-        args={[LEG_GEOMETRY, PANTS_MATERIAL, count]}
-      />
-      <instancedMesh
-        ref={leftShoeRef}
-        args={[SHOE_GEOMETRY, SHOE_MATERIAL, count]}
-      />
-      <instancedMesh
-        ref={rightShoeRef}
-        args={[SHOE_GEOMETRY, SHOE_MATERIAL, count]}
+        ref={eyePupilRRef}
+        args={[EYE_PUPIL_GEO, WHITE_MATERIAL, count]}
       />
 
-      {/* 6. Z-Fighting Immune Activity Ring */}
+      {/* Arms & Hands */}
       <instancedMesh
-        ref={ringRef}
-        args={[RING_GEOMETRY, RING_BASE_MATERIAL, count]}
+        ref={armLRef}
+        args={[ARM_GEO, TOP_BASE_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={armRRef}
+        args={[ARM_GEO, TOP_BASE_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={handLRef}
+        args={[HAND_GEO, SKIN_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={handRRef}
+        args={[HAND_GEO, SKIN_MATERIAL, count]}
       />
 
-      {/* 7. Level of Detail (LOD) Nameplates & Inspection Badges */}
-      {visibleAgents
-        .filter((agent) => {
-          // Always show selected agent or speaking/voting agents
-          if (agent.id === selectedAgentId) return true;
-          if (agent.meetingState === "SPEAKING" || agent.meetingState === "VOTING") return true;
-          // In close-up view (floor focused), show departmental agents
-          if (!isOverview) {
-            return !agent.id.startsWith("bench-") || agent.id.includes("spec") || count <= 20;
-          }
-          // In overview view, show key department leads without flooding the DOM
-          return agent.id === "agent-eng-lead" || agent.id === "agent-exec-ceo";
-        })
-        .map((agent) => {
-          const isSelected = selectedAgentId === agent.id;
-          return (
-            <group key={agent.id} position={agent.position}>
-              {isSelected && (
-                <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                  <ringGeometry args={[0.55, 0.72, 32]} />
-                  <meshBasicMaterial color="#38bdf8" />
-                </mesh>
-              )}
-              <Html position={[0, 1.95, 0]} center distanceFactor={14}>
+      {/* Thighs, Shins & Shoes */}
+      <instancedMesh
+        ref={thighLRef}
+        args={[THIGH_GEO, PANTS_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={thighRRef}
+        args={[THIGH_GEO, PANTS_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={shinLRef}
+        args={[SHIN_GEO, PANTS_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={shinRRef}
+        args={[SHIN_GEO, PANTS_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={shoeLRef}
+        args={[SHOE_GEO, SHOE_MATERIAL, count]}
+      />
+      <instancedMesh
+        ref={shoeRRef}
+        args={[SHOE_GEO, SHOE_MATERIAL, count]}
+      />
+
+      {/* Accessories */}
+      <instancedMesh
+        ref={mugRef}
+        args={[ACCESSORY_MUG_GEO, MUG_MATERIAL, count]}
+      />
+
+      {/* 3. Sleek Floating Chibi Overhead Nameplates (HTML Billboard with distance LOD) */}
+      {visibleAgents.map((agent) => {
+        const isSelected = selectedAgentId === agent.id;
+        const simAgent = officeSimulationEngine.getAgent(agent.id);
+        const isMoving = simAgent
+          ? simAgent.state === "WALKING" || simAgent.state === "RUNNING" || simAgent.state === "APPROACHING_AGENT"
+          : agent.isMoving;
+        const isSeated = simAgent ? simAgent.isSeated : (agent.isSeated || Boolean(agent.assignedWorkstation));
+
+        const posX = simAgent ? simAgent.position[0] : agent.position[0];
+        const posY = simAgent ? simAgent.position[1] : agent.position[1];
+        const posZ = isSeated && !isMoving && agent.assignedWorkstation
+          ? agent.position[2] + 0.55
+          : simAgent ? simAgent.position[2] : agent.position[2];
+
+        const state = agent.behavioralState || "IDLE";
+        const config = CANONICAL_STATE_CONFIGS[state] || CANONICAL_STATE_CONFIGS.IDLE;
+
+        return (
+          <group
+            key={`nameplate-${agent.id}`}
+            position={[posX, posY + 1.25, posZ]}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectAgent?.(agent.id);
+            }}
+          >
+            <Html
+              center
+              distanceFactor={18}
+              className="select-none pointer-events-auto cursor-pointer"
+            >
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectAgent?.(agent.id);
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md transition-all duration-200 ${
+                  isSelected
+                    ? "bg-amber-500/95 border-2 border-amber-300 text-slate-950 font-black shadow-lg shadow-amber-500/50 scale-110"
+                    : "bg-slate-950/80 border border-slate-700/80 hover:border-amber-400 text-slate-100 shadow-md hover:scale-105"
+                }`}
+              >
                 <div
-                  data-testid={`agent-card-${agent.id}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onSelectAgent) onSelectAgent(agent.id);
-                  }}
-                  className="select-none flex flex-col items-center pointer-events-auto cursor-pointer"
-                >
-                  {agent.meetingState === "SPEAKING" && (
-                    <div className="mb-1 px-2 py-0.5 rounded-full bg-emerald-600/95 text-[10px] font-semibold text-white shadow-md border border-emerald-400/50 flex items-center gap-1.5 animate-bounce">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                      <span>ĐANG PHÁT BIỂU</span>
-                    </div>
-                  )}
-                  {agent.meetingState === "VOTING" && (
-                    <div className="mb-1 px-2 py-0.5 rounded-full bg-amber-600/95 text-[10px] font-semibold text-white shadow-md border border-amber-400/50 flex items-center gap-1.5 animate-pulse">
-                      <span>ĐANG BIỂU QUYẾT</span>
-                    </div>
-                  )}
-                  {agent.currentTaskTitle && isSelected && (
-                    <div className="mb-1.5 px-2.5 py-0.5 rounded-full bg-blue-600/95 text-[10px] font-medium text-white shadow-md border border-blue-400/50 flex items-center gap-1.5 max-w-[200px] truncate animate-pulse">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
-                      <span className="truncate">{agent.currentTaskTitle}</span>
-                    </div>
-                  )}
-                  <div
-                    className={`px-2.5 py-1 rounded-lg backdrop-blur-md shadow-xl border transition-all duration-150 flex items-center gap-2 ${
-                      isSelected
-                        ? "bg-slate-900/95 border-sky-400 scale-105 ring-2 ring-sky-400/30"
-                        : "bg-slate-950/80 border-slate-800 hover:border-slate-600"
-                    }`}
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: agent.color || "#38bdf8" }}
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-white whitespace-nowrap">
-                        {agent.name}
-                      </span>
-                      {isSelected && (
-                        <span className="text-[10px] text-sky-300 font-mono">
-                          {agent.role}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Html>
-            </group>
-          );
-        })}
+                  className="w-2 h-2 rounded-full shadow-sm"
+                  style={{ backgroundColor: config.beaconColor }}
+                />
+                <span className="text-[11px] font-bold tracking-tight whitespace-nowrap">
+                  {agent.name.split(" ")[0]}
+                </span>
+                {agent.currentTaskTitle && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-800 text-amber-300 max-w-[80px] truncate">
+                    {agent.currentTaskTitle}
+                  </span>
+                )}
+              </div>
+            </Html>
+          </group>
+        );
+      })}
     </group>
   );
 }
