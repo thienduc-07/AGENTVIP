@@ -42,7 +42,50 @@ interface AgentAvatarProps {
   onSelect?: (agentId: string) => void;
 }
 
-export default function AgentAvatar({
+// Shared Avatar Geometries (Singletons reused across all agents to eliminate memory churn)
+const PELVIS_GEOMETRY = new THREE.BoxGeometry(0.32, 0.14, 0.22);
+const TORSO_GEOMETRY = new THREE.BoxGeometry(0.38, 0.42, 0.24);
+const SHIRT_GEOMETRY = new THREE.PlaneGeometry(0.16, 0.32);
+const TIE_GEOMETRY = new THREE.BoxGeometry(0.04, 0.22, 0.005);
+const NECK_GEOMETRY = new THREE.CylinderGeometry(0.06, 0.07, 0.1, 8);
+const HEAD_GEOMETRY = new THREE.SphereGeometry(0.13, 12, 12);
+const HAIR_GEOMETRY = new THREE.BoxGeometry(0.26, 0.14, 0.26);
+const ARM_GEOMETRY = new THREE.CylinderGeometry(0.05, 0.045, 0.36, 8);
+const HAND_GEOMETRY = new THREE.SphereGeometry(0.04, 8, 8);
+const LEG_GEOMETRY = new THREE.CylinderGeometry(0.065, 0.055, 0.74, 8);
+const SHOE_GEOMETRY = new THREE.BoxGeometry(0.1, 0.07, 0.22);
+const RING_GEOMETRY = new THREE.RingGeometry(0.45, 0.58, 24);
+
+// Shared Avatar Materials (Singletons reused across all agents)
+const PELVIS_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.6 });
+const TORSO_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.5 });
+const SHIRT_MATERIAL = new THREE.MeshStandardMaterial({ color: "#f8fafc", roughness: 0.3 });
+const SKIN_NECK_MATERIAL = new THREE.MeshStandardMaterial({ color: "#fed7aa", roughness: 0.7 });
+const SKIN_HEAD_MATERIAL = new THREE.MeshStandardMaterial({ color: "#fed7aa", roughness: 0.6 });
+const HAIR_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.4 });
+const SUIT_ARM_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0f172a", roughness: 0.5 });
+const SKIN_HAND_MATERIAL = new THREE.MeshStandardMaterial({ color: "#fed7aa", roughness: 0.7 });
+const PANTS_LEG_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.7 });
+const SHOE_MATERIAL = new THREE.MeshStandardMaterial({ color: "#090d16", roughness: 0.3, metalness: 0.4 });
+const RING_SELECTED_MATERIAL = new THREE.MeshBasicMaterial({ color: "#38bdf8", transparent: true, opacity: 0.85 });
+const RING_HOVER_MATERIAL = new THREE.MeshBasicMaterial({ color: "#94a3b8", transparent: true, opacity: 0.45 });
+
+// Memoized Accent Tie Materials Map
+const TIE_MATERIALS = new Map<string, THREE.MeshStandardMaterial>();
+function getTieMaterial(color: string): THREE.MeshStandardMaterial {
+  let mat = TIE_MATERIALS.get(color);
+  if (!mat) {
+    mat = new THREE.MeshStandardMaterial({
+      color,
+      emissive: color,
+      emissiveIntensity: 0.3,
+    });
+    TIE_MATERIALS.set(color, mat);
+  }
+  return mat;
+}
+
+function AgentAvatar({
   data,
   isSelected = false,
   onSelect,
@@ -245,119 +288,129 @@ export default function AgentAvatar({
     >
       {/* 1. Selection & Hover Floor Ring */}
       {(isSelected || isHovered) && (
-        <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.45, 0.58, 32]} />
-          <meshBasicMaterial
-            color={isSelected ? "#38bdf8" : "#94a3b8"}
-            transparent
-            opacity={isSelected ? 0.85 : 0.45}
-          />
-        </mesh>
+        <mesh
+          position={[0, 0.01, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          geometry={RING_GEOMETRY}
+          material={isSelected ? RING_SELECTED_MATERIAL : RING_HOVER_MATERIAL}
+        />
       )}
 
       {/* 2. Character Model (Modern Proportional PBR Stylized Humanoid) */}
       <group position={[0, 0, 0]}>
         {/* Pelvis / Hips */}
-        <mesh position={[0, 0.82, 0]} castShadow>
-          <boxGeometry args={[0.32, 0.14, 0.22]} />
-          <meshStandardMaterial color="#1e293b" roughness={0.6} />
-        </mesh>
+        <mesh
+          position={[0, 0.82, 0]}
+          geometry={PELVIS_GEOMETRY}
+          material={PELVIS_MATERIAL}
+        />
 
-        {/* Torso & Suit Jacket */}
-        <mesh position={[0, 1.08, 0]} castShadow>
-          <boxGeometry args={[0.38, 0.42, 0.24]} />
-          <meshStandardMaterial color="#0f172a" roughness={0.5} />
-        </mesh>
+        {/* Torso & Suit Jacket (Primary body shadow caster) */}
+        <mesh
+          position={[0, 1.08, 0]}
+          geometry={TORSO_GEOMETRY}
+          material={TORSO_MATERIAL}
+          castShadow
+        />
 
         {/* Corporate Shirt & Tie / Accent Lanyard */}
-        <mesh position={[0, 1.1, 0.125]}>
-          <planeGeometry args={[0.16, 0.32]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.3} />
-        </mesh>
-        <mesh position={[0, 1.08, 0.128]}>
-          <boxGeometry args={[0.04, 0.22, 0.005]} />
-          <meshStandardMaterial
-            color={accentColor}
-            emissive={accentColor}
-            emissiveIntensity={0.3}
-          />
-        </mesh>
+        <mesh
+          position={[0, 1.1, 0.125]}
+          geometry={SHIRT_GEOMETRY}
+          material={SHIRT_MATERIAL}
+        />
+        <mesh
+          position={[0, 1.08, 0.128]}
+          geometry={TIE_GEOMETRY}
+          material={getTieMaterial(accentColor)}
+        />
 
         {/* Head & Neck */}
         <group ref={headRef} position={[0, 1.42, 0]}>
           {/* Neck */}
-          <mesh position={[0, -0.06, 0]} castShadow>
-            <cylinderGeometry args={[0.06, 0.07, 0.1, 12]} />
-            <meshStandardMaterial color="#fed7aa" roughness={0.7} />
-          </mesh>
+          <mesh
+            position={[0, -0.06, 0]}
+            geometry={NECK_GEOMETRY}
+            material={SKIN_NECK_MATERIAL}
+          />
           {/* Head Base */}
-          <mesh position={[0, 0.08, 0]} castShadow>
-            <sphereGeometry args={[0.13, 16, 16]} />
-            <meshStandardMaterial color="#fed7aa" roughness={0.6} />
-          </mesh>
+          <mesh
+            position={[0, 0.08, 0]}
+            geometry={HEAD_GEOMETRY}
+            material={SKIN_HEAD_MATERIAL}
+          />
           {/* Stylized Hair */}
-          <mesh position={[0, 0.15, -0.02]} castShadow>
-            <boxGeometry args={[0.26, 0.14, 0.26]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.4} />
-          </mesh>
+          <mesh
+            position={[0, 0.15, -0.02]}
+            geometry={HAIR_GEOMETRY}
+            material={HAIR_MATERIAL}
+          />
         </group>
 
         {/* Left Arm */}
         <group ref={leftArmRef} position={[-0.24, 1.25, 0]}>
-          <mesh position={[0, -0.18, 0]} castShadow>
-            <cylinderGeometry args={[0.05, 0.045, 0.36, 10]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.5} />
-          </mesh>
+          <mesh
+            position={[0, -0.18, 0]}
+            geometry={ARM_GEOMETRY}
+            material={SUIT_ARM_MATERIAL}
+          />
           {/* Hand */}
-          <mesh position={[0, -0.38, 0]} castShadow>
-            <sphereGeometry args={[0.04, 8, 8]} />
-            <meshStandardMaterial color="#fed7aa" roughness={0.7} />
-          </mesh>
+          <mesh
+            position={[0, -0.38, 0]}
+            geometry={HAND_GEOMETRY}
+            material={SKIN_HAND_MATERIAL}
+          />
         </group>
 
         {/* Right Arm */}
         <group ref={rightArmRef} position={[0.24, 1.25, 0]}>
-          <mesh position={[0, -0.18, 0]} castShadow>
-            <cylinderGeometry args={[0.05, 0.045, 0.36, 10]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.5} />
-          </mesh>
+          <mesh
+            position={[0, -0.18, 0]}
+            geometry={ARM_GEOMETRY}
+            material={SUIT_ARM_MATERIAL}
+          />
           {/* Hand */}
-          <mesh position={[0, -0.38, 0]} castShadow>
-            <sphereGeometry args={[0.04, 8, 8]} />
-            <meshStandardMaterial color="#fed7aa" roughness={0.7} />
-          </mesh>
+          <mesh
+            position={[0, -0.38, 0]}
+            geometry={HAND_GEOMETRY}
+            material={SKIN_HAND_MATERIAL}
+          />
         </group>
 
         {/* Left Leg */}
         <group ref={leftLegRef} position={[-0.1, 0.75, 0]}>
-          <mesh position={[0, -0.36, 0]} castShadow>
-            <cylinderGeometry args={[0.065, 0.055, 0.74, 10]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.7} />
-          </mesh>
+          <mesh
+            position={[0, -0.36, 0]}
+            geometry={LEG_GEOMETRY}
+            material={PANTS_LEG_MATERIAL}
+          />
           {/* Shoe */}
-          <mesh position={[0, -0.74, 0.05]} castShadow>
-            <boxGeometry args={[0.1, 0.07, 0.22]} />
-            <meshStandardMaterial color="#090d16" roughness={0.3} metalness={0.4} />
-          </mesh>
+          <mesh
+            position={[0, -0.74, 0.05]}
+            geometry={SHOE_GEOMETRY}
+            material={SHOE_MATERIAL}
+          />
         </group>
 
         {/* Right Leg */}
         <group ref={rightLegRef} position={[0.1, 0.75, 0]}>
-          <mesh position={[0, -0.36, 0]} castShadow>
-            <cylinderGeometry args={[0.065, 0.055, 0.74, 10]} />
-            <meshStandardMaterial color="#1e293b" roughness={0.7} />
-          </mesh>
+          <mesh
+            position={[0, -0.36, 0]}
+            geometry={LEG_GEOMETRY}
+            material={PANTS_LEG_MATERIAL}
+          />
           {/* Shoe */}
-          <mesh position={[0, -0.74, 0.05]} castShadow>
-            <boxGeometry args={[0.1, 0.07, 0.22]} />
-            <meshStandardMaterial color="#090d16" roughness={0.3} metalness={0.4} />
-          </mesh>
+          <mesh
+            position={[0, -0.74, 0.05]}
+            geometry={SHOE_GEOMETRY}
+            material={SHOE_MATERIAL}
+          />
         </group>
       </group>
 
       {/* 3. Floating 3D Billboard Name & Status Badge */}
       <Html position={[0, 1.95, 0]} center distanceFactor={14}>
-        <div className="pointer-events-none select-none flex flex-col items-center">
+        <div className="select-none flex flex-col items-center">
           {/* Active Speaking Indicator in Meeting */}
           {data.meetingState === "SPEAKING" && (
             <div className="mb-1.5 px-2.5 py-0.5 rounded-full bg-emerald-600/95 text-[10px] font-semibold text-white shadow-md border border-emerald-400/50 flex items-center gap-1.5 animate-bounce">
@@ -383,7 +436,9 @@ export default function AgentAvatar({
 
           {/* Name & Role Card */}
           <div
-            className={`px-2.5 py-1 rounded-lg backdrop-blur-md shadow-xl border transition-all duration-150 flex items-center gap-2 ${
+            data-testid={`agent-card-${data.id}`}
+            onClick={handleClick}
+            className={`pointer-events-auto cursor-pointer px-2.5 py-1 rounded-lg backdrop-blur-md shadow-xl border transition-all duration-150 flex items-center gap-2 ${
               isSelected
                 ? "bg-slate-900/95 border-sky-400 scale-105 ring-2 ring-sky-400/30"
                 : isHovered
@@ -411,4 +466,21 @@ export default function AgentAvatar({
     </group>
   );
 }
+
+export default React.memo(AgentAvatar, (prev, next) => {
+  return (
+    prev.isSelected === next.isSelected &&
+    prev.data.id === next.data.id &&
+    prev.data.behavioralState === next.data.behavioralState &&
+    prev.data.meetingState === next.data.meetingState &&
+    prev.data.currentTaskTitle === next.data.currentTaskTitle &&
+    prev.data.isMoving === next.data.isMoving &&
+    prev.data.isSeated === next.data.isSeated &&
+    prev.data.assignedWorkstation === next.data.assignedWorkstation &&
+    prev.data.position[0] === next.data.position[0] &&
+    prev.data.position[1] === next.data.position[1] &&
+    prev.data.position[2] === next.data.position[2] &&
+    prev.data.headingRadians === next.data.headingRadians
+  );
+});
 

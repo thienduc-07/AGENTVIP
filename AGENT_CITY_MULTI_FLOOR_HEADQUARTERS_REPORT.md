@@ -172,3 +172,4 @@ High-resolution 1080p screenshots captured via Playwright automation:
 | `screenshot_08_executive_boardroom_meeting.png` | Floor 6: Grand Executive Boardroom in Session | 1920 × 1080 | Verified |
 
 All screenshots are permanently archived in `docs/screenshots/agent_city_headquarters/`.
+

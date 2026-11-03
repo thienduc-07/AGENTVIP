@@ -1,0 +1,21 @@
+{
+  "idle": {
+    "scenario": "Idle Scene",
+    "sampleCount": 2,
+    "durationMs": 7833,
+    "avgFps": 0.3,
+    "medianFrameTimeMs": 4016.5,
+    "p95FrameTimeMs": 4016.5,
+    "p99FrameTimeMs": 4016.5,
+    "onePercentLowFps": 0.2,
+    "framesExceeding33ms": 2,
+    "framesExceeding50ms": 2,
+    "minFrameTimeMs": 3816.5,
+    "maxFrameTimeMs": 4016.5,
+    "drawCalls": 5032,
+    "triangles": 192186,
+    "uniqueGeometries": 386,
+    "uniqueMaterials": 397,
+    "jsHeapUsedMB": 54.2
+  }
+}

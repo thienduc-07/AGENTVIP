@@ -37,7 +37,7 @@ const DEPARTMENT_COLORS: Record<string, string> = {
   "Customer Success": "#ec4899",
 };
 
-export default function DepartmentZone({
+function DepartmentZone({
   data,
   isSelected = false,
   selectedWorkstationId,
@@ -134,4 +134,17 @@ export default function DepartmentZone({
     </group>
   );
 }
+
+export default React.memo(DepartmentZone, (prev, next) => {
+  return (
+    prev.isSelected === next.isSelected &&
+    prev.selectedWorkstationId === next.selectedWorkstationId &&
+    prev.data.department === next.data.department &&
+    prev.data.workstations.length === next.data.workstations.length &&
+    prev.data.base_x === next.data.base_x &&
+    prev.data.base_y === next.data.base_y &&
+    prev.data.base_z === next.data.base_z &&
+    prev.data.workstations === next.data.workstations
+  );
+});
 

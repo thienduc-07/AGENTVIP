@@ -7,6 +7,7 @@ import {
   SyncManagerConfig,
   SyncTelemetry,
 } from "@/types/events";
+import { getAuthToken } from "@/lib/api/client";
 
 const WS_CONNECTING = 0;
 const WS_OPEN = 1;
@@ -233,8 +234,9 @@ export class SyncManager {
     let base = this.config.wsUrl;
     const query = new URLSearchParams();
 
-    if (this.config.token) {
-      query.set("token", this.config.token);
+    const activeToken = this.config.token || getAuthToken();
+    if (activeToken) {
+      query.set("token", activeToken);
     }
     if (this.config.organizationId) {
       query.set("organization_id", this.config.organizationId);

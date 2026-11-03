@@ -140,6 +140,7 @@ export default function OfficeHUD({
 
           {onRefreshData && (
             <button
+              type="button"
               onClick={onRefreshData}
               title="Làm mới snapshot backend"
               className="ml-1 p-1 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
@@ -152,6 +153,7 @@ export default function OfficeHUD({
         {/* Camera Quick Buttons */}
         <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl backdrop-blur-md">
           <button
+            type="button"
             onClick={onResetCamera}
             title="Góc nhìn toàn cảnh (Tactical Overview)"
             className="px-2.5 py-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-slate-100 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
@@ -160,6 +162,7 @@ export default function OfficeHUD({
             <span className="hidden sm:inline">Toàn Cảnh</span>
           </button>
           <button
+            type="button"
             onClick={onFocusCEO}
             title="Tiêu điểm Văn Phòng CEO"
             className="px-2.5 py-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-slate-100 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
@@ -169,6 +172,7 @@ export default function OfficeHUD({
           </button>
           {onFocusMeetingRoom && (
             <button
+              type="button"
               onClick={onFocusMeetingRoom}
               title="Tiêu điểm Phòng Họp Điều Hành"
               className="px-2.5 py-1.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-slate-100 text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
@@ -183,6 +187,7 @@ export default function OfficeHUD({
         <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl backdrop-blur-md">
           {onOpenTaskModal && (
             <button
+              type="button"
               onClick={onOpenTaskModal}
               title="Giao nhiệm vụ mới cho đặc vụ"
               className="px-2.5 py-1.5 rounded-xl bg-sky-600/30 hover:bg-sky-600/50 text-sky-300 hover:text-white text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer border border-sky-500/30"
@@ -194,6 +199,7 @@ export default function OfficeHUD({
 
           {onOpenRecruitmentModal && (
             <button
+              type="button"
               onClick={onOpenRecruitmentModal}
               title="Tuyển dụng đặc vụ AI mới"
               className="px-2.5 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer border border-indigo-500/30"
@@ -205,6 +211,7 @@ export default function OfficeHUD({
 
           {onToggleMissionDrawer && (
             <button
+              type="button"
               onClick={onToggleMissionDrawer}
               title="Bảng điều khiển & Dispatcher"
               className={`px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer border ${
@@ -223,6 +230,7 @@ export default function OfficeHUD({
       {/* 4. Floor Navigation Bar (Multi-Story Skyscraper Controller) */}
       <div className="absolute top-18 left-1/2 -translate-x-1/2 z-20 pointer-events-auto flex items-center gap-1 p-1 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl backdrop-blur-md max-w-[96vw] overflow-x-auto">
         <button
+          type="button"
           onClick={() => onSelectFloor?.(0)}
           className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
             activeFloor === 0
@@ -243,6 +251,7 @@ export default function OfficeHUD({
           { f: 6, label: "T6: Điều Hành", color: "#38bdf8" },
         ].map((item) => (
           <button
+            type="button"
             key={item.f}
             onClick={() => onSelectFloor?.(item.f)}
             className={`px-2 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${

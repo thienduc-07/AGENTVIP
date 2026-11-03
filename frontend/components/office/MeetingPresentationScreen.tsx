@@ -104,7 +104,6 @@ export default function MeetingPresentationScreen({
       {/* 3. High-Fidelity Interactive Screen Content */}
       <Html
         transform
-        occlude="blending"
         position={[0, 0, 0.02]}
         distanceFactor={2.4}
         className="w-[840px] h-[460px] select-none pointer-events-auto rounded-lg overflow-hidden bg-slate-950/95 border border-slate-800 text-slate-100 flex flex-col justify-between p-6 shadow-2xl font-sans"

@@ -10,7 +10,7 @@ export interface FloorInteriorsProps {
   isFloorIsolated?: boolean;
 }
 
-export default function FloorInteriors({
+function FloorInteriors({
   activeFloor = 0,
   isFloorIsolated = false,
 }: FloorInteriorsProps) {
@@ -473,3 +473,7 @@ export default function FloorInteriors({
     </group>
   );
 }
+
+export default React.memo(FloorInteriors, (prev, next) => {
+  return prev.activeFloor === next.activeFloor && prev.isFloorIsolated === next.isFloorIsolated;
+});

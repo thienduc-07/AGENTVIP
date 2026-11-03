@@ -161,7 +161,40 @@ class WorldService:
                 dept = rec.department
             else:
                 agent_def = default_agent_registry.get_by_employee_id(agent.id)
-                dept = agent_def.department if agent_def and hasattr(agent_def, "department") else "Executive"
+                if agent_def and hasattr(agent_def, "department") and agent_def.department:
+                    dept = agent_def.department
+                else:
+                    station_to_dept = {
+                        "executive_suite": "Executive",
+                        "engineering_bay": "Engineering",
+                        "research_lab": "AI Research",
+                        "ws-ai_research-01": "AI Research",
+                        "marketing_studio": "Marketing",
+                        "sales_wing": "Sales",
+                        "finance_office": "Finance",
+                        "operations_hub": "Operations",
+                        "support_lounge": "Customer Success",
+                    }
+                    role_lower = (agent.role or "").lower()
+                    id_lower = (agent.id or "").lower()
+                    if agent.station in station_to_dept:
+                        dept = station_to_dept[agent.station]
+                    elif "engineer" in role_lower or "software" in role_lower or "mlops" in role_lower or "dev" in role_lower or "eng" in id_lower:
+                        dept = "Engineering"
+                    elif "research" in role_lower or "scientist" in role_lower or "ai" in id_lower:
+                        dept = "AI Research"
+                    elif "market" in role_lower or "growth" in role_lower or "brand" in role_lower or "mkt" in id_lower:
+                        dept = "Marketing"
+                    elif "sale" in role_lower:
+                        dept = "Sales"
+                    elif "finan" in role_lower or "treasur" in role_lower:
+                        dept = "Finance"
+                    elif "operat" in role_lower or "recruit" in role_lower or "ops" in id_lower:
+                        dept = "Operations"
+                    elif "support" in role_lower or "customer" in role_lower:
+                        dept = "Customer Success"
+                    else:
+                        dept = "Executive"
 
             # Resolve authoritative lifecycle state
             if rec:

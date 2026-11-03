@@ -1,7 +1,7 @@
 "use client";
 
-import React, { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import React, { Suspense, useRef, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import OfficeEnvironment from "./OfficeEnvironment";
 import OfficeFloor from "./OfficeFloor";
@@ -15,6 +15,7 @@ import FloorInteriors from "./FloorInteriors";
 import { WorkstationData } from "./Workstation";
 import { OfficeSelection } from "@/types/office";
 import { useMeetingStore } from "@/store/meetingStore";
+import { getDepartmentFloor } from "@/hooks/useOfficeSync";
 
 interface OfficeCanvasProps {
   departments: Record<string, DepartmentZoneData>;
@@ -122,7 +123,10 @@ export default function OfficeCanvas({
   }, [agents, activeMeeting, seatAssignments, currentSpeakerId, presentationMode]);
 
   return (
-    <div className="relative w-full h-full bg-slate-950 overflow-hidden">
+    <div
+      className="relative w-full h-full bg-slate-950 overflow-hidden"
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <Canvas
         shadows={{ type: THREE.PCFSoftShadowMap }}
         camera={{
@@ -166,34 +170,46 @@ export default function OfficeCanvas({
           />
 
           {/* Dynamic Department Zones with Child Workstations */}
-          {Object.values(departments).map((dept) => (
-            <DepartmentZone
-              key={dept.department}
-              data={dept}
-              isSelected={selectedDeptName === dept.department}
-              selectedWorkstationId={selectedWorkstationId}
-              onSelectDepartment={onSelectDepartment}
-              onSelectWorkstation={onSelectWorkstation}
-            />
-          ))}
+          {Object.values(departments).map((dept) => {
+            const deptFloor = getDepartmentFloor(dept.department);
+            const isVisible = !isFloorIsolated || activeFloor === 0 || deptFloor === activeFloor;
+            if (!isVisible) return null;
+            return (
+              <DepartmentZone
+                key={dept.department}
+                data={dept}
+                isSelected={selectedDeptName === dept.department}
+                selectedWorkstationId={selectedWorkstationId}
+                onSelectDepartment={onSelectDepartment}
+                onSelectWorkstation={onSelectWorkstation}
+              />
+            );
+          })}
 
           {/* 3D Glass Grand Executive Boardroom on Floor 6 */}
-          <MeetingRoom
-            position={[4.5, 30.0, 0]}
-            onEnterMeetingView={onEnterMeetingView}
-            onSelectChair={onSelectMeetingChair}
-            onSelectDisplay={onSelectMeetingDisplay}
-          />
+          {(!isFloorIsolated || activeFloor === 0 || activeFloor === 6) && (
+            <MeetingRoom
+              position={[4.5, 30.0, 0]}
+              onEnterMeetingView={onEnterMeetingView}
+              onSelectChair={onSelectMeetingChair}
+              onSelectDisplay={onSelectMeetingDisplay}
+            />
+          )}
 
           {/* Stateful Autonomous AI Agents */}
-          {Object.values(renderedAgents).map((agent) => (
-            <AgentAvatar
-              key={agent.id}
-              data={agent}
-              isSelected={selectedAgentId === agent.id}
-              onSelect={onSelectAgent}
-            />
-          ))}
+          {Object.values(renderedAgents).map((agent) => {
+            const agentFloor = getDepartmentFloor(agent.department);
+            const isVisible = !isFloorIsolated || activeFloor === 0 || agentFloor === activeFloor;
+            if (!isVisible) return null;
+            return (
+              <AgentAvatar
+                key={agent.id}
+                data={agent}
+                isSelected={selectedAgentId === agent.id}
+                onSelect={onSelectAgent}
+              />
+            );
+          })}
 
           {/* Visual Destination Marker for Selected Moving Agent */}
           {selectedAgentId &&
@@ -223,9 +239,146 @@ export default function OfficeCanvas({
             targetLookAt={cameraTarget}
             isTransitioning={selection.type !== "none"}
           />
+
+          {/* Real-time In-Engine Performance Profiler */}
+          <ScenePerformanceMonitor />
         </Suspense>
       </Canvas>
     </div>
   );
+}
+
+function ScenePerformanceMonitor() {
+  const { gl, scene, camera } = useThree();
+  const fpsRef = useRef<number>(60);
+  const frameTimes = useRef<number[]>([]);
+  const lastTime = useRef<number>(performance.now());
+  const reactRenderCount = useRef<number>(0);
+  const activeMeasure = useRef<{ start: number; frames: number; deltas: number[] } | null>(null);
+
+  useEffect(() => {
+    reactRenderCount.current += 1;
+  });
+
+  useFrame(() => {
+    const now = performance.now();
+    const delta = now - lastTime.current;
+    lastTime.current = now;
+    if (delta > 0) {
+      frameTimes.current.push(1000 / delta);
+      if (frameTimes.current.length > 60) frameTimes.current.shift();
+      const sum = frameTimes.current.reduce((a, b) => a + b, 0);
+      fpsRef.current = Math.round(sum / frameTimes.current.length);
+    }
+    if (activeMeasure.current) {
+      activeMeasure.current.frames += 1;
+      if (delta > 0 && delta < 5000) {
+        activeMeasure.current.deltas.push(delta);
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    (window as any).__AGENT_CITY_PROFILER__ = {
+      startMeasure: () => {
+        activeMeasure.current = { start: performance.now(), frames: 0, deltas: [] };
+      },
+      stopMeasure: (detailed = false) => {
+        if (!activeMeasure.current) return detailed ? { fps: fpsRef.current } : fpsRef.current;
+        const elapsed = (performance.now() - activeMeasure.current.start) / 1000;
+        const fps = elapsed > 0 ? Math.round(activeMeasure.current.frames / elapsed) : fpsRef.current;
+        const deltas = [...activeMeasure.current.deltas].sort((a, b) => a - b);
+        activeMeasure.current = null;
+
+        if (!detailed) return fps;
+        if (deltas.length === 0) return { fps, frameCount: 0 };
+
+        const totalMs = deltas.reduce((a, b) => a + b, 0);
+        const avgFps = totalMs > 0 ? Math.round((deltas.length / (totalMs / 1000)) * 10) / 10 : fps;
+        const median = Math.round(deltas[Math.floor(deltas.length * 0.5)] * 100) / 100;
+        const p95 = Math.round(deltas[Math.floor(deltas.length * 0.95)] * 100) / 100;
+        const p99 = Math.round(deltas[Math.floor(deltas.length * 0.99)] * 100) / 100;
+        const onePercentLow = Math.round((1000 / Math.max(1, p99)) * 10) / 10;
+        const longTasks = deltas.filter((d) => d > 50).length;
+        const dropped = deltas.filter((d) => d > 16.67).length;
+
+        return {
+          fps,
+          avgFps,
+          frameCount: deltas.length,
+          durationMs: Math.round(totalMs),
+          medianFrameTimeMs: median,
+          p95FrameTimeMs: p95,
+          p99FrameTimeMs: p99,
+          onePercentLowFps: onePercentLow,
+          longTasksCount: longTasks,
+          droppedFramesCount: dropped,
+          minFrameTimeMs: Math.round(deltas[0] * 100) / 100,
+          maxFrameTimeMs: Math.round(deltas[deltas.length - 1] * 100) / 100,
+        };
+      },
+      getMetrics: () => {
+        let meshCount = 0;
+        const uniqueGeometries = new Set();
+        const uniqueMaterials = new Set();
+        let visibleMeshes = 0;
+        let castShadowMeshes = 0;
+        let receiveShadowMeshes = 0;
+        let transparentMeshes = 0;
+        let opaqueMeshes = 0;
+
+        scene.traverse((obj: any) => {
+          if (obj.isMesh) {
+            meshCount += 1;
+            if (obj.visible) visibleMeshes += 1;
+            if (obj.castShadow) castShadowMeshes += 1;
+            if (obj.receiveShadow) receiveShadowMeshes += 1;
+            if (obj.material) {
+              const isTrans = Array.isArray(obj.material)
+                ? obj.material.some((m: any) => m.transparent)
+                : Boolean(obj.material.transparent);
+              if (isTrans) transparentMeshes += 1;
+              else opaqueMeshes += 1;
+            }
+            if (obj.geometry) uniqueGeometries.add(obj.geometry.id);
+            if (obj.material) {
+              if (Array.isArray(obj.material)) {
+                obj.material.forEach((m: any) => uniqueMaterials.add(m.id));
+              } else {
+                uniqueMaterials.add(obj.material.id);
+              }
+            }
+          }
+        });
+
+        const memory = (window.performance as any)?.memory;
+
+        return {
+          fps: fpsRef.current,
+          drawCalls: gl.info.render.calls,
+          triangles: gl.info.render.triangles,
+          points: gl.info.render.points,
+          lines: gl.info.render.lines,
+          geometries: gl.info.memory.geometries,
+          textures: gl.info.memory.textures,
+          sceneMeshes: meshCount,
+          visibleMeshes,
+          castShadowMeshes,
+          receiveShadowMeshes,
+          transparentMeshes,
+          opaqueMeshes,
+          uniqueGeometriesCount: uniqueGeometries.size,
+          uniqueMaterialsCount: uniqueMaterials.size,
+          jsHeapUsedMB: memory ? Math.round((memory.usedJSHeapSize / 1048576) * 10) / 10 : null,
+          jsHeapTotalMB: memory ? Math.round((memory.totalJSHeapSize / 1048576) * 10) / 10 : null,
+          reactRenderCount: reactRenderCount.current,
+        };
+      },
+    };
+  }, [gl, scene, camera]);
+
+  return null;
 }
 

@@ -1,0 +1,22 @@
+{
+  "idle": {
+    "scenario": "Idle Scene",
+    "fps": 0,
+    "avgFps": 0.3,
+    "frameCount": 2,
+    "durationMs": 7632,
+    "medianFrameTimeMs": 3948.6,
+    "p95FrameTimeMs": 3948.6,
+    "p99FrameTimeMs": 3948.6,
+    "onePercentLowFps": 0.3,
+    "longTasksCount": 2,
+    "droppedFramesCount": 2,
+    "minFrameTimeMs": 3683.4,
+    "maxFrameTimeMs": 3948.6,
+    "drawCalls": 5032,
+    "triangles": 192186,
+    "castShadowMeshes": 253,
+    "transparentMeshes": 75,
+    "opaqueMeshes": 2409
+  }
+}

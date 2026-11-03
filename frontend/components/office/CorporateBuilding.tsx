@@ -25,7 +25,37 @@ export const FLOOR_METADATA = [
   { floor: 6, name: "BAN ĐIỀU HÀNH & PHÒNG HỌP", nameEn: "Executive Penthouse & Boardroom", color: "#38bdf8", baseElevation: 30.0 },
 ];
 
-export default function CorporateBuilding({
+// Shared Structural Geometries & Materials (Singletons)
+const CORNER_COL_GEOMETRY = new THREE.BoxGeometry(0.7, 36.4, 0.7);
+const CORNER_COL_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", metalness: 0.85, roughness: 0.2 });
+
+const LOUVER_GEOMETRY = new THREE.BoxGeometry(0.2, 36.0, 0.25);
+const LOUVER_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", metalness: 0.85, roughness: 0.2 });
+
+const WINDOW_GEOMETRY = new THREE.PlaneGeometry(4.4, 35.0);
+const WINDOW_MATERIAL = new THREE.MeshPhysicalMaterial({
+  color: "#38bdf8",
+  transmission: 0.88,
+  opacity: 0.35,
+  transparent: true,
+  roughness: 0.15,
+  metalness: 0.2,
+});
+
+const MULLION_GEOMETRY = new THREE.BoxGeometry(0.25, 36.0, 0.12);
+const MULLION_MATERIAL = new THREE.MeshStandardMaterial({ color: "#0f172a", metalness: 0.9, roughness: 0.15 });
+
+const SPANDREL_GEOMETRY = new THREE.BoxGeometry(0.3, 0.45, 26.0);
+const SPANDREL_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", metalness: 0.8, roughness: 0.25 });
+
+const STEP_GEOMETRY = new THREE.BoxGeometry(1.4, 0.1, 0.45);
+const STEP_MATERIAL = new THREE.MeshStandardMaterial({ color: "#d4a373", roughness: 0.5 });
+const HANDRAIL_GEOMETRY = new THREE.CylinderGeometry(0.03, 0.03, 3.8);
+const HANDRAIL_MATERIAL = new THREE.MeshStandardMaterial({ color: "#f8fafc", metalness: 0.9, roughness: 0.1 });
+
+const CEILING_LIGHT_GEOMETRY = new THREE.BoxGeometry(0.3, 0.02, 22.0);
+
+function CorporateBuilding({
   activeFloor = 0,
   isFloorIsolated = false,
   onSelectFloor,
@@ -67,10 +97,14 @@ export default function CorporateBuilding({
         [-17.8, 12.8],
         [17.8, 12.8],
       ].map(([x, z], idx) => (
-        <mesh key={`col-${idx}`} position={[x, 18.0, z]} castShadow receiveShadow>
-          <boxGeometry args={[0.7, 36.4, 0.7]} />
-          <meshStandardMaterial color="#1e293b" metalness={0.85} roughness={0.2} />
-        </mesh>
+        <mesh
+          key={`col-${idx}`}
+          position={[x, 18.0, z]}
+          geometry={CORNER_COL_GEOMETRY}
+          material={CORNER_COL_MATERIAL}
+          castShadow
+          receiveShadow
+        />
       ))}
 
       {/* =========================================================================
@@ -85,25 +119,22 @@ export default function CorporateBuilding({
 
         {/* Vertical Architectural Louvers / Ribs */}
         {[-15, -10, -5, 0, 5, 10, 15].map((x) => (
-          <mesh key={`louver-${x}`} position={[x, 0, 0.22]}>
-            <boxGeometry args={[0.2, 36.0, 0.25]} />
-            <meshStandardMaterial color="#1e293b" metalness={0.85} roughness={0.2} />
-          </mesh>
+          <mesh
+            key={`louver-${x}`}
+            position={[x, 0, 0.22]}
+            geometry={LOUVER_GEOMETRY}
+            material={LOUVER_MATERIAL}
+          />
         ))}
 
         {/* Windows between ribs */}
         {[-12.5, -7.5, -2.5, 2.5, 7.5, 12.5].map((x) => (
-          <mesh key={`win-${x}`} position={[x, 0, 0.18]}>
-            <planeGeometry args={[4.4, 35.0]} />
-            <meshPhysicalMaterial
-              color="#38bdf8"
-              transmission={0.88}
-              opacity={0.35}
-              transparent
-              roughness={0.15}
-              metalness={0.2}
-            />
-          </mesh>
+          <mesh
+            key={`win-${x}`}
+            position={[x, 0, 0.18]}
+            geometry={WINDOW_GEOMETRY}
+            material={WINDOW_MATERIAL}
+          />
         ))}
       </group>
 
@@ -128,18 +159,22 @@ export default function CorporateBuilding({
 
           {/* Structural Vertical Mullions every 4.5m along Z */}
           {[-11, -6.5, -2, 2.5, 7, 11.5].map((z) => (
-            <mesh key={`mullion-${sideIdx}-${z}`} position={[0, 0, z]}>
-              <boxGeometry args={[0.25, 36.0, 0.12]} />
-              <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.15} />
-            </mesh>
+            <mesh
+              key={`mullion-${sideIdx}-${z}`}
+              position={[0, 0, z]}
+              geometry={MULLION_GEOMETRY}
+              material={MULLION_MATERIAL}
+            />
           ))}
 
           {/* Horizontal Spandrel Beams between Floors */}
           {[6.0, 12.0, 18.0, 24.0, 30.0].map((y) => (
-            <mesh key={`spandrel-${sideIdx}-${y}`} position={[0, y - 18.0, 0]}>
-              <boxGeometry args={[0.3, 0.45, 26.0]} />
-              <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.25} />
-            </mesh>
+            <mesh
+              key={`spandrel-${sideIdx}-${y}`}
+              position={[0, y - 18.0, 0]}
+              geometry={SPANDREL_GEOMETRY}
+              material={SPANDREL_MATERIAL}
+            />
           ))}
         </group>
       ))}
@@ -314,10 +349,9 @@ export default function CorporateBuilding({
                 <mesh
                   key={`step-1-${stepIdx}`}
                   position={[-0.8, stepIdx * 0.5 + 0.25, -stepIdx * 0.45]}
-                >
-                  <boxGeometry args={[1.4, 0.1, 0.45]} />
-                  <meshStandardMaterial color="#d4a373" roughness={0.5} />
-                </mesh>
+                  geometry={STEP_GEOMETRY}
+                  material={STEP_MATERIAL}
+                />
               ))}
               {/* Mid-Floor Landing */}
               <mesh position={[0, 3.0, -2.8]}>
@@ -329,20 +363,23 @@ export default function CorporateBuilding({
                 <mesh
                   key={`step-2-${stepIdx}`}
                   position={[0.8, 3.25 + stepIdx * 0.5, -2.4 + stepIdx * 0.45]}
-                >
-                  <boxGeometry args={[1.4, 0.1, 0.45]} />
-                  <meshStandardMaterial color="#d4a373" roughness={0.5} />
-                </mesh>
+                  geometry={STEP_GEOMETRY}
+                  material={STEP_MATERIAL}
+                />
               ))}
               {/* Stainless Steel Handrails */}
-              <mesh position={[-1.5, 1.8, -1.2]} rotation={[0.45, 0, 0]}>
-                <cylinderGeometry args={[0.03, 0.03, 3.8]} />
-                <meshStandardMaterial color="#f8fafc" metalness={0.9} roughness={0.1} />
-              </mesh>
-              <mesh position={[1.5, 4.8, -1.2]} rotation={[-0.45, 0, 0]}>
-                <cylinderGeometry args={[0.03, 0.03, 3.8]} />
-                <meshStandardMaterial color="#f8fafc" metalness={0.9} roughness={0.1} />
-              </mesh>
+              <mesh
+                position={[-1.5, 1.8, -1.2]}
+                rotation={[0.45, 0, 0]}
+                geometry={HANDRAIL_GEOMETRY}
+                material={HANDRAIL_MATERIAL}
+              />
+              <mesh
+                position={[1.5, 4.8, -1.2]}
+                rotation={[-0.45, 0, 0]}
+                geometry={HANDRAIL_GEOMETRY}
+                material={HANDRAIL_MATERIAL}
+              />
             </group>
           );
         })}
@@ -397,8 +434,11 @@ export default function CorporateBuilding({
 
               {/* Longitudinal Recessed Ceiling LED Strips */}
               {[-8.0, 0.0, 8.0].map((lx, lIdx) => (
-                <mesh key={`ceiling-light-${floorNum}-${lIdx}`} position={[lx, -0.05, 0]}>
-                  <boxGeometry args={[0.3, 0.02, 22.0]} />
+                <mesh
+                  key={`ceiling-light-${floorNum}-${lIdx}`}
+                  position={[lx, -0.05, 0]}
+                  geometry={CEILING_LIGHT_GEOMETRY}
+                >
                   <meshStandardMaterial
                     color="#ffffff"
                     emissive={isDimmed ? "#334155" : "#e2e8f0"}
@@ -510,3 +550,8 @@ export default function CorporateBuilding({
     </group>
   );
 }
+
+export default React.memo(CorporateBuilding, (prev, next) => {
+  return prev.activeFloor === next.activeFloor && prev.isFloorIsolated === next.isFloorIsolated;
+});
+
