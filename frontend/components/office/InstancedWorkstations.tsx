@@ -63,6 +63,10 @@ const HALO_MATERIAL = new THREE.MeshBasicMaterial({
   color: "#38bdf8",
   transparent: true,
   opacity: 0.4,
+  depthWrite: false,
+  polygonOffset: true,
+  polygonOffsetFactor: -1,
+  polygonOffsetUnits: -1,
 });
 
 export default function InstancedWorkstations({
@@ -298,7 +302,7 @@ export default function InstancedWorkstations({
       {/* 5. Selected Workstation Highlight Floor Halo */}
       {selectedWs && (
         <mesh
-          position={[selectedWs.pos_x, (selectedWs.pos_y || 0) + 0.008, selectedWs.pos_z]}
+          position={[selectedWs.pos_x, (selectedWs.pos_y || 0) + 0.035, selectedWs.pos_z]}
           rotation={[-Math.PI / 2, 0, 0]}
           geometry={HALO_GEOMETRY}
           material={HALO_MATERIAL}

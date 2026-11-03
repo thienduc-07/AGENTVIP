@@ -74,23 +74,30 @@ function DepartmentZone({
       onPointerOut={() => setIsHovered(false)}
     >
       {/* 1. Department Floor Light Carpet Accent (Warm Travertine / Slate) */}
-      <mesh receiveShadow position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh receiveShadow position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[carpetWidth, carpetDepth]} />
         <meshStandardMaterial
           color="#f8fafc"
           roughness={0.4}
           metalness={0.05}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       </mesh>
 
       {/* 2. Department Boundary Subtle Accent Line */}
-      <mesh position={[0, 0.007, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[carpetWidth + 0.12, carpetDepth + 0.12]} />
         <meshBasicMaterial
           color={isSelected ? "#38bdf8" : deptColor}
           transparent
           opacity={isSelected ? 0.75 : isHovered ? 0.4 : 0.15}
           wireframe
+          depthWrite={false}
+          polygonOffset
+          polygonOffsetFactor={-1}
+          polygonOffsetUnits={-1}
         />
       </mesh>
 

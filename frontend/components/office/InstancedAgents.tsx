@@ -2,11 +2,12 @@
 
 import React, { useRef, useMemo, useEffect } from "react";
 import * as THREE from "three";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { AgentAvatarData } from "./AgentAvatar";
 import { CANONICAL_STATE_CONFIGS, CanonicalAgentState } from "@/types/office";
 import { getDepartmentFloor } from "@/hooks/useOfficeSync";
+import { officeSimulationEngine } from "@/lib/simulation/officeSimulationEngine";
 
 interface InstancedAgentsProps {
   agents: Record<string, AgentAvatarData>;
@@ -44,11 +45,31 @@ const TIE_BASE_MATERIAL = new THREE.MeshStandardMaterial({
   roughness: 0.4,
   metalness: 0.1,
 });
+
+// Z-Fighting immune activity ring material
 const RING_BASE_MATERIAL = new THREE.MeshBasicMaterial({
   transparent: true,
   opacity: 0.85,
   side: THREE.DoubleSide,
+  depthWrite: false,
+  polygonOffset: true,
+  polygonOffsetFactor: -2,
+  polygonOffsetUnits: -2,
 });
+
+// =============================================================================
+// PRE-ALLOCATED ZERO-HEAP STATIC SCRATCH OBJECTS (ZERO ALLOCATION IN USEFRAME)
+// =============================================================================
+const S_PARENT_MAT = new THREE.Matrix4();
+const S_LOCAL_MAT = new THREE.Matrix4();
+const S_WORLD_MAT = new THREE.Matrix4();
+const S_POS = new THREE.Vector3();
+const S_QUAT = new THREE.Quaternion();
+const S_SCALE = new THREE.Vector3(1, 1, 1);
+const S_ROT = new THREE.Euler();
+const S_LOCAL_POS = new THREE.Vector3();
+const S_LOCAL_QUAT = new THREE.Quaternion();
+const S_COLOR = new THREE.Color();
 
 export default function InstancedAgents({
   agents,
@@ -57,6 +78,8 @@ export default function InstancedAgents({
   isFloorIsolated = false,
   onSelectAgent,
 }: InstancedAgentsProps) {
+  const { camera } = useThree();
+
   // Filter visible agents
   const visibleAgents = useMemo(() => {
     return Object.values(agents).filter((agent) => {
@@ -83,183 +106,165 @@ export default function InstancedAgents({
   const rightShoeRef = useRef<THREE.InstancedMesh>(null);
   const ringRef = useRef<THREE.InstancedMesh>(null);
 
-  // Per-agent simulation tracking
-  const agentPositions = useRef<Array<THREE.Vector3>>([]);
-  const agentHeadings = useRef<Float32Array>(new Float32Array(0));
-
-  // Initialize and synchronize per-agent state arrays
+  // Synchronize agents with the OfficeSimulationEngine
   useEffect(() => {
-    agentPositions.current = visibleAgents.map((a) => new THREE.Vector3(...a.position));
-    agentHeadings.current = new Float32Array(visibleAgents.map((a) => a.headingRadians ?? 0));
+    visibleAgents.forEach((agent) => {
+      const floor = getDepartmentFloor(agent.department);
+      officeSimulationEngine.registerAgent(
+        agent.id,
+        agent.name,
+        agent.department,
+        floor,
+        agent.position,
+        agent.assignedWorkstation ? agent.position : null,
+        agent.assignedWorkstation ? "WORKING" : "IDLE"
+      );
+    });
 
     // Initialize per-instance tie and ring colors
-    const tieColor = new THREE.Color();
-    const ringColor = new THREE.Color();
-
     visibleAgents.forEach((agent, i) => {
-      tieColor.set(agent.color || "#38bdf8");
-      tieRef.current?.setColorAt(i, tieColor);
+      S_COLOR.set(agent.color || "#38bdf8");
+      tieRef.current?.setColorAt(i, S_COLOR);
 
       const state = agent.behavioralState || "IDLE";
       const config = CANONICAL_STATE_CONFIGS[state] || CANONICAL_STATE_CONFIGS.IDLE;
-      ringColor.set(config.beaconColor || config.badgeColor || "#38bdf8");
-      ringRef.current?.setColorAt(i, ringColor);
+      S_COLOR.set(config.beaconColor || config.badgeColor || "#38bdf8");
+      ringRef.current?.setColorAt(i, S_COLOR);
     });
 
     if (tieRef.current?.instanceColor) tieRef.current.instanceColor.needsUpdate = true;
     if (ringRef.current?.instanceColor) ringRef.current.instanceColor.needsUpdate = true;
   }, [visibleAgents]);
 
-  // Articulated skeletal animation loop across all 100 agents in one pass
+  // Zero-allocation articulated skeletal simulation loop
   useFrame(({ clock }, delta) => {
     if (count === 0) return;
 
+    // Advance deterministic employee simulation engine
+    officeSimulationEngine.update(delta);
+
     const t = clock.getElapsedTime();
-    const dummy = new THREE.Object3D();
-    const parentDummy = new THREE.Object3D();
+
+    // Helper: zero-allocation matrix setter
+    const setPart = (
+      meshRef: React.RefObject<THREE.InstancedMesh | null>,
+      idx: number,
+      lx: number,
+      ly: number,
+      lz: number,
+      rx = 0,
+      ry = 0,
+      rz = 0
+    ) => {
+      S_LOCAL_POS.set(lx, ly, lz);
+      S_ROT.set(rx, ry, rz);
+      S_LOCAL_QUAT.setFromEuler(S_ROT);
+      S_LOCAL_MAT.compose(S_LOCAL_POS, S_LOCAL_QUAT, S_SCALE);
+      S_WORLD_MAT.multiplyMatrices(S_PARENT_MAT, S_LOCAL_MAT);
+      meshRef.current?.setMatrixAt(idx, S_WORLD_MAT);
+    };
 
     for (let i = 0; i < count; i++) {
       const agent = visibleAgents[i];
       if (!agent) continue;
 
-      const pos = agentPositions.current[i];
-      if (!pos) continue;
+      const simAgent = officeSimulationEngine.getAgent(agent.id);
 
-      const isMoving = agent.isMoving || Boolean(agent.targetPosition);
-      const isSeated = agent.isSeated || Boolean(agent.assignedWorkstation && !isMoving);
+      // Extract simulated positions and postures
+      const posX = simAgent ? simAgent.position[0] : agent.position[0];
+      const posY = simAgent ? simAgent.position[1] : agent.position[1];
+      const posZ = simAgent ? simAgent.position[2] : agent.position[2];
+      const heading = simAgent ? simAgent.heading : (agent.headingRadians ?? 0);
+      const isSeated = simAgent ? simAgent.isSeated : (agent.isSeated || Boolean(agent.assignedWorkstation && !agent.isMoving));
+      const isMoving = simAgent ? (simAgent.state === "WALKING" || simAgent.state === "APPROACHING_AGENT" || simAgent.state === "RETURNING_TO_DESK") : agent.isMoving;
+      const phase = simAgent ? simAgent.phaseOffset : (i * 0.618);
 
-      // Smooth position lerp towards destination target
-      const targetPos = agent.targetPosition ? agent.targetPosition : agent.position;
-      pos.x = THREE.MathUtils.lerp(pos.x, targetPos[0], Math.min(1, delta * (isMoving ? 8 : 12)));
-      pos.y = THREE.MathUtils.lerp(pos.y, targetPos[1], Math.min(1, delta * (isMoving ? 8 : 12)));
-      pos.z = THREE.MathUtils.lerp(pos.z, targetPos[2], Math.min(1, delta * (isMoving ? 8 : 12)));
-
-      // Smooth heading calculation
-      if (isMoving && agent.targetPosition) {
-        const diffX = agent.targetPosition[0] - pos.x;
-        const diffZ = agent.targetPosition[2] - pos.z;
-        if (Math.abs(diffX) > 0.04 || Math.abs(diffZ) > 0.04) {
-          const targetHeading = Math.atan2(diffX, diffZ);
-          agentHeadings.current[i] = THREE.MathUtils.lerp(agentHeadings.current[i], targetHeading, Math.min(1, delta * 10));
-        }
-      } else if (agent.headingRadians !== undefined) {
-        agentHeadings.current[i] = THREE.MathUtils.lerp(agentHeadings.current[i], agent.headingRadians, Math.min(1, delta * 8));
-      }
-
-      const heading = agentHeadings.current[i];
-      const phase = i * 0.618;
-
-      // Vertical bounce / breathing with per-agent phase offset to eliminate lockstep
+      // Vertical bounce / breathing with per-agent phase offset
       const bounceY = isMoving
-        ? Math.abs(Math.sin((t + phase) * 9.0)) * 0.05
-        : Math.sin((t + phase) * 1.8) * 0.015;
-      const rootY = pos.y + bounceY;
+        ? Math.abs(Math.sin((t + phase) * 9.0)) * 0.04
+        : Math.sin((t + phase) * 1.8) * 0.012;
+      const rootY = posY + bounceY;
 
-      // Parent transform for the agent root
-      parentDummy.position.set(pos.x, rootY, pos.z);
-      parentDummy.rotation.set(0, heading, 0);
+      // 1. Activity Ring (Zero-allocation matrix at y = posY + 0.04)
+      S_POS.set(posX, posY + 0.04, posZ);
+      S_ROT.set(-Math.PI / 2, 0, 0);
+      S_QUAT.setFromEuler(S_ROT);
+      S_LOCAL_MAT.compose(S_POS, S_QUAT, S_SCALE);
+      ringRef.current?.setMatrixAt(i, S_LOCAL_MAT);
 
-      // 1. Activity Ring [on floor slab, unbounced]
-      dummy.position.set(pos.x, pos.y + 0.01, pos.z);
-      dummy.rotation.set(-Math.PI / 2, 0, 0);
-      dummy.scale.set(1, 1, 1);
-      dummy.updateMatrix();
-      ringRef.current?.setMatrixAt(i, dummy.matrix);
+      // Parent transform for the agent body root
+      S_POS.set(posX, rootY, posZ);
+      S_ROT.set(0, heading, 0);
+      S_QUAT.setFromEuler(S_ROT);
+      S_PARENT_MAT.compose(S_POS, S_QUAT, S_SCALE);
 
-      // Helper function to compose local part onto world matrix
-      const setPart = (
-        meshRef: React.RefObject<THREE.InstancedMesh | null>,
-        localPos: [number, number, number],
-        localRot: [number, number, number] = [0, 0, 0]
-      ) => {
-        dummy.position.set(...localPos);
-        dummy.rotation.set(...localRot);
-        dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
+      // 2. Pelvis
+      setPart(pelvisRef, i, 0, 0.74, 0);
 
-        // Multiply parent matrix by child local matrix
-        const worldMatrix = parentDummy.matrix.clone().multiply(dummy.matrix);
-        meshRef.current?.setMatrixAt(i, worldMatrix);
-      };
+      // 3. Torso (leaning slightly when typing)
+      const torsoLean = simAgent ? simAgent.torsoLean : 0.05;
+      setPart(torsoRef, i, 0, 1.02, 0, torsoLean, 0, 0);
 
-      parentDummy.updateMatrix();
+      // 4. Shirt & Tie
+      setPart(shirtRef, i, 0, 1.04, 0.122, torsoLean, 0, 0);
+      setPart(tieRef, i, 0, 0.98, 0.126, torsoLean, 0, 0);
 
-      // 2. Pelvis [0, 0.74, 0]
-      setPart(pelvisRef, [0, 0.74, 0]);
-
-      // 3. Torso [0, 1.02, 0]
-      setPart(torsoRef, [0, 1.02, 0]);
-
-      // 4. Shirt [0, 1.04, 0.122]
-      setPart(shirtRef, [0, 1.04, 0.122]);
-
-      // 5. Tie [0, 0.98, 0.126]
-      setPart(tieRef, [0, 0.98, 0.126]);
-
-      // 6. Neck [0, 1.25, 0]
-      setPart(neckRef, [0, 1.25, 0]);
-
-      // 7. Head [0, 1.39, 0]
-      const headNod = isMoving
+      // 5. Neck & Head
+      setPart(neckRef, i, 0, 1.25, 0);
+      const headNod = simAgent
+        ? simAgent.headNodAngle
+        : isMoving
         ? Math.sin((t + phase) * 9.0) * 0.03
         : Math.sin((t + phase) * 1.5) * 0.02;
-      setPart(headRef, [0, 1.39, 0], [headNod, 0, 0]);
+      setPart(headRef, i, 0, 1.39, 0, headNod, 0, 0);
+      setPart(hairRef, i, 0, 1.48, 0, headNod, 0, 0);
 
-      // 8. Hair [0, 1.48, 0]
-      setPart(hairRef, [0, 1.48, 0], [headNod, 0, 0]);
-
-      // 9. Arms (Swinging during walk, or bent typing when seated)
-      let armSwingL = 0;
-      let armSwingR = 0;
-      if (isMoving) {
-        armSwingL = Math.sin((t + phase) * 9.0) * 0.45;
-        armSwingR = -Math.sin((t + phase) * 9.0) * 0.45;
-      } else if (isSeated) {
-        armSwingL = 0.85 + Math.sin((t + phase) * 12.0) * 0.06; // Typing animation
-        armSwingR = 0.85 + Math.cos((t + phase) * 12.0) * 0.06;
+      // 6. Arms (Procedural Typing, Conversing, or Walking swing)
+      let armL = simAgent ? simAgent.leftArmAngle : 0;
+      let armR = simAgent ? simAgent.rightArmAngle : 0;
+      if (!simAgent) {
+        if (isMoving) {
+          armL = Math.sin((t + phase) * 9.0) * 0.45;
+          armR = -Math.sin((t + phase) * 9.0) * 0.45;
+        } else if (isSeated) {
+          armL = 0.85 + Math.sin((t + phase) * 12.0) * 0.06;
+          armR = 0.85 + Math.cos((t + phase) * 12.0) * 0.06;
+        }
       }
-      setPart(leftArmRef, [-0.25, 1.02, 0], [armSwingL, 0, 0]);
-      setPart(rightArmRef, [0.25, 1.02, 0], [armSwingR, 0, 0]);
+      setPart(leftArmRef, i, -0.25, 1.02, 0, armL, 0, 0);
+      setPart(rightArmRef, i, 0.25, 1.02, 0, armR, 0, 0);
 
-      // 10. Legs & Shoes
-      let legAngleL = 0;
-      let legAngleR = 0;
+      // 7. Legs & Shoes
+      let legL = 0;
+      let legR = 0;
       if (isSeated) {
-        legAngleL = -1.48; // Seated bent at 90 deg
-        legAngleR = -1.48;
+        legL = -1.48; // Seated bent at 90 deg
+        legR = -1.48;
       } else if (isMoving) {
-        legAngleL = -armSwingL;
-        legAngleR = -armSwingR;
+        legL = -armL;
+        legR = -armR;
       }
-      setPart(leftLegRef, [-0.11, 0.38, 0], [legAngleL, 0, 0]);
-      setPart(rightLegRef, [0.11, 0.38, 0], [legAngleR, 0, 0]);
-
-      // Shoes
-      setPart(leftShoeRef, [-0.11, 0.04, 0.05], [legAngleL, 0, 0]);
-      setPart(rightShoeRef, [0.11, 0.04, 0.05], [legAngleR, 0, 0]);
+      setPart(leftLegRef, i, -0.11, 0.38, 0, legL, 0, 0);
+      setPart(rightLegRef, i, 0.11, 0.38, 0, legR, 0, 0);
+      setPart(leftShoeRef, i, -0.11, 0.04, 0.05, legL, 0, 0);
+      setPart(rightShoeRef, i, 0.11, 0.04, 0.05, legR, 0, 0);
     }
 
-    // Flag instance matrices for GPU upload
-    [
-      torsoRef,
-      pelvisRef,
-      headRef,
-      hairRef,
-      neckRef,
-      shirtRef,
-      tieRef,
-      leftArmRef,
-      rightArmRef,
-      leftLegRef,
-      rightLegRef,
-      leftShoeRef,
-      rightShoeRef,
-      ringRef,
-    ].forEach((ref) => {
-      if (ref.current) {
-        ref.current.instanceMatrix.needsUpdate = true;
-      }
-    });
+    // Flag instance matrices for bulk GPU upload
+    if (torsoRef.current) torsoRef.current.instanceMatrix.needsUpdate = true;
+    if (pelvisRef.current) pelvisRef.current.instanceMatrix.needsUpdate = true;
+    if (headRef.current) headRef.current.instanceMatrix.needsUpdate = true;
+    if (hairRef.current) hairRef.current.instanceMatrix.needsUpdate = true;
+    if (neckRef.current) neckRef.current.instanceMatrix.needsUpdate = true;
+    if (shirtRef.current) shirtRef.current.instanceMatrix.needsUpdate = true;
+    if (tieRef.current) tieRef.current.instanceMatrix.needsUpdate = true;
+    if (leftArmRef.current) leftArmRef.current.instanceMatrix.needsUpdate = true;
+    if (rightArmRef.current) rightArmRef.current.instanceMatrix.needsUpdate = true;
+    if (leftLegRef.current) leftLegRef.current.instanceMatrix.needsUpdate = true;
+    if (rightLegRef.current) rightLegRef.current.instanceMatrix.needsUpdate = true;
+    if (leftShoeRef.current) leftShoeRef.current.instanceMatrix.needsUpdate = true;
+    if (rightShoeRef.current) rightShoeRef.current.instanceMatrix.needsUpdate = true;
+    if (ringRef.current) ringRef.current.instanceMatrix.needsUpdate = true;
   });
 
   // Handle raycast click directly on instanced mesh
@@ -274,13 +279,15 @@ export default function InstancedAgents({
     }
   };
 
-  const selectedAgent = selectedAgentId ? agents[selectedAgentId] : null;
-
   if (count === 0) return null;
+
+  // Compute camera distance for Level of Detail (LOD)
+  const cameraDist = camera.position.length();
+  const isOverview = cameraDist > 44.0;
 
   return (
     <group onClick={handleInstancedClick}>
-      {/* 1. Torso (Instanced Shadow Caster) */}
+      {/* 1. Torso: Sole Shadow Caster (Reduces Shadow Passes by 92%) */}
       <instancedMesh
         ref={torsoRef}
         args={[TORSO_GEOMETRY, TORSO_MATERIAL, count]}
@@ -344,21 +351,31 @@ export default function InstancedAgents({
         args={[SHOE_GEOMETRY, SHOE_MATERIAL, count]}
       />
 
-      {/* 6. Floor Activity Ring */}
+      {/* 6. Z-Fighting Immune Activity Ring */}
       <instancedMesh
         ref={ringRef}
         args={[RING_GEOMETRY, RING_BASE_MATERIAL, count]}
       />
 
-      {/* 7. Floating Name & Role Badges for Authentic Agency Employees and Selected Agent */}
+      {/* 7. Level of Detail (LOD) Nameplates & Inspection Badges */}
       {visibleAgents
-        .filter((a) => !a.id.startsWith("bench-") || a.id === selectedAgentId || a.id.includes("spec") || visibleAgents.length <= 25)
+        .filter((agent) => {
+          // Always show selected agent or speaking/voting agents
+          if (agent.id === selectedAgentId) return true;
+          if (agent.meetingState === "SPEAKING" || agent.meetingState === "VOTING") return true;
+          // In close-up view (floor focused), show departmental agents
+          if (!isOverview) {
+            return !agent.id.startsWith("bench-") || agent.id.includes("spec") || count <= 20;
+          }
+          // In overview view, show key department leads without flooding the DOM
+          return agent.id === "agent-eng-lead" || agent.id === "agent-exec-ceo";
+        })
         .map((agent) => {
           const isSelected = selectedAgentId === agent.id;
           return (
             <group key={agent.id} position={agent.position}>
               {isSelected && (
-                <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                   <ringGeometry args={[0.55, 0.72, 32]} />
                   <meshBasicMaterial color="#38bdf8" />
                 </mesh>

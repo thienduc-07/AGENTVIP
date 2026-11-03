@@ -233,7 +233,7 @@ function CorporateBuilding({
       {[-18.0, 18.0].map((x, sideIdx) => (
         <group key={`side-wall-${sideIdx}`} position={[x, 18.0, 0]}>
           {/* Main Clear Architectural Glass Curtain Pane */}
-          <mesh receiveShadow>
+          <mesh receiveShadow renderOrder={10}>
             <boxGeometry args={[0.15, 36.0, 26.0]} />
             <meshPhysicalMaterial
               color="#e0f2fe"
@@ -243,6 +243,7 @@ function CorporateBuilding({
               opacity={0.35}
               ior={1.5}
               reflectivity={0.7}
+              depthWrite={true}
             />
           </mesh>
 
@@ -683,7 +684,7 @@ function CorporateBuilding({
             </group>
 
             {/* South Open Cutaway Toughened Glass Balustrade (Height = 1.1m) */}
-            <group position={[0, 0.55, 12.95]}>
+            <group position={[0, 0.55, 12.95]} renderOrder={10}>
               <mesh>
                 <boxGeometry args={[BUILDING_WIDTH - 0.8, 1.1, 0.05]} />
                 <meshPhysicalMaterial
@@ -693,6 +694,7 @@ function CorporateBuilding({
                   opacity={isDimmed ? 0.15 : 0.55}
                   roughness={0.04}
                   ior={1.5}
+                  depthWrite={true}
                 />
               </mesh>
               <mesh position={[0, 0.55, 0]}>

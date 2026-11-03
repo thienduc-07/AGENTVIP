@@ -427,42 +427,6 @@ function FloorInteriors({
             <meshStandardMaterial color="#1c1917" roughness={0.2} metalness={0.8} />
           </mesh>
         </group>
-
-        {/* Executive 3D Boardroom (Right Wing) at [8.5, 0, 0] */}
-        <group position={[8.5, 0, 0]}>
-          {/* Glass Partition Wall */}
-          <mesh position={[-4.5, 1.6, 0]}>
-            <boxGeometry args={[0.08, 3.2, 10.0]} />
-            <meshPhysicalMaterial color="#e0f2fe" transmission={0.95} transparent opacity={0.35} roughness={0.05} />
-          </mesh>
-          {/* Grand Boardroom Table (Smoked Glass & Brass) */}
-          <mesh castShadow receiveShadow position={[0, 0.74, 0]}>
-            <boxGeometry args={[6.2, 0.08, 2.2]} />
-            <meshPhysicalMaterial color="#1e293b" transmission={0.4} roughness={0.1} metalness={0.7} />
-          </mesh>
-          {/* Executive Leather Boardroom Chairs */}
-          {[-2.2, -0.7, 0.7, 2.2].map((cx, idx) => (
-            <React.Fragment key={`bd-chair-${idx}`}>
-              <mesh position={[cx, 0.55, 1.4]} rotation={[0, Math.PI, 0]}>
-                <boxGeometry args={[0.55, 0.85, 0.55]} />
-                <meshStandardMaterial color="#0f172a" roughness={0.5} />
-              </mesh>
-              <mesh position={[cx, 0.55, -1.4]}>
-                <boxGeometry args={[0.55, 0.85, 0.55]} />
-                <meshStandardMaterial color="#0f172a" roughness={0.5} />
-              </mesh>
-            </React.Fragment>
-          ))}
-          {/* Large Presentation Display Screen on East Wall */}
-          <mesh position={[3.8, 1.8, 0]}>
-            <boxGeometry args={[0.06, 1.8, 4.2]} />
-            <meshStandardMaterial color="#020617" />
-          </mesh>
-          <mesh position={[3.75, 1.8, 0]}>
-            <planeGeometry args={[4.0, 1.6]} />
-            <meshBasicMaterial color="#38bdf8" />
-          </mesh>
-        </group>
       </group>
     </group>
   );
