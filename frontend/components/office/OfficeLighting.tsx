@@ -20,8 +20,8 @@ export default function OfficeLighting() {
         intensity={1.35}
         color="#fffbeb"
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
         shadow-camera-near={1}
         shadow-camera-far={120}
         shadow-camera-left={-28}

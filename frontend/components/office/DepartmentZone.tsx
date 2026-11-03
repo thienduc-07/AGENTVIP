@@ -22,6 +22,7 @@ interface DepartmentZoneProps {
   data: DepartmentZoneData;
   isSelected?: boolean;
   selectedWorkstationId?: string | null;
+  renderWorkstations?: boolean;
   onSelectDepartment?: (deptName: string) => void;
   onSelectWorkstation?: (workstationId: string) => void;
 }
@@ -41,6 +42,7 @@ function DepartmentZone({
   data,
   isSelected = false,
   selectedWorkstationId,
+  renderWorkstations = false,
   onSelectDepartment,
   onSelectWorkstation,
 }: DepartmentZoneProps) {
@@ -118,19 +120,20 @@ function DepartmentZone({
         </div>
       </Html>
 
-      {/* 4. Child Workstation Array within this Department Zone (relative to zone base) */}
-      {data.workstations.map((ws) => (
-        <Workstation
-          key={ws.workstation_id}
-          data={{
-            ...ws,
-            pos_x: ws.pos_x - data.base_x,
-            pos_z: ws.pos_z - data.base_z,
-          }}
-          isSelected={selectedWorkstationId === ws.workstation_id}
-          onSelect={onSelectWorkstation}
-        />
-      ))}
+      {/* 4. Child Workstation Array within this Department Zone (Optional non-instanced fallback) */}
+      {renderWorkstations &&
+        data.workstations.map((ws) => (
+          <Workstation
+            key={ws.workstation_id}
+            data={{
+              ...ws,
+              pos_x: ws.pos_x - data.base_x,
+              pos_z: ws.pos_z - data.base_z,
+            }}
+            isSelected={selectedWorkstationId === ws.workstation_id}
+            onSelect={onSelectWorkstation}
+          />
+        ))}
     </group>
   );
 }

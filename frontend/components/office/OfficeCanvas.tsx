@@ -9,6 +9,8 @@ import OfficeLighting from "./OfficeLighting";
 import OfficeCamera from "./OfficeCamera";
 import DepartmentZone, { DepartmentZoneData } from "./DepartmentZone";
 import AgentAvatar, { AgentAvatarData } from "./AgentAvatar";
+import InstancedWorkstations from "./InstancedWorkstations";
+import InstancedAgents from "./InstancedAgents";
 import MeetingRoom from "./MeetingRoom";
 import CorporateBuilding from "./CorporateBuilding";
 import FloorInteriors from "./FloorInteriors";
@@ -169,7 +171,7 @@ export default function OfficeCanvas({
             isFloorIsolated={isFloorIsolated}
           />
 
-          {/* Dynamic Department Zones with Child Workstations */}
+          {/* Dynamic Department Zones (Carpets, Glow Borders & Labels) */}
           {Object.values(departments).map((dept) => {
             const deptFloor = getDepartmentFloor(dept.department);
             const isVisible = !isFloorIsolated || activeFloor === 0 || deptFloor === activeFloor;
@@ -186,6 +188,15 @@ export default function OfficeCanvas({
             );
           })}
 
+          {/* High-Performance Instanced Workstations (Replaces 768 individual meshes with ~10 calls) */}
+          <InstancedWorkstations
+            workstations={workstations}
+            selectedWorkstationId={selectedWorkstationId}
+            activeFloor={activeFloor}
+            isFloorIsolated={isFloorIsolated}
+            onSelectWorkstation={onSelectWorkstation}
+          />
+
           {/* 3D Glass Grand Executive Boardroom on Floor 6 */}
           {(!isFloorIsolated || activeFloor === 0 || activeFloor === 6) && (
             <MeetingRoom
@@ -196,20 +207,14 @@ export default function OfficeCanvas({
             />
           )}
 
-          {/* Stateful Autonomous AI Agents */}
-          {Object.values(renderedAgents).map((agent) => {
-            const agentFloor = getDepartmentFloor(agent.department);
-            const isVisible = !isFloorIsolated || activeFloor === 0 || agentFloor === activeFloor;
-            if (!isVisible) return null;
-            return (
-              <AgentAvatar
-                key={agent.id}
-                data={agent}
-                isSelected={selectedAgentId === agent.id}
-                onSelect={onSelectAgent}
-              />
-            );
-          })}
+          {/* High-Performance Instanced Autonomous AI Agents (Replaces 1,600 meshes with ~10 calls) */}
+          <InstancedAgents
+            agents={renderedAgents}
+            selectedAgentId={selectedAgentId}
+            activeFloor={activeFloor}
+            isFloorIsolated={isFloorIsolated}
+            onSelectAgent={onSelectAgent}
+          />
 
           {/* Visual Destination Marker for Selected Moving Agent */}
           {selectedAgentId &&

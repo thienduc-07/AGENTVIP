@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
 
 interface SkylineBuilding {
@@ -13,11 +13,28 @@ interface SkylineBuilding {
   isGlass: boolean;
 }
 
+const UNIT_BOX_GEOMETRY = new THREE.BoxGeometry(1, 1, 1);
+const SKYLINE_GLASS_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#0f172a",
+  roughness: 0.15,
+  metalness: 0.85,
+});
+const SKYLINE_SOLID_MATERIAL = new THREE.MeshStandardMaterial({
+  color: "#1e293b",
+  roughness: 0.75,
+  metalness: 0.25,
+});
+
 export default function OfficeEnvironment() {
+  const glassRef = useRef<THREE.InstancedMesh>(null);
+  const solidRef = useRef<THREE.InstancedMesh>(null);
+
   // Procedural futuristic metropolis backdrop scaled for a multi-floor skyscraper
-  const skylineBuildings = useMemo<SkylineBuilding[]>(() => {
-    const buildings: SkylineBuilding[] = [];
+  const { glassBuildings, solidBuildings } = useMemo(() => {
+    const glass: SkylineBuilding[] = [];
+    const solid: SkylineBuilding[] = [];
     const count = 48;
+
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
       const dist = 75 + ((i * 17) % 35);
@@ -27,38 +44,58 @@ export default function OfficeEnvironment() {
       const x = Math.cos(angle) * dist;
       const z = Math.sin(angle) * dist;
       const isGlass = i % 3 !== 0;
-      buildings.push({ id: i, x, z, width, depth, height, isGlass });
+
+      const item: SkylineBuilding = { id: i, x, z, width, depth, height, isGlass };
+      if (isGlass) glass.push(item);
+      else solid.push(item);
     }
-    return buildings;
+
+    return { glassBuildings: glass, solidBuildings: solid };
   }, []);
+
+  useEffect(() => {
+    const dummy = new THREE.Object3D();
+
+    // 1. Position and scale glass skyscraper instances
+    glassBuildings.forEach((b, i) => {
+      dummy.position.set(b.x, b.height / 2 - 4, b.z);
+      dummy.scale.set(b.width, b.height, b.depth);
+      dummy.rotation.set(0, 0, 0);
+      dummy.updateMatrix();
+      glassRef.current?.setMatrixAt(i, dummy.matrix);
+    });
+    if (glassRef.current) {
+      glassRef.current.instanceMatrix.needsUpdate = true;
+    }
+
+    // 2. Position and scale solid skyscraper instances
+    solidBuildings.forEach((b, i) => {
+      dummy.position.set(b.x, b.height / 2 - 4, b.z);
+      dummy.scale.set(b.width, b.height, b.depth);
+      dummy.rotation.set(0, 0, 0);
+      dummy.updateMatrix();
+      solidRef.current?.setMatrixAt(i, dummy.matrix);
+    });
+    if (solidRef.current) {
+      solidRef.current.instanceMatrix.needsUpdate = true;
+    }
+  }, [glassBuildings, solidBuildings]);
 
   return (
     <group>
-      {/* Distant Skyline Skyscrapers surrounding the Corporate Headquarters */}
-      {skylineBuildings.map((b) => (
-        <group key={b.id} position={[b.x, b.height / 2 - 4, b.z]}>
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[b.width, b.height, b.depth]} />
-            <meshStandardMaterial
-              color={b.isGlass ? "#0f172a" : "#1e293b"}
-              roughness={b.isGlass ? 0.15 : 0.75}
-              metalness={b.isGlass ? 0.85 : 0.25}
-            />
-          </mesh>
-          {/* Subtle Window Glow Strips on Distant Skyscrapers */}
-          {b.isGlass && (
-            <mesh position={[0, 0, b.depth / 2 + 0.05]}>
-              <planeGeometry args={[b.width * 0.85, b.height * 0.9]} />
-              <meshBasicMaterial
-                color="#38bdf8"
-                transparent
-                opacity={0.12}
-              />
-            </mesh>
-          )}
-        </group>
-      ))}
+      {/* Instanced Glass Skyline Skyscrapers (1 Draw Call) */}
+      <instancedMesh
+        ref={glassRef}
+        args={[UNIT_BOX_GEOMETRY, SKYLINE_GLASS_MATERIAL, glassBuildings.length]}
+        receiveShadow
+      />
+
+      {/* Instanced Solid Concrete Skyscrapers (1 Draw Call) */}
+      <instancedMesh
+        ref={solidRef}
+        args={[UNIT_BOX_GEOMETRY, SKYLINE_SOLID_MATERIAL, solidBuildings.length]}
+        receiveShadow
+      />
     </group>
   );
 }
-

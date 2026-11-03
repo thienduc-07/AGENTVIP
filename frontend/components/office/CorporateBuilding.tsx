@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -52,6 +52,74 @@ const STEP_GEOMETRY = new THREE.BoxGeometry(1.4, 0.1, 0.45);
 const STEP_MATERIAL = new THREE.MeshStandardMaterial({ color: "#d4a373", roughness: 0.5 });
 const HANDRAIL_GEOMETRY = new THREE.CylinderGeometry(0.03, 0.03, 3.8);
 const HANDRAIL_MATERIAL = new THREE.MeshStandardMaterial({ color: "#f8fafc", metalness: 0.9, roughness: 0.1 });
+const LANDING_GEOMETRY = new THREE.BoxGeometry(3.2, 0.15, 1.5);
+const LANDING_MATERIAL = new THREE.MeshStandardMaterial({ color: "#1e293b", metalness: 0.6, roughness: 0.3 });
+
+function InstancedStaircase() {
+  const stepsRef = useRef<THREE.InstancedMesh>(null);
+  const handrailsRef = useRef<THREE.InstancedMesh>(null);
+  const landingsRef = useRef<THREE.InstancedMesh>(null);
+
+  useEffect(() => {
+    const dummy = new THREE.Object3D();
+    let stepCount = 0;
+    let handrailCount = 0;
+
+    for (let stairIdx = 0; stairIdx < 5; stairIdx++) {
+      const sy = stairIdx * 6.0;
+
+      // Flight 1: 6 steps
+      for (let s = 0; s < 6; s++) {
+        dummy.position.set(-0.8, sy + s * 0.5 + 0.25, -0.2 - s * 0.45);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        stepsRef.current?.setMatrixAt(stepCount++, dummy.matrix);
+      }
+
+      // Mid-floor landing
+      dummy.position.set(0, sy + 3.0, -0.2 - 2.8);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      landingsRef.current?.setMatrixAt(stairIdx, dummy.matrix);
+
+      // Flight 2: 6 steps
+      for (let s = 0; s < 6; s++) {
+        dummy.position.set(0.8, sy + 3.25 + s * 0.5, -0.2 - 2.4 + s * 0.45);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        stepsRef.current?.setMatrixAt(stepCount++, dummy.matrix);
+      }
+
+      // Handrails (Flight 1 & Flight 2)
+      dummy.position.set(-1.5, sy + 1.8, -0.2 - 1.2);
+      dummy.rotation.set(0.45, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      handrailsRef.current?.setMatrixAt(handrailCount++, dummy.matrix);
+
+      dummy.position.set(1.5, sy + 4.8, -0.2 - 1.2);
+      dummy.rotation.set(-0.45, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      handrailsRef.current?.setMatrixAt(handrailCount++, dummy.matrix);
+    }
+
+    if (stepsRef.current) stepsRef.current.instanceMatrix.needsUpdate = true;
+    if (handrailsRef.current) handrailsRef.current.instanceMatrix.needsUpdate = true;
+    if (landingsRef.current) landingsRef.current.instanceMatrix.needsUpdate = true;
+  }, []);
+
+  return (
+    <group>
+      <instancedMesh ref={stepsRef} args={[STEP_GEOMETRY, STEP_MATERIAL, 60]} />
+      <instancedMesh ref={landingsRef} args={[LANDING_GEOMETRY, LANDING_MATERIAL, 5]} />
+      <instancedMesh ref={handrailsRef} args={[HANDRAIL_GEOMETRY, HANDRAIL_MATERIAL, 10]} />
+    </group>
+  );
+}
 
 const CEILING_LIGHT_GEOMETRY = new THREE.BoxGeometry(0.3, 0.02, 22.0);
 
@@ -339,50 +407,8 @@ function CorporateBuilding({
           <pointLight color="#38bdf8" intensity={1.2} distance={5} position={[0, 2.5, 0]} />
         </group>
 
-        {/* ARCHITECTURAL SWITCHBACK STAIRCASES connecting each floor */}
-        {[0, 1, 2, 3, 4].map((stairIdx) => {
-          const sy = stairIdx * 6.0;
-          return (
-            <group key={`stairs-${stairIdx}`} position={[0, sy, -0.2]}>
-              {/* Flight 1: Lower to landing */}
-              {Array.from({ length: 6 }).map((_, stepIdx) => (
-                <mesh
-                  key={`step-1-${stepIdx}`}
-                  position={[-0.8, stepIdx * 0.5 + 0.25, -stepIdx * 0.45]}
-                  geometry={STEP_GEOMETRY}
-                  material={STEP_MATERIAL}
-                />
-              ))}
-              {/* Mid-Floor Landing */}
-              <mesh position={[0, 3.0, -2.8]}>
-                <boxGeometry args={[3.2, 0.15, 1.5]} />
-                <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.3} />
-              </mesh>
-              {/* Flight 2: Landing to next floor */}
-              {Array.from({ length: 6 }).map((_, stepIdx) => (
-                <mesh
-                  key={`step-2-${stepIdx}`}
-                  position={[0.8, 3.25 + stepIdx * 0.5, -2.4 + stepIdx * 0.45]}
-                  geometry={STEP_GEOMETRY}
-                  material={STEP_MATERIAL}
-                />
-              ))}
-              {/* Stainless Steel Handrails */}
-              <mesh
-                position={[-1.5, 1.8, -1.2]}
-                rotation={[0.45, 0, 0]}
-                geometry={HANDRAIL_GEOMETRY}
-                material={HANDRAIL_MATERIAL}
-              />
-              <mesh
-                position={[1.5, 4.8, -1.2]}
-                rotation={[-0.45, 0, 0]}
-                geometry={HANDRAIL_GEOMETRY}
-                material={HANDRAIL_MATERIAL}
-              />
-            </group>
-          );
-        })}
+        {/* ARCHITECTURAL SWITCHBACK STAIRCASES connecting each floor (Instanced) */}
+        <InstancedStaircase />
       </group>
 
       {/* =========================================================================

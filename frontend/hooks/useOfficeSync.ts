@@ -380,6 +380,50 @@ export function useOfficeSync(initialOrgId: string = "org_default_company"): Off
         );
       });
 
+      // 6. Guarantee Baseline Leadership Workforce Hydration
+      if (Object.keys(loadedAgents).length === 0) {
+        const fallbackList = [
+          { id: "agent-exec-ceo", name: "Victoria Vance", role: "Chief Executive Officer & Autonomous Strategy Lead", dept: "Executive", color: "#3b82f6" },
+          { id: "agent-eng-lead", name: "David Chen", role: "Principal Systems Architect & Engineering Lead", dept: "Engineering", color: "#0ea5e9" },
+          { id: "agent-research-ai", name: "Dr. Elena Rostova", role: "Chief AI Scientist & Intelligence Director", dept: "AI Research", color: "#8b5cf6" },
+          { id: "agent-mkt-growth", name: "Sophia Martinez", role: "VP of Brand Strategy & Growth Marketing", dept: "Marketing", color: "#ec4899" },
+          { id: "agent-sales-director", name: "Marcus Reynolds", role: "Director of Enterprise Solutions & Sales", dept: "Sales", color: "#10b981" },
+          { id: "agent-fin-controller", name: "Julian Thorne", role: "Chief Financial Officer & Treasury Controller", dept: "Finance", color: "#f59e0b" },
+          { id: "agent-ops-recruiter", name: "Amara Okafor", role: "Head of Operations & AI Agent Recruitment", dept: "Operations", color: "#6366f1" },
+          { id: "agent-support-lead", name: "Liam O'Connor", role: "Head of Customer Success & Support Operations", dept: "Customer Success", color: "#14b8a6" },
+        ];
+        fallbackList.forEach((fb) => {
+          const floor = getDepartmentFloor(fb.dept);
+          const floorElev = getFloorElevation(floor);
+          const deptZone = loadedDepartments[fb.dept];
+          const desk = Object.values(DEFAULT_DEPARTMENT_DESKS[fb.dept] || []).find((d) => d.defaultAgentId === fb.id);
+          const px = desk && deptZone ? deptZone.base_x + desk.offset_x : (deptZone?.base_x || 0);
+          const py = floorElev + 0.05;
+          const pz = desk && deptZone ? deptZone.base_z + desk.offset_z : (deptZone?.base_z || 0);
+          loadedAgents[fb.id] = {
+            id: fb.id,
+            name: fb.name,
+            role: fb.role,
+            department: fb.dept,
+            position: [px, py, pz],
+            targetPosition: null,
+            headingRadians: Math.PI,
+            behavioralState: "IDLE",
+            operationalStatus: "idle",
+            currentTaskTitle: null,
+            assignedWorkstation: desk?.id || null,
+            isMoving: false,
+            color: fb.color,
+          };
+          if (desk && loadedWorkstations[desk.id]) {
+            loadedWorkstations[desk.id].occupancy_status = "occupied";
+            loadedWorkstations[desk.id].assigned_employee = fb.id;
+            loadedWorkstations[desk.id].assigned_employee_name = fb.name;
+            loadedWorkstations[desk.id].assigned_employee_role = fb.role;
+          }
+        });
+      }
+
       if (!isStaleSnapshot) {
         setAgents(loadedAgents);
       } else {

@@ -7531,14 +7531,14 @@
     "semantic_hash": ""
   },
   "frontend/components/office/AgentAvatar.tsx": {
-    "mtime": 1793702749.2523663,
-    "seen": 1793704538.112763,
+    "mtime": 1793710181.9774442,
+    "seen": 1793713913.022923,
     "ast_hash": "84d31ac65fc66d72b76723475f0b3ed4",
     "semantic_hash": ""
   },
   "frontend/components/office/DepartmentZone.tsx": {
-    "mtime": 1793702838.3678627,
-    "seen": 1793704538.112767,
+    "mtime": 1793710182.0675113,
+    "seen": 1793713913.0229309,
     "ast_hash": "7341cb81435803db3463cdc2470728c5",
     "semantic_hash": ""
   },
@@ -7555,9 +7555,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeCanvas.tsx": {
-    "mtime": 1793703095.6588635,
-    "seen": 1793704538.1127748,
-    "ast_hash": "cefc5e185186fed7fd6ae2a5e1b6d97b",
+    "mtime": 1793711991.5530398,
+    "seen": 1793713913.02295,
+    "ast_hash": "dc876e378f121bbe9083c85d83e966d6",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeEnvironment.tsx": {
@@ -7597,8 +7597,8 @@
     "semantic_hash": ""
   },
   "frontend/components/office/Workstation.tsx": {
-    "mtime": 1793702824.3180828,
-    "seen": 1793704538.1127832,
+    "mtime": 1793710182.1511831,
+    "seen": 1793713913.022966,
     "ast_hash": "7cf63c76fba29d9332247b599cf1b41e",
     "semantic_hash": ""
   },
@@ -7951,9 +7951,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/MeetingPresentationScreen.tsx": {
-    "mtime": 1793636551.331999,
-    "seen": 1793636700.36943,
-    "ast_hash": "0c2a9a0c5334a879e335a0a031f1384a",
+    "mtime": 1793712591.7479424,
+    "seen": 1793713913.022943,
+    "ast_hash": "f2d68a05f52eec7304b7c28c9ce69b6c",
     "semantic_hash": ""
   },
   "frontend/components/office/MeetingRoom.tsx": {
@@ -7981,8 +7981,8 @@
     "semantic_hash": ""
   },
   "frontend/store/meetingStore.ts": {
-    "mtime": 1793703063.3193882,
-    "seen": 1793704538.1128519,
+    "mtime": 1793710182.2046576,
+    "seen": 1793713913.023135,
     "ast_hash": "2200375055ac14f588a9a6a33d293578",
     "semantic_hash": ""
   },
@@ -8263,9 +8263,9 @@
     "semantic_hash": ""
   },
   "frontend/playwright.config.ts": {
-    "mtime": 1793701010.8769064,
-    "seen": 1793704538.112851,
-    "ast_hash": "8d9519710fa7228816c211aca27cbcb6",
+    "mtime": 1793712997.7168338,
+    "seen": 1793713913.023133,
+    "ast_hash": "1cefa7147cff10800f29ba164d1b1115",
     "semantic_hash": ""
   },
   "PHASE_4_3_7_1_FINAL_VERIFICATION_REPORT.md": {
@@ -8425,14 +8425,14 @@
     "semantic_hash": ""
   },
   "frontend/components/office/CorporateBuilding.tsx": {
-    "mtime": 1793702999.0525718,
-    "seen": 1793704538.112766,
+    "mtime": 1793710182.0446808,
+    "seen": 1793713913.022929,
     "ast_hash": "1298ed1494707f92924b029706dc2814",
     "semantic_hash": ""
   },
   "frontend/components/office/FloorInteriors.tsx": {
-    "mtime": 1793702977.1779635,
-    "seen": 1793704538.1127691,
+    "mtime": 1793710182.1044564,
+    "seen": 1793713913.0229352,
     "ast_hash": "de5d36be9d5fbe0aeb98e1cdc179302d",
     "semantic_hash": ""
   },
@@ -8521,8 +8521,8 @@
     "semantic_hash": ""
   },
   "frontend/e2e/camera_and_agent_verification.spec.ts": {
-    "mtime": 1793703514.472754,
-    "seen": 1793704538.11281,
+    "mtime": 1793710182.2282598,
+    "seen": 1793713913.0230222,
     "ast_hash": "7f398c0b676f3f2a7b49f417aceeebaf",
     "semantic_hash": ""
   },
@@ -8584,6 +8584,54 @@
     "mtime": 1793703908.2350607,
     "seen": 1793704538.113824,
     "ast_hash": "e4af6c825d970955ef56a442d7063bfe",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/draw_call_inspector.spec.ts": {
+    "mtime": 1793710764.6339726,
+    "seen": 1793713913.023028,
+    "ast_hash": "beaba8d012316cbb5e36c2d56b2caec7",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/frametime_analysis.spec.ts": {
+    "mtime": 1793711758.474493,
+    "seen": 1793713913.02303,
+    "ast_hash": "1446edc0ff2230085b5b6ea57b2ecf67",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/frametime_analysis_raw.json": {
+    "mtime": 1793711797.355587,
+    "seen": 1793713913.023032,
+    "ast_hash": "9a08e7f0be9af91f68f41403ba23e9a7",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/long_duration_stress.spec.ts": {
+    "mtime": 1793713518.917848,
+    "seen": 1793713913.023037,
+    "ast_hash": "87ede69ec12911924134e8a5f712a155",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/profiler_gate_scenarios_raw.json": {
+    "mtime": 1793713452.0326157,
+    "seen": 1793713913.023052,
+    "ast_hash": "67db012722e3875e6a621a678d9bd37f",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/profiler_stability_gate.spec.ts": {
+    "mtime": 1793713269.3143916,
+    "seen": 1793713913.0230541,
+    "ast_hash": "111870477a70a9bdf6bf4e83f014ae52",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/profiler_stability_raw.json": {
+    "mtime": 1793712470.137831,
+    "seen": 1793713913.0230558,
+    "ast_hash": "bbc6b329317d52a0130cad13f81760bb",
+    "semantic_hash": ""
+  },
+  "AGENT_CITY_PERFORMANCE_REPORT.md": {
+    "mtime": 1793704655.1410215,
+    "seen": 1793713913.02333,
+    "ast_hash": "c417612bf6f590762acc2c556329119f",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

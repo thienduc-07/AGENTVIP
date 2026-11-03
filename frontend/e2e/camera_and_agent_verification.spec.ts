@@ -4,11 +4,29 @@ import fs from 'fs';
 
 const OUT_DIR = path.resolve(process.cwd(), '../docs/screenshots/camera_and_agents');
 const ARTIFACT_DIR = '/Users/thienduc/.gemini/antigravity/brain/95bb19d2-ffd9-43b3-a0fd-ec96de9c7e9a/screenshots';
+const BACKEND_BASE = 'http://127.0.0.1:8000';
 
 test.describe('PROVIPAGENT: Camera Drag Persistence & Authentic Agent Visibility Verification', () => {
-  test.beforeAll(async () => {
+  let authToken: string = '';
+
+  test.beforeAll(async ({ request }) => {
     fs.mkdirSync(OUT_DIR, { recursive: true });
     fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
+
+    try {
+      const loginRes = await request.post(`${BACKEND_BASE}/api/v1/auth/login`, {
+        data: {
+          email: 'admin@agency.ai',
+          password: 'SuperAdminSecurePassword2026!',
+        },
+      });
+      if (loginRes.ok()) {
+        const body = await loginRes.json();
+        authToken = body.access_token;
+      }
+    } catch (e) {
+      console.warn('[beforeAll] Login fetch note:', e);
+    }
   });
 
   const makeScreenshotSaver = (page: any) => async (filename: string) => {
@@ -21,6 +39,14 @@ test.describe('PROVIPAGENT: Camera Drag Persistence & Authentic Agent Visibility
 
   test('Part 1: Visual Verification — Multi-Floor Headquarters & Authentic AI Employees', async ({ page }) => {
     test.setTimeout(360000);
+
+    if (authToken) {
+      await page.addInitScript((t) => {
+        localStorage.setItem('provipagent_auth_token', t);
+        localStorage.setItem('auth_token', t);
+        localStorage.setItem('provipagent_org_id', 'org_default_company');
+      }, authToken);
+    }
 
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/');
@@ -68,6 +94,14 @@ test.describe('PROVIPAGENT: Camera Drag Persistence & Authentic Agent Visibility
 
   test('Part 2: Camera Control — Mouse Drag Persistence & React Re-render Immunity', async ({ page }) => {
     test.setTimeout(360000);
+
+    if (authToken) {
+      await page.addInitScript((t) => {
+        localStorage.setItem('provipagent_auth_token', t);
+        localStorage.setItem('auth_token', t);
+        localStorage.setItem('provipagent_org_id', 'org_default_company');
+      }, authToken);
+    }
 
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/');
