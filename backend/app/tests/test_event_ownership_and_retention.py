@@ -387,7 +387,7 @@ def test_12_superadmin_replay_snapshot_broadcast_consistency(client, db_session,
         snapshot = ws.receive_json()
         assert snapshot["message_type"] == "snapshot"
 
-        ws.send_json({"action": "replay", "last_sequence_id": 0})
+        ws.send_json({"action": "replay", "last_sequence_id": ev_super.sequence_id - 1})
         frame = ws.receive_json()
         assert frame["message_type"] == "event"
         assert frame["event"]["event_id"] == ev_super.id
@@ -562,3 +562,139 @@ def test_18_crash_recovery_event_ownership_integrity(isolated_ownership_db):
     assert event.organization_id == "org_alpha_test"
     assert event.sequence_id is not None
     assert event.agent_id == "agent_alpha_spec"
+
+
+def test_19_superadmin_replay_tenant_events(client, db_session, monkeypatch):
+    """Scenario 19: Superadmin scoped to a tenant successfully replays that tenant's events."""
+    monkeypatch.setattr("backend.app.websocket_manager.SessionLocal", lambda: db_session)
+    monkeypatch.setattr(db_session, "close", lambda: None)
+
+    org = OrganizationModel(id="org_super_tenant_test", name="Super Target Org", slug="super-target", is_active=True)
+    super_u = UserModel(
+        id="usr_super_tenant",
+        email="super_scoped@provipagent.internal",
+        full_name="Super Scoped",
+        hashed_password=hash_password("SuperSecret123!"),
+        is_active=True,
+        is_superadmin=True,
+    )
+    db_session.add_all([org, super_u])
+    db_session.commit()
+
+    ev_target = event_service.create_event(db=db_session, event_type="target.event", organization_id=org.id, commit=True)
+    token_super = create_jwt_token({"sub": super_u.id, "email": super_u.email, "ver": 1})
+
+    # Connect scoped to target org
+    with client.websocket_connect(f"/api/v1/events/ws?token={token_super}&organization_id={org.id}") as ws:
+        _ = ws.receive_json()
+        ws.send_json({"action": "replay", "last_sequence_id": ev_target.sequence_id - 1})
+        frame = ws.receive_json()
+        assert frame["message_type"] == "event"
+        assert frame["event"]["event_id"] == ev_target.id
+        assert frame["event"]["organization_id"] == org.id
+
+
+def test_20_superadmin_replay_global_events(client, db_session, monkeypatch):
+    """Scenario 20: Unscoped Superadmin receives global system events (organization_id is None)."""
+    monkeypatch.setattr("backend.app.websocket_manager.SessionLocal", lambda: db_session)
+    monkeypatch.setattr(db_session, "close", lambda: None)
+
+    super_u = UserModel(
+        id="usr_super_global",
+        email="super_glob@provipagent.internal",
+        full_name="Super Global",
+        hashed_password=hash_password("SuperSecret123!"),
+        is_active=True,
+        is_superadmin=True,
+    )
+    db_session.add(super_u)
+    db_session.commit()
+
+    ev_global = event_service.create_event(db=db_session, event_type="global.announcement", organization_id=None, commit=True)
+    token_super = create_jwt_token({"sub": super_u.id, "email": super_u.email, "ver": 1})
+
+    # Connect unscoped
+    with client.websocket_connect(f"/api/v1/events/ws?token={token_super}") as ws:
+        _ = ws.receive_json()
+        ws.send_json({"action": "replay", "last_sequence_id": ev_global.sequence_id - 1})
+        frame = ws.receive_json()
+        assert frame["message_type"] == "event"
+        assert frame["event"]["event_id"] == ev_global.id
+        assert frame["event"]["organization_id"] is None
+
+
+def test_21_regular_user_cross_tenant_replay_denial(client, db_session, monkeypatch):
+    """Scenario 21: Regular tenant user is strictly denied other tenant and global events during replay."""
+    monkeypatch.setattr("backend.app.websocket_manager.SessionLocal", lambda: db_session)
+    monkeypatch.setattr(db_session, "close", lambda: None)
+
+    org_a = OrganizationModel(id="org_denial_a", name="Org A", slug="denial-a", is_active=True)
+    org_b = OrganizationModel(id="org_denial_b", name="Org B", slug="denial-b", is_active=True)
+    user_a = UserModel(id="usr_denial_a", email="denial_a@test.com", full_name="User A", hashed_password=hash_password("P!"), is_active=True, is_superadmin=False)
+    member_a = OrganizationMemberModel(user_id=user_a.id, organization_id=org_a.id, role="MEMBER")
+    db_session.add_all([org_a, org_b, user_a, member_a])
+    db_session.commit()
+
+    ev_a = event_service.create_event(db=db_session, event_type="denial.a", organization_id=org_a.id, commit=True)
+    ev_b = event_service.create_event(db=db_session, event_type="denial.b", organization_id=org_b.id, commit=True)
+    ev_sys = event_service.create_event(db=db_session, event_type="denial.sys", organization_id=None, commit=True)
+
+    token_a = create_jwt_token({"sub": user_a.id, "email": user_a.email, "org_id": org_a.id, "ver": 1})
+
+    with client.websocket_connect(f"/api/v1/events/ws?token={token_a}") as ws:
+        _ = ws.receive_json()
+        ws.send_json({"action": "replay", "last_sequence_id": 0})
+        frame = ws.receive_json()
+        # Must only receive org A event
+        assert frame["event"]["event_id"] == ev_a.id
+        assert frame["event"]["event_id"] != ev_b.id
+        assert frame["event"]["event_id"] != ev_sys.id
+
+
+def test_22_missing_organization_id_connection_behavior(client, db_session, monkeypatch):
+    """Scenario 22: User lacking active organization memberships fails closed on connection."""
+    monkeypatch.setattr("backend.app.websocket_manager.SessionLocal", lambda: db_session)
+    monkeypatch.setattr(db_session, "close", lambda: None)
+
+    user_orphan = UserModel(
+        id="usr_orphan_test",
+        email="orphan@test.com",
+        full_name="Orphan",
+        hashed_password=hash_password("P!"),
+        is_active=True,
+        is_superadmin=False,
+    )
+    db_session.add(user_orphan)
+    db_session.commit()
+
+    token_orphan = create_jwt_token({"sub": user_orphan.id, "email": user_orphan.email, "ver": 1})
+
+    # Must be rejected because user has no organizations and is not superadmin
+    from starlette.websockets import WebSocketDisconnect
+    with pytest.raises(WebSocketDisconnect):
+        with client.websocket_connect(f"/api/v1/events/ws?token={token_orphan}"):
+            pass
+
+
+def test_23_empty_replay_response_behavior(client, db_session, monkeypatch):
+    """Scenario 23: Replay with no missed events returns replay_empty response promptly."""
+    monkeypatch.setattr("backend.app.websocket_manager.SessionLocal", lambda: db_session)
+    monkeypatch.setattr(db_session, "close", lambda: None)
+
+    org = OrganizationModel(id="org_empty_replay", name="Empty Replay", slug="empty-rep", is_active=True)
+    user = UserModel(id="usr_empty_rep", email="empty@test.com", full_name="Empty User", hashed_password=hash_password("P!"), is_active=True, is_superadmin=False)
+    member = OrganizationMemberModel(user_id=user.id, organization_id=org.id, role="MEMBER")
+    db_session.add_all([org, user, member])
+    db_session.commit()
+
+    ev = event_service.create_event(db=db_session, event_type="single.ev", organization_id=org.id, commit=True)
+    token = create_jwt_token({"sub": user.id, "email": user.email, "org_id": org.id, "ver": 1})
+
+    with client.websocket_connect(f"/api/v1/events/ws?token={token}") as ws:
+        _ = ws.receive_json()
+        # Request replay with sequence equal to or greater than ev.sequence_id
+        ws.send_json({"action": "replay", "last_sequence_id": ev.sequence_id})
+        frame = ws.receive_json()
+        assert frame["message_type"] == "replay_empty"
+        assert frame["replayed_count"] == 0
+        assert frame["last_sequence_id"] == ev.sequence_id

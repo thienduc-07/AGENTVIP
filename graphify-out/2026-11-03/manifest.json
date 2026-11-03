@@ -6073,8 +6073,8 @@
     "semantic_hash": ""
   },
   "workspace_sandbox/multiagent_report.md": {
-    "mtime": 1793651449.8143835,
-    "seen": 1793651510.6919029,
+    "mtime": 1793677839.7464745,
+    "seen": 1793677889.60748,
     "ast_hash": "d6bd0ece0b0df87e683b0aadc5a72369",
     "semantic_hash": ""
   },
@@ -8416,6 +8416,12 @@
     "mtime": 1793677756.6639895,
     "seen": 1793677775.990175,
     "ast_hash": "f64a969119305b00177bda0c0e11453b",
+    "semantic_hash": ""
+  },
+  "PHASE_4_3_8_SECURITY_REGRESSION_REPORT.md": {
+    "mtime": 1793677866.9430006,
+    "seen": 1793677889.606869,
+    "ast_hash": "076f89514b29fbd382fe5dfe17358bba",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

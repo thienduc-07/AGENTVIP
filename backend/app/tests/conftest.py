@@ -1,10 +1,29 @@
 import os
 os.environ.setdefault("SECRET_KEY", "test-suite-secure-signing-secret-at-least-32-bytes-long")
 import pytest
+import anyio
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
+from starlette.testclient import WebSocketTestSession
+
+# Bounded WebSocket receive timeout to eliminate indefinite test hangs
+_original_ws_receive = WebSocketTestSession.receive
+
+def _bounded_ws_receive(self, timeout: float = 10.0):
+    async def _recv():
+        with anyio.fail_after(timeout):
+            return await self._send_rx.receive()
+    try:
+        return self.portal.call(_recv)
+    except TimeoutError:
+        raise TimeoutError(
+            f"WebSocket test receive timed out after {timeout}s! "
+            f"Server did not send any message. Check for deadlocks or unmatched queries."
+        )
+
+WebSocketTestSession.receive = _bounded_ws_receive
 
 from backend.app.core.database import Base, get_db
 import backend.app.models  # Registers all models (including ExecutionModel, TerminalLineModel, MeetingModel) with Base.metadata

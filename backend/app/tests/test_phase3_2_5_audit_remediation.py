@@ -130,6 +130,8 @@ def test_task_creation_idempotency(audit_fixture, db_session: Session):
     without creating a duplicate or raising an IntegrityError.
     """
     client_id = "task_client_idempotent_test_001"
+    db_session.query(TaskModel).filter(TaskModel.id == client_id).delete()
+    db_session.commit()
 
     task_in = TaskCreate(
         id=client_id,

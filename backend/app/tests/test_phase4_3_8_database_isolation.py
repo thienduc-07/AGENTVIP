@@ -150,3 +150,4 @@ def test_02_database_isolation_and_immutability():
     )
 
     e2e_engine.dispose()
+

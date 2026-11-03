@@ -3,7 +3,7 @@ import threading
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any, Set
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, or_
 
 from backend.app.core.database import commit_with_retry
 from backend.app.models.agent_event import AgentEventModel
@@ -579,7 +579,12 @@ class EventService:
         if not is_superadmin:
             query = query.filter(AgentEventModel.organization_id == organization_id)
         elif organization_id:
-            query = query.filter(AgentEventModel.organization_id == organization_id)
+            query = query.filter(
+                or_(
+                    AgentEventModel.organization_id == organization_id,
+                    AgentEventModel.organization_id.is_(None),
+                )
+            )
 
         return query.order_by(AgentEventModel.sequence_id.asc()).limit(limit).all()
 

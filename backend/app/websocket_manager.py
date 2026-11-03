@@ -99,7 +99,7 @@ class WebSocketManager:
             user_orgs = {m.organization_id: m.role for m in memberships}
 
             if user.is_superadmin:
-                tenant_org = req_org or "org_default_company"
+                tenant_org = req_org
             else:
                 if req_org:
                     if req_org not in user_orgs:
@@ -139,9 +139,10 @@ class WebSocketManager:
         # Send authoritative initial snapshot scoped to client organization
         db = SessionLocal()
         try:
+            snapshot_org = tenant_org or ("org_default_company" if user.is_superadmin else None)
             snapshot = build_initial_snapshot(
                 db,
-                organization_id=tenant_org,
+                organization_id=snapshot_org,
                 is_superadmin=bool(user.is_superadmin),
             )
             await websocket.send_text(json.dumps(snapshot, default=str))
@@ -488,6 +489,14 @@ class WebSocketManager:
                     organization_id=conn_org,
                     is_superadmin=is_superadmin,
                 )
+
+                if not missed_events:
+                    await websocket.send_text(json.dumps({
+                        "message_type": "replay_empty",
+                        "last_sequence_id": last_seq_int,
+                        "replayed_count": 0,
+                    }))
+
                 for ev in missed_events:
                     env = ev.to_envelope()
                     ev_org = env.get("organization_id") or env.get("payload", {}).get("organization_id")
@@ -499,7 +508,8 @@ class WebSocketManager:
                             f"(event_id={ev.id}, event_org={ev_org}, conn_org={conn_org})"
                         )
                         continue
-                    elif is_superadmin and conn_org and ev_org != conn_org:
+                    elif is_superadmin and conn_org and ev_org and ev_org != conn_org:
+                        # Scoped superadmin: skip events belonging to another specific tenant
                         continue
 
                     await websocket.send_text(json.dumps({
