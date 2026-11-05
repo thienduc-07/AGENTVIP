@@ -215,64 +215,74 @@ export interface ArchitecturalRoom {
  */
 export function getOfficeRoomsForFloor(floorId: number): ArchitecturalRoom[] {
   return [
-    // 1. Grand Glass Boardroom (Northwest)
+    // 1. Grand Glass Boardroom (Southwest)
     {
       id: `room-boardroom-${floorId}`,
       floor: floorId,
       type: "conference_room",
-      title: "Phòng Họp Hội Đồng Quản Trị & Hội Thảo",
-      bounds: { minX: -25.5, maxX: -13.5, minZ: -17.5, maxZ: -6.5 },
-      door: { x: -13.5, z: -8.0, width: 2.2, orientation: "east" },
+      title: "Phòng Họp Hội Đồng Quản Trị & Chiến Lược",
+      bounds: { minX: -26.0, maxX: -14.0, minZ: 2.0, maxZ: 15.0 },
+      door: { x: -14.0, z: 5.0, width: 2.2, orientation: "east" },
       accentColor: 0x38bdf8,
     },
-    // 2. Glass Focus / Interview Room (North Center-West)
+    // 2. Glass Focus / Interview Room (Mid-West)
     {
       id: `room-focus-${floorId}`,
       floor: floorId,
       type: "focus_room",
-      title: "Phòng Họp Nhóm & Phỏng Vấn Kín",
-      bounds: { minX: -12.5, maxX: -3.5, minZ: -17.5, maxZ: -6.5 },
-      door: { x: -3.5, z: -8.0, width: 1.8, orientation: "east" },
+      title: "Phòng Họp Nhóm & Phỏng Vấn Chuyên Gia",
+      bounds: { minX: -26.0, maxX: -14.0, minZ: -7.0, maxZ: 1.0 },
+      door: { x: -14.0, z: -3.0, width: 1.8, orientation: "east" },
       accentColor: 0x64748b,
     },
-    // 3. Glass Executive / Director Suite (North Center)
+    // 3. Glass Executive / Director Suite (Northwest)
     {
       id: `room-exec-${floorId}`,
       floor: floorId,
       type: "executive_office",
       title: "Văn Phòng Lãnh Đạo & Cố Vấn Cấp Cao",
-      bounds: { minX: -2.5, maxX: 6.5, minZ: -17.5, maxZ: -6.5 },
-      door: { x: 6.5, z: -8.0, width: 1.8, orientation: "east" },
+      bounds: { minX: -26.0, maxX: -14.0, minZ: -17.0, maxZ: -8.0 },
+      door: { x: -14.0, z: -12.5, width: 1.8, orientation: "east" },
       accentColor: 0x0284c7,
     },
-    // 4. Open Kitchen, High Bar Counter & Beanbag Nook (Northeast)
+    // 4. Open Kitchen & Window High Bar Counter (North Central)
     {
       id: `room-pantry-${floorId}`,
       floor: floorId,
       type: "pantry_lounge",
-      title: "Quầy Bếp Pantry, Quầy Bar Cao & Góc Lười Chill",
-      bounds: { minX: 8.0, maxX: 24.5, minZ: -17.5, maxZ: -6.5 },
-      door: { x: 8.0, z: -8.0, width: 2.5, orientation: "west" },
+      title: "Quầy Bếp Pantry & Quầy Bar Cửa Sổ View Thành Phố",
+      bounds: { minX: -11.0, maxX: 4.0, minZ: -17.8, maxZ: -11.0 },
+      door: { x: -2.0, z: -13.0, width: 2.5, orientation: "south" },
       accentColor: 0xd97706,
     },
-    // 5. Central Collaboration Lounge with Sofas, Coffee Table & Area Rug (Center)
+    // 5. Beanbag Chill Relaxation Nook (Northeast)
+    {
+      id: `room-beanbag-${floorId}`,
+      floor: floorId,
+      type: "pantry_lounge",
+      title: "Góc Lười Thư Giãn Ghế Lười & Đọc Sách",
+      bounds: { minX: 6.0, maxX: 15.0, minZ: -17.0, maxZ: -9.5 },
+      door: { x: 10.5, z: -12.0, width: 2.2, orientation: "south" },
+      accentColor: 0x06b6d4,
+    },
+    // 6. Central Collaboration Lounge with Sofas & Area Rug (Center)
     {
       id: `room-lounge-${floorId}`,
       floor: floorId,
       type: "pantry_lounge",
       title: "Khu Lounge Tiếp Khách & Trao Đổi Trung Tâm",
-      bounds: { minX: -6.5, maxX: 6.5, minZ: -3.5, maxZ: 4.0 },
-      door: { x: 0.0, z: 4.0, width: 4.0, orientation: "south" },
+      bounds: { minX: -7.0, maxX: 7.0, minZ: -3.5, maxZ: 4.5 },
+      door: { x: 0.0, z: 1.0, width: 4.0, orientation: "south" },
       accentColor: 0xf59e0b,
     },
-    // 6. Elevator Core & Fluted Reception Desk (East)
+    // 7. Elevator Core & Fluted Reception Desk (East)
     {
       id: `room-reception-${floorId}`,
       floor: floorId,
       type: "reception_lobby",
       title: "Sảnh Thang Máy & Quầy Tiếp Tân Tầng",
-      bounds: { minX: 18.0, maxX: 25.5, minZ: 5.5, maxZ: 17.0 },
-      door: { x: 18.0, z: 9.0, width: 2.5, orientation: "west" },
+      bounds: { minX: 17.5, maxX: 24.5, minZ: 1.0, maxZ: 7.0 },
+      door: { x: 18.0, z: 4.0, width: 2.5, orientation: "west" },
       accentColor: 0x38bdf8,
     },
   ];
@@ -384,56 +394,44 @@ export interface MasterNavNode {
 }
 
 export const MASTER_CORRIDOR_NAV_NODES: MasterNavNode[] = [
-  // 1. Central Promenade / Main Highway (Z = 0.0)
-  { id: "cen_w_far", x: -22.0, z: 0.0, neighbors: ["cen_w_mid", "cor_west_n", "cor_west_s"] },
-  { id: "cen_w_mid", x: -15.0, z: 0.0, neighbors: ["cen_w_far", "cen_w_in", "door_exec_n", "door_exec_s"] },
-  { id: "cen_w_in",  x: -8.0,  z: 0.0, neighbors: ["cen_w_mid", "cen_center", "aisle_n_w", "aisle_s_w"] },
-  { id: "cen_center",x: 0.0,   z: 0.0, neighbors: ["cen_w_in", "cen_e_in", "portal_pod_n", "portal_pod_s"] },
-  { id: "cen_e_in",  x: 8.0,   z: 0.0, neighbors: ["cen_center", "cen_e_mid", "aisle_n_e", "aisle_s_e", "door_pantry"] },
-  { id: "cen_e_mid", x: 14.0,  z: 0.0, neighbors: ["cen_e_in", "cen_e_far", "lobby_elev", "vestibule_wc"] },
-  { id: "cen_e_far", x: 18.0,  z: 0.0, neighbors: ["cen_e_mid", "stair_lower", "door_wc"] },
+  // 1. West Corridor (Running North-South along outside of Glass Suites at X = -10.5)
+  { id: "node_w_n",     x: -10.5, z: -13.0, neighbors: ["node_w_m", "node_c_n", "door_suite_3"] },
+  { id: "node_w_m",     x: -10.5, z: -3.0,  neighbors: ["node_w_n", "node_w_s", "node_c_m", "door_suite_2"] },
+  { id: "node_w_s",     x: -10.5, z: 5.0,   neighbors: ["node_w_m", "node_w_far_s", "door_suite_1", "node_c_s1"] },
+  { id: "node_w_far_s", x: -10.5, z: 14.5,  neighbors: ["node_w_s", "node_c_s2"] },
 
-  // 2. North Boulevard (Z = -6.0)
-  { id: "blvd_n_w",  x: -12.0, z: -6.0, neighbors: ["cen_w_in", "blvd_n_c", "pod_n_0"] },
-  { id: "blvd_n_c",  x: 0.0,   z: -6.0, neighbors: ["blvd_n_w", "blvd_n_e", "portal_pod_n"] },
-  { id: "blvd_n_e",  x: 12.0,  z: -6.0, neighbors: ["blvd_n_c", "cen_e_in", "pantry_north"] },
+  // 2. Central Boulevard (Running North-South through the center of the office at X = 0.0)
+  { id: "node_c_n",     x: 0.0,   z: -13.0, neighbors: ["node_w_n", "node_c_m", "node_e_n", "pantry_bar", "door_pantry"] },
+  { id: "node_c_m",     x: 0.0,   z: 0.0,   neighbors: ["node_c_n", "node_w_m", "node_e_m", "node_c_s1", "lounge_spot"] },
+  { id: "node_c_s1",    x: 0.0,   z: 9.0,   neighbors: ["node_c_m", "node_c_s2", "node_w_s", "node_e_s1"] },
+  { id: "node_c_s2",    x: 0.0,   z: 14.5,  neighbors: ["node_c_s1", "node_w_far_s", "node_e_s2"] },
 
-  // 3. South Boulevard (Z = 6.0)
-  { id: "blvd_s_w",  x: -12.0, z: 6.0, neighbors: ["cen_w_in", "blvd_s_c", "pod_s_0"] },
-  { id: "blvd_s_c",  x: 0.0,   z: 6.0, neighbors: ["blvd_s_w", "blvd_s_e", "portal_pod_s"] },
-  { id: "blvd_s_e",  x: 12.0,  z: 6.0, neighbors: ["blvd_s_c", "cen_e_in", "vestibule_wc"] },
+  // 3. East Corridor (Elevator Core, Reception, Restroom, and East Pods at X = 14.0)
+  { id: "node_e_n",     x: 14.0,  z: -13.0, neighbors: ["node_c_n", "node_e_m", "lobby_elev", "pantry_beanbag"] },
+  { id: "node_e_m",     x: 14.0,  z: 0.0,   neighbors: ["node_e_n", "node_c_m", "node_e_s1", "door_reception"] },
+  { id: "node_e_s1",    x: 14.0,  z: 9.0,   neighbors: ["node_e_m", "node_e_s2", "node_c_s1", "door_reception"] },
+  { id: "node_e_s2",    x: 14.0,  z: 14.5,  neighbors: ["node_e_s1", "node_c_s2", "vestibule_wc"] },
 
-  // 4. North Deep Pod Aisle (Z = -12.0)
-  { id: "aisle_n_w", x: -8.0,  z: -12.0, neighbors: ["blvd_n_w", "aisle_n_c"] },
-  { id: "aisle_n_c", x: 0.0,   z: -12.0, neighbors: ["aisle_n_w", "aisle_n_e", "blvd_n_c"] },
-  { id: "aisle_n_e", x: 8.0,   z: -12.0, neighbors: ["aisle_n_c", "blvd_n_e"] },
+  // 4. Room Portals (Doorway Access Nodes)
+  { id: "door_suite_1", x: -14.0, z: 5.0,   neighbors: ["node_w_s"], isDoorPortal: true },
+  { id: "door_suite_2", x: -14.0, z: -3.0,  neighbors: ["node_w_m"], isDoorPortal: true },
+  { id: "door_suite_3", x: -14.0, z: -12.5, neighbors: ["node_w_n"], isDoorPortal: true },
+  { id: "door_pantry",  x: -2.0,  z: -15.5, neighbors: ["node_c_n"], isDoorPortal: true },
+  { id: "pantry_bar",   x: -4.5,  z: -13.0, neighbors: ["node_c_n"] },
+  { id: "pantry_beanbag", x: 10.5, z: -12.0, neighbors: ["node_e_n"] },
+  { id: "lounge_spot",  x: 0.0,   z: 1.0,   neighbors: ["node_c_m"] },
+  { id: "door_reception", x: 18.0, z: 4.0,  neighbors: ["node_e_m", "node_e_s1"], isDoorPortal: true },
 
-  // 5. South Deep Pod Aisle (Z = 12.0)
-  { id: "aisle_s_w", x: -8.0,  z: 12.0, neighbors: ["blvd_s_w", "aisle_s_c"] },
-  { id: "aisle_s_c", x: 0.0,   z: 12.0, neighbors: ["aisle_s_w", "aisle_s_e", "blvd_s_c"] },
-  { id: "aisle_s_e", x: 8.0,   z: 12.0, neighbors: ["aisle_s_c", "blvd_s_e", "vestibule_wc"] },
+  // 5. Vertical Circulation Nodes (Elevator & Staircase)
+  { id: "lobby_elev",   x: 22.5,  z: -11.5, neighbors: ["node_e_n", "stair_upper"], isDoorPortal: true },
+  { id: "stair_upper",  x: 23.0,  z: -9.2,  neighbors: ["lobby_elev"], isDoorPortal: true },
+  { id: "stair_lower",  x: 23.0,  z: -2.6,  neighbors: ["node_e_m"], isDoorPortal: true },
 
-  // 6. West Corridor (Connecting Executive Rooms)
-  { id: "cor_west_n",x: -22.0, z: -10.0, neighbors: ["cen_w_far", "door_exec_n"] },
-  { id: "cor_west_s",x: -22.0, z: 10.0,  neighbors: ["cen_w_far", "door_exec_s"] },
+  // 6. Restroom Core Access
+  { id: "vestibule_wc", x: 18.0,  z: 12.0,  neighbors: ["node_e_s2", "door_wc"] },
+  { id: "door_wc",      x: 19.5,  z: 12.0,  neighbors: ["vestibule_wc"], isDoorPortal: true },
 
-  // 7. Room Portals (Doorway Access Nodes)
-  { id: "door_exec_n", x: -15.5, z: -11.5, neighbors: ["cen_w_mid", "cor_west_n", "blvd_n_w"], isDoorPortal: true },
-  { id: "door_exec_s", x: -15.5, z: 9.5,   neighbors: ["cen_w_mid", "cor_west_s", "blvd_s_w"], isDoorPortal: true },
-  { id: "portal_pod_n",x: 0.0,   z: -4.0,  neighbors: ["cen_center", "blvd_n_c"], isDoorPortal: true },
-  { id: "portal_pod_s",x: 0.0,   z: 4.0,   neighbors: ["cen_center", "blvd_s_c"], isDoorPortal: true },
-  { id: "door_pantry", x: 8.5,   z: 0.0,   neighbors: ["cen_e_in"], isDoorPortal: true },
-
-  // 8. Vertical Circulation Nodes (Elevator & Staircase)
-  { id: "lobby_elev",  x: 22.5,  z: -11.5, neighbors: ["cen_e_mid", "stair_upper"], isDoorPortal: true },
-  { id: "stair_upper", x: 23.0,  z: -9.2,  neighbors: ["lobby_elev"], isDoorPortal: true },
-  { id: "stair_lower", x: 23.0,  z: -2.6,  neighbors: ["cen_e_far"], isDoorPortal: true },
-
-  // 9. Restroom Core Access
-  { id: "vestibule_wc",x: 18.0,  z: 12.0,  neighbors: ["cen_e_mid", "aisle_s_e", "door_wc"] },
-  { id: "door_wc",     x: 19.5,  z: 12.0,  neighbors: ["vestibule_wc", "cen_e_far"], isDoorPortal: true },
-
-  // 10. Floor G Entrance Portals
-  { id: "door_g_ext",  x: 0.0,   z: 17.5,  neighbors: ["door_g_int"], isDoorPortal: true },
-  { id: "door_g_int",  x: 0.0,   z: 14.0,  neighbors: ["door_g_ext", "cen_center"] },
+  // 7. Floor G Entrance Portals
+  { id: "door_g_ext",   x: 0.0,   z: 17.5,  neighbors: ["door_g_int"], isDoorPortal: true },
+  { id: "door_g_int",   x: 0.0,   z: 14.0,  neighbors: ["door_g_ext", "node_c_s2"] },
 ];

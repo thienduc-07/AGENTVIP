@@ -991,16 +991,16 @@ export default function MyOfficeDiorama({
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
 
-    // Bright, Clean Studio & Sunlight Illumination (Matching Image 2 Reference)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.15);
+    // Balanced Studio & Sunlight Illumination (Matching Scandinavian Reference Render)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
     scene.add(ambientLight);
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcfd8dc, 0.95);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xb0bec5, 0.55);
     hemiLight.position.set(0, 50, 0);
     scene.add(hemiLight);
 
     // Key Directional Sun streaming through the Northwest perimeter windows
-    const sunLight = new THREE.DirectionalLight(0xfffaed, 1.7);
+    const sunLight = new THREE.DirectionalLight(0xfffaed, 1.35);
     sunLight.position.set(-35, 52, -35);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
@@ -1016,7 +1016,7 @@ export default function MyOfficeDiorama({
     scene.add(sunLight);
 
     // Soft South-East Fill Light
-    const fillLight = new THREE.DirectionalLight(0xf1f5f9, 0.85);
+    const fillLight = new THREE.DirectionalLight(0xf1f5f9, 0.55);
     fillLight.position.set(30, 40, 30);
     scene.add(fillLight);
 
@@ -1546,9 +1546,13 @@ export default function MyOfficeDiorama({
         bezel.rotation.x = imacBody.rotation.x;
         group.add(bezel);
 
-        // 6. Glowing Active Display Plane
-        // ORIENTATION FIX: Screen normal faces directly into the eyes of the sitting employee!
-        const screenMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ color: themeColor }));
+        // 6. Sleek Dark Retina Display with Subtle Department Accent Top Bar (Matching Image 2)
+        // Screen normal faces directly towards the seated employee
+        const screenMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({
+          color: 0x0f172a,
+          roughness: 0.35,
+          metalness: 0.1
+        }));
         const glowScreen = createMesh(floorId, GEO.plane, screenMat, 1.18, 0.54, 1, sx, 2.09, sc.monZ + (sc.userFacing > 0 ? -0.022 : 0.022), false, false);
         glowScreen.rotation.x = imacBody.rotation.x;
         if (sc.userFacing > 0) {
@@ -1557,6 +1561,13 @@ export default function MyOfficeDiorama({
           glowScreen.rotation.y = 0;       // Faces +Z towards South employee at cz + 1.35
         }
         group.add(glowScreen);
+
+        // Thin accent header bar indicating department activity
+        const barMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ color: themeColor }));
+        const topBar = createMesh(floorId, GEO.plane, barMat, 1.14, 0.035, 1, sx, 2.32, sc.monZ + (sc.userFacing > 0 ? -0.023 : 0.023), false, false);
+        topBar.rotation.x = imacBody.rotation.x;
+        if (sc.userFacing > 0) topBar.rotation.y = Math.PI;
+        group.add(topBar);
 
         // --- EXECUTIVE DESK MAT ---
         const matZ = sc.monZ + (sc.userFacing > 0 ? -0.52 : 0.52);
@@ -1613,34 +1624,34 @@ export default function MyOfficeDiorama({
         isFocusRoom?: boolean;
       }>> = {
         1: [
-          { cx: -19.5, cz: -12.0, w: 11.0, d: 10.0, title: "PHÒNG HỌP BAN ĐIỀU HÀNH & TÁC CHIẾN", headName: "Executive Boardroom", themeColor: 0x38bdf8, isBoardroom: true },
-          { cx: -8.5, cz: -12.0, w: 9.0, d: 10.0, title: "PHÒNG ĐIỀU HÀNH DỊCH VỤ KHÁCH HÀNG", headName: "Liam (Support Lead)", themeColor: 0x0284c7, isFocusRoom: true },
-          { cx: 1.5, cz: -12.0, w: 9.0, d: 10.0, title: "VĂN PHÒNG GIÁM ĐỐC VẬN HÀNH & NHÂN SỰ", headName: "Amara (COO)", themeColor: 0x38bdf8 },
+          { cx: -20.0, cz: 8.5, w: 12.0, d: 13.0, title: "PHÒNG HỌP BAN ĐIỀU HÀNH & TÁC CHIẾN", headName: "Executive Boardroom", themeColor: 0x38bdf8, isBoardroom: true },
+          { cx: -20.0, cz: -3.0, w: 12.0, d: 8.0, title: "PHÒNG ĐIỀU HÀNH DỊCH VỤ KHÁCH HÀNG", headName: "Liam (Support Lead)", themeColor: 0x0284c7, isFocusRoom: true },
+          { cx: -20.0, cz: -12.5, w: 12.0, d: 9.0, title: "VĂN PHÒNG GIÁM ĐỐC VẬN HÀNH & NHÂN SỰ", headName: "Amara (COO)", themeColor: 0x38bdf8 },
         ],
         2: [
-          { cx: -19.5, cz: -12.0, w: 11.0, d: 10.0, title: "HỘI ĐỒNG THẨM ĐỊNH TÀI CHÍNH & ĐẦU TƯ", headName: "Financial Boardroom", themeColor: 0x34d399, isBoardroom: true },
-          { cx: -8.5, cz: -12.0, w: 9.0, d: 10.0, title: "PHÒNG THẨM ĐỊNH PHÁP LÝ & CỐ VẤN THUẾ", headName: "Legal & Audit Chamber", themeColor: 0x059669, isFocusRoom: true },
-          { cx: 1.5, cz: -12.0, w: 9.0, d: 10.0, title: "VĂN PHÒNG GIÁM ĐỐC TÀI CHÍNH (CFO)", headName: "Julian (CFO)", themeColor: 0x34d399 },
+          { cx: -20.0, cz: 8.5, w: 12.0, d: 13.0, title: "HỘI ĐỒNG THẨM ĐỊNH TÀI CHÍNH & ĐẦU TƯ", headName: "Financial Boardroom", themeColor: 0x34d399, isBoardroom: true },
+          { cx: -20.0, cz: -3.0, w: 12.0, d: 8.0, title: "PHÒNG THẨM ĐỊNH PHÁP LÝ & CỐ VẤN THUẾ", headName: "Legal & Audit Chamber", themeColor: 0x059669, isFocusRoom: true },
+          { cx: -20.0, cz: -12.5, w: 12.0, d: 9.0, title: "VĂN PHÒNG GIÁM ĐỐC TÀI CHÍNH (CFO)", headName: "Julian (CFO)", themeColor: 0x34d399 },
         ],
         3: [
-          { cx: -19.5, cz: -12.0, w: 11.0, d: 10.0, title: "STUDIO CHIẾN LƯỢC MARKETING TOÀN CẦU", headName: "Marketing Boardroom", themeColor: 0xf472b6, isBoardroom: true },
-          { cx: -8.5, cz: -12.0, w: 9.0, d: 10.0, title: "PHÒNG ĐÀM PHÁN THƯƠNG MẠI & ENTERPRISE", headName: "Marcus (VP Sales)", themeColor: 0xfb7185, isFocusRoom: true },
-          { cx: 1.5, cz: -12.0, w: 9.0, d: 10.0, title: "VĂN PHÒNG GIÁM ĐỐC TĂNG TRƯỞNG (CMO)", headName: "Sophia (CMO)", themeColor: 0xf472b6 },
+          { cx: -20.0, cz: 8.5, w: 12.0, d: 13.0, title: "STUDIO CHIẾN LƯỢC MARKETING TOÀN CẦU", headName: "Marketing Boardroom", themeColor: 0xf472b6, isBoardroom: true },
+          { cx: -20.0, cz: -3.0, w: 12.0, d: 8.0, title: "PHÒNG ĐÀM PHÁN THƯƠNG MẠI & ENTERPRISE", headName: "Marcus (VP Sales)", themeColor: 0xfb7185, isFocusRoom: true },
+          { cx: -20.0, cz: -12.5, w: 12.0, d: 9.0, title: "VĂN PHÒNG GIÁM ĐỐC TĂNG TRƯỞNG (CMO)", headName: "Sophia (CMO)", themeColor: 0xf472b6 },
         ],
         4: [
-          { cx: -19.5, cz: -12.0, w: 11.0, d: 10.0, title: "XƯỞNG THIẾT KẾ & SÁNG TẠO NGHỆ THUẬT", headName: "Creative Design Lab", themeColor: 0xa855f7, isBoardroom: true },
-          { cx: -8.5, cz: -12.0, w: 9.0, d: 10.0, title: "LAB KIỂM THỬ TRẢI NGHIỆM AR/VR", headName: "Spatial UX Chamber", themeColor: 0xc084fc, isFocusRoom: true },
-          { cx: 1.5, cz: -12.0, w: 9.0, d: 10.0, title: "VĂN PHÒNG GIÁM ĐỐC THIẾT KẾ UI/UX", headName: "Hana (Design Director)", themeColor: 0xa855f7 },
+          { cx: -20.0, cz: 8.5, w: 12.0, d: 13.0, title: "XƯỞNG THIẾT KẾ & SÁNG TẠO NGHỆ THUẬT", headName: "Creative Design Lab", themeColor: 0xa855f7, isBoardroom: true },
+          { cx: -20.0, cz: -3.0, w: 12.0, d: 8.0, title: "LAB KIỂM THỬ TRẢI NGHIỆM AR/VR", headName: "Spatial UX Chamber", themeColor: 0xc084fc, isFocusRoom: true },
+          { cx: -20.0, cz: -12.5, w: 12.0, d: 9.0, title: "VĂN PHÒNG GIÁM ĐỐC THIẾT KẾ UI/UX", headName: "Hana (Design Director)", themeColor: 0xa855f7 },
         ],
         5: [
-          { cx: -19.5, cz: -12.0, w: 11.0, d: 10.0, title: "TRUNG TÂM TÁC CHIẾN AN NINH MẠNG SOC", headName: "Cybersecurity SOC War Room", themeColor: 0xef4444, isBoardroom: true },
-          { cx: -8.5, cz: -12.0, w: 9.0, d: 10.0, title: "PHÒNG CHIẾN LƯỢC HẠ TẦNG & CLOUD", headName: "Systems Strategy Room", themeColor: 0x38bdf8, isFocusRoom: true },
-          { cx: 1.5, cz: -12.0, w: 9.0, d: 10.0, title: "VĂN PHÒNG TỔNG KIẾN TRÚC SƯ HỆ THỐNG", headName: "David Chen (Architect)", themeColor: 0x38bdf8 },
+          { cx: -20.0, cz: 8.5, w: 12.0, d: 13.0, title: "TRUNG TÂM TÁC CHIẾN AN NINH MẠNG SOC", headName: "Cybersecurity SOC War Room", themeColor: 0xef4444, isBoardroom: true },
+          { cx: -20.0, cz: -3.0, w: 12.0, d: 8.0, title: "PHÒNG CHIẾN LƯỢC HẠ TẦNG & CLOUD", headName: "Systems Strategy Room", themeColor: 0x38bdf8, isFocusRoom: true },
+          { cx: -20.0, cz: -12.5, w: 12.0, d: 9.0, title: "VĂN PHÒNG TỔNG KIẾN TRÚC SƯ HỆ THỐNG", headName: "David Chen (Architect)", themeColor: 0x38bdf8 },
         ],
         6: [
-          { cx: -19.5, cz: -12.0, w: 11.0, d: 10.0, title: "PHÒNG HỌP HỘI ĐỒNG QUẢN TRỊ (BOARDROOM)", headName: "Supreme Executive Boardroom", themeColor: 0xd97706, isBoardroom: true },
-          { cx: -8.5, cz: -12.0, w: 9.0, d: 10.0, title: "VIỆN NGHIÊN CỨU MÔ HÌNH AI TIÊN TIẾN", headName: "Dr. Elena Rostova (AI Lab)", themeColor: 0x8b5cf6, isFocusRoom: true },
-          { cx: 1.5, cz: -12.0, w: 9.0, d: 10.0, title: "VĂN PHÒNG TỔNG GIÁM ĐỐC (CEO SUITE)", headName: "Victoria Vance (CEO)", themeColor: 0xfbbf24 },
+          { cx: -20.0, cz: 8.5, w: 12.0, d: 13.0, title: "PHÒNG HỌP HỘI ĐỒNG QUẢN TRỊ (BOARDROOM)", headName: "Supreme Executive Boardroom", themeColor: 0xd97706, isBoardroom: true },
+          { cx: -20.0, cz: -3.0, w: 12.0, d: 8.0, title: "VIỆN NGHIÊN CỨU MÔ HÌNH AI TIÊN TIẾN", headName: "Dr. Elena Rostova (AI Lab)", themeColor: 0x8b5cf6, isFocusRoom: true },
+          { cx: -20.0, cz: -12.5, w: 12.0, d: 9.0, title: "VĂN PHÒNG TỔNG GIÁM ĐỐC (CEO SUITE)", headName: "Victoria Vance (CEO)", themeColor: 0xfbbf24 },
         ]
       };
 
@@ -1658,44 +1669,45 @@ export default function MyOfficeDiorama({
         const wallH = 5.4;
         const halfW = suite.w / 2;
         const halfD = suite.d / 2;
-        const frontZ = suite.cz + halfD; // Front glass wall facing South into main corridor (Z = -7.0)
+        const frontX = -14.0; // East-facing glass facade into the main corridor
 
-        // 1. South Glass Front Wall with 2.2m central doorway opening
-        const doorOpeningW = 2.2;
-        const sidePanelW = (suite.w - doorOpeningW) / 2;
-        // West side of front glass
-        group.add(createMesh(floorId, GEO.box, glassMat, sidePanelW, wallH, 0.08, suite.cx - halfW + sidePanelW / 2, wallH / 2, frontZ, false, false));
-        // East side of front glass
-        group.add(createMesh(floorId, GEO.box, glassMat, sidePanelW, wallH, 0.08, suite.cx + halfW - sidePanelW / 2, wallH / 2, frontZ, false, false));
-        // Black steel frame posts and top lintel
-        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, suite.cx - halfW, wallH / 2, frontZ, false, false));
-        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, suite.cx + halfW, wallH / 2, frontZ, false, false));
-        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, suite.cx - doorOpeningW / 2, wallH / 2, frontZ, false, false));
-        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, suite.cx + doorOpeningW / 2, wallH / 2, frontZ, false, false));
-        group.add(createMesh(floorId, GEO.box, darkFrameMat, suite.w, 0.14, 0.12, suite.cx, wallH, frontZ, false, false));
+        // 1. East Glass Facade Wall along X = -14.0 with doorway opening
+        const doorOpeningD = 2.2;
+        const sidePanelD = (suite.d - doorOpeningD) / 2;
+        // North side of East glass facade
+        group.add(createMesh(floorId, GEO.box, glassMat, 0.08, wallH, sidePanelD, frontX, wallH / 2, suite.cz - halfD + sidePanelD / 2, false, false));
+        // South side of East glass facade
+        group.add(createMesh(floorId, GEO.box, glassMat, 0.08, wallH, sidePanelD, frontX, wallH / 2, suite.cz + halfD - sidePanelD / 2, false, false));
 
-        // 2. East Dividing Glass Wall (running North-South between rooms)
-        group.add(createMesh(floorId, GEO.box, glassMat, 0.08, wallH, suite.d, suite.cx + halfW, wallH / 2, suite.cz, false, false));
-        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, 0.14, suite.d, suite.cx + halfW, wallH, suite.cz, false, false));
-        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, suite.cx + halfW, wallH / 2, suite.cz - halfD, false, false));
+        // Black steel frame posts and top lintel along East facade
+        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, frontX, wallH / 2, suite.cz - halfD, false, false));
+        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, frontX, wallH / 2, suite.cz + halfD, false, false));
+        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, frontX, wallH / 2, suite.cz - doorOpeningD / 2, false, false));
+        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, frontX, wallH / 2, suite.cz + doorOpeningD / 2, false, false));
+        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, 0.14, suite.d, frontX, wallH, suite.cz, false, false));
+
+        // 2. North Dividing Glass Partition (running East-West between rooms)
+        group.add(createMesh(floorId, GEO.box, glassMat, suite.w, wallH, 0.08, suite.cx, wallH / 2, suite.cz - halfD, false, false));
+        group.add(createMesh(floorId, GEO.box, darkFrameMat, suite.w, 0.14, 0.12, suite.cx, wallH, suite.cz - halfD, false, false));
+        group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, suite.cx - halfW, wallH / 2, suite.cz - halfD, false, false));
 
         // Register Suite Partition & Desk Obstacles in Collision System
         collisionRegistryRef.current.registerObstacle({
           id: `suite-front-wall-${floorId}-${suite.headName}`,
           floor: floorId,
-          minX: suite.cx - halfW,
-          maxX: suite.cx + halfW,
-          minZ: frontZ - 0.25,
-          maxZ: frontZ + 0.25,
-          label: `${suite.title} Front Glass Wall`
+          minX: frontX - 0.25,
+          maxX: frontX + 0.25,
+          minZ: suite.cz - halfD,
+          maxZ: suite.cz + halfD,
+          label: `${suite.title} Glass Partition Wall`
         });
         collisionRegistryRef.current.registerObstacle({
           id: `suite-desk-${floorId}-${suite.headName}`,
           floor: floorId,
-          minX: suite.cx - 2.6,
-          maxX: suite.cx + 2.6,
-          minZ: suite.cz - 1.8,
-          maxZ: suite.cz + 1.8,
+          minX: suite.cx - 3.2,
+          maxX: suite.cx + 3.2,
+          minZ: suite.cz - 2.0,
+          maxZ: suite.cz + 2.0,
           label: `${suite.title} Table`
         });
 
@@ -1718,7 +1730,8 @@ export default function MyOfficeDiorama({
         const pMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ map: pTex, depthTest: true, depthWrite: true }));
         const pPlane = new THREE.Mesh(GEO.plane, pMat);
         pPlane.scale.set(1.4, 0.42, 1);
-        pPlane.position.set(suite.cx + doorOpeningW / 2 + 0.85, 2.4, frontZ + 0.08);
+        pPlane.rotation.y = Math.PI / 2; // Faces East into the corridor
+        pPlane.position.set(frontX + 0.08, 2.4, suite.cz + doorOpeningD / 2 + 0.85);
         group.add(pPlane);
 
         if (suite.isBoardroom) {
@@ -1745,16 +1758,63 @@ export default function MyOfficeDiorama({
           group.add(createMesh(floorId, GEO.box, confChairMat, 0.8, 0.12, 0.8, suite.cx + 3.4, 0.82, suite.cz, true, true));
           group.add(createMesh(floorId, GEO.box, confChairMat, 0.1, 0.95, 0.76, suite.cx + 3.8, 1.35, suite.cz, true, true));
 
-          // 85" Wall Presentation OLED Screen on North Wall
-          group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 4.4, 2.6, 0.12, suite.cx, 3.4, suite.cz - halfD + 0.14, true, false));
-          const oledMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
-          group.add(createMesh(floorId, GEO.plane, oledMat, 4.2, 2.4, 1, suite.cx, 3.4, suite.cz - halfD + 0.22, false, false));
+          // 85" Ultra-Thin Executive OLED Presentation Display on North Wall (Matching Image 2)
+          group.add(createMesh(floorId, GEO.box, MAT.blackMetal, 4.4, 2.6, 0.08, suite.cx, 3.4, suite.cz - halfD + 0.12, true, false));
+          const oledCanvas = document.createElement("canvas");
+          oledCanvas.width = 840;
+          oledCanvas.height = 480;
+          const oCtx = oledCanvas.getContext("2d")!;
+          oCtx.fillStyle = "#090d16";
+          oCtx.fillRect(0, 0, 840, 480);
+          oCtx.fillStyle = "#1e293b";
+          oCtx.fillRect(0, 0, 840, 56);
+          oCtx.fillStyle = "#38bdf8";
+          oCtx.fillRect(28, 22, 12, 12);
+          oCtx.fillStyle = "#f8fafc";
+          oCtx.font = "700 22px 'Plus Jakarta Sans', sans-serif";
+          oCtx.fillText("PROVIPAGENT • EXECUTIVE BOARDROOM", 52, 34);
+          oCtx.fillStyle = "#0f172a";
+          oCtx.fillRect(36, 80, 360, 360);
+          oCtx.fillRect(430, 80, 374, 360);
+          oCtx.fillStyle = "#38bdf8";
+          oCtx.font = "800 52px 'Plus Jakarta Sans', sans-serif";
+          oCtx.fillText("276", 64, 160);
+          oCtx.fillStyle = "#94a3b8";
+          oCtx.font = "600 18px 'Plus Jakarta Sans', sans-serif";
+          oCtx.fillText("Active AI Specialists Online", 64, 195);
+          oCtx.fillStyle = "#34d399";
+          oCtx.font = "800 52px 'Plus Jakarta Sans', sans-serif";
+          oCtx.fillText("100%", 64, 280);
+          oCtx.fillStyle = "#94a3b8";
+          oCtx.font = "600 18px 'Plus Jakarta Sans', sans-serif";
+          oCtx.fillText("Automated Workforce Operations", 64, 315);
+          oCtx.fillStyle = "#f8fafc";
+          oCtx.font = "700 20px 'Plus Jakarta Sans', sans-serif";
+          oCtx.fillText("Strategy & Growth Velocity Index", 456, 120);
+          oCtx.strokeStyle = "#38bdf8";
+          oCtx.lineWidth = 4;
+          oCtx.beginPath();
+          oCtx.moveTo(460, 380);
+          oCtx.lineTo(540, 300);
+          oCtx.lineTo(620, 330);
+          oCtx.lineTo(700, 220);
+          oCtx.lineTo(780, 160);
+          oCtx.stroke();
+          [[460, 380], [540, 300], [620, 330], [700, 220], [780, 160]].forEach(([gx, gy]) => {
+            oCtx.fillStyle = "#38bdf8";
+            oCtx.beginPath();
+            oCtx.arc(gx, gy, 6, 0, Math.PI * 2);
+            oCtx.fill();
+          });
+          const oledTex = new THREE.CanvasTexture(oledCanvas);
+          const oledMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ map: oledTex }));
+          group.add(createMesh(floorId, GEO.plane, oledMat, 4.24, 2.44, 1, suite.cx, 3.4, suite.cz - halfD + 0.17, false, false));
 
-          // 3 Modern Black Ceiling Drop Pendant Lights (Matching Image 2)
+          // 3 Modern Brass & Black Cone Drop Pendant Lamps (Matching Image 2)
           [-2.0, 0.0, 2.0].forEach(lx => {
-            group.add(createMesh(floorId, GEO.cyl, MAT.darkMetal, 0.025, 2.0, 0.025, suite.cx + lx, 4.4, suite.cz, false, false));
-            group.add(createMesh(floorId, GEO.cyl, MAT.darkMetal, 0.45, 0.25, 0.45, suite.cx + lx, 3.4, suite.cz, false, false));
-            group.add(createMesh(floorId, GEO.sphere, new THREE.MeshBasicMaterial({ color: 0xfef08a }), 0.20, 0.20, 0.20, suite.cx + lx, 3.25, suite.cz, false, false));
+            group.add(createMesh(floorId, GEO.cyl, MAT.darkMetal, 0.02, 1.8, 0.02, suite.cx + lx, 4.5, suite.cz, false, false));
+            group.add(createMesh(floorId, GEO.cyl, MAT.blackMetal, 0.48, 0.28, 0.48, suite.cx + lx, 3.5, suite.cz, false, false));
+            group.add(createMesh(floorId, GEO.sphere, new THREE.MeshBasicMaterial({ color: 0xffedd5 }), 0.18, 0.18, 0.18, suite.cx + lx, 3.38, suite.cz, false, false));
           });
 
           // Potted Ficus Tree in Corner
@@ -1855,41 +1915,42 @@ export default function MyOfficeDiorama({
     };
 
     // Modern Open Architectural Pantry, Breakfast High Bar & Chill Nook (Matching Image 2 Top-Right)
-    // Located along North-East wall: X in [8.5, 19.5], Z in [-17.5, -6.5]
+    // Located along North wall: X in [-11.0, 15.0], Z in [-17.8, -9.5]
     const buildFloorPantryAndLounge = (floorId: number, group: THREE.Group) => {
-      // 1. Kitchenette Upper & Lower Cabinetry along North Wall (Z = -18.2, X in [8.5, 16.5])
-      const kx = 12.5, kz = -18.0;
+      // 1. Kitchenette Upper & Lower Cabinetry along North Wall (Z = -17.8, X in [-11.0, -4.0])
+      const kx = -7.5, kz = -17.8;
       // Lower oak cabinets & black quartz countertop
-      group.add(createMesh(floorId, GEO.box, MAT.woodLight, 7.5, 1.1, 1.2, kx, 0.55, kz, true, true));
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 7.7, 0.12, 1.3, kx, 1.16, kz, true, true));
-      // Upper oak cabinets
-      group.add(createMesh(floorId, GEO.box, MAT.woodLight, 7.5, 1.4, 0.8, kx, 4.2, kz - 0.2, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.woodLight, 6.8, 1.1, 1.2, kx, 0.55, kz, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 6.9, 0.12, 1.3, kx, 1.16, kz, true, true));
+      // Upper oak cabinets mounted on wall
+      group.add(createMesh(floorId, GEO.box, MAT.woodLight, 6.8, 1.3, 0.75, kx, 4.0, kz - 0.2, true, true));
 
       // Undermount Stainless Steel Sink & Chrome Gooseneck Faucet
-      group.add(createMesh(floorId, GEO.box, MAT.chrome, 1.1, 0.04, 0.7, kx - 2.2, 1.23, kz, false, false));
-      group.add(createMesh(floorId, GEO.cyl, MAT.chrome, 0.03, 0.45, 0.03, kx - 2.2, 1.45, kz - 0.25, false, false));
+      group.add(createMesh(floorId, GEO.box, MAT.chrome, 1.1, 0.04, 0.7, kx - 1.8, 1.23, kz, false, false));
+      group.add(createMesh(floorId, GEO.cyl, MAT.chrome, 0.03, 0.45, 0.03, kx - 1.8, 1.45, kz - 0.25, false, false));
 
       // Commercial Espresso Machine & Microwave
-      group.add(createMesh(floorId, GEO.box, MAT.chrome, 0.8, 0.75, 0.85, kx + 0.5, 1.58, kz, true, true));
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.9, 0.55, 0.65, kx + 2.5, 1.48, kz, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.chrome, 0.85, 0.75, 0.85, kx + 0.8, 1.58, kz, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.9, 0.55, 0.65, kx + 2.2, 1.48, kz, true, true));
 
-      // Beverage Glass Cooler Refrigerator (X = 8.5, Z = -12.0)
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.2, 3.4, 1.4, 8.5, 1.7, -12.0, true, true));
+      // Beverage Glass Cooler Refrigerator (X = -3.5, Z = -16.8)
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.2, 3.4, 1.4, -3.5, 1.7, -16.8, true, true));
       const coolerGlassMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({
         color: 0x38bdf8,
         transparent: true,
         opacity: 0.45,
         roughness: 0.1
       }));
-      group.add(createMesh(floorId, GEO.plane, coolerGlassMat, 1.1, 3.0, 1, 8.5 - 0.62, 1.7, -12.0, false, false));
+      group.add(createMesh(floorId, GEO.plane, coolerGlassMat, 1.1, 3.0, 1, -3.5 - 0.62, 1.7, -16.8, false, false));
 
-      // 5-Gallon Blue Water Cooler (X = 8.5, Z = -15.5)
-      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 0.55, 1.25, 0.55, 8.5, 0.62, -15.5, true, true));
+      // 5-Gallon Blue Water Cooler (X = -2.0, Z = -16.8)
+      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 0.55, 1.25, 0.55, -2.0, 0.62, -16.8, true, true));
       const waterBottleMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x0284c7, transparent: true, opacity: 0.75 }));
-      group.add(createMesh(floorId, GEO.cyl, waterBottleMat, 0.35, 0.75, 0.35, 8.5, 1.65, -15.5, true, false));
+      group.add(createMesh(floorId, GEO.cyl, waterBottleMat, 0.35, 0.75, 0.35, -2.0, 1.65, -16.8, true, false));
 
       // 2. High Breakfast Bar Counter facing North Window with Stools (Matching Image 2)
-      const barX = 14.5, barZ = -13.5;
+      // Placed directly in front of the grand center panoramic window bay!
+      const barX = 1.8, barZ = -15.2;
       group.add(createMesh(floorId, GEO.box, MAT.woodLight, 6.2, 0.12, 1.0, barX, 1.35, barZ, true, true));
       [-2.8, 2.8].forEach(lx => {
         group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.1, 1.35, 0.8, barX + lx, 0.67, barZ, true, true));
@@ -1904,20 +1965,23 @@ export default function MyOfficeDiorama({
       // 3. Chill Relaxation Beanbag Nook (Matching Image 2)
       const beanbagMatCyan = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x06b6d4, roughness: 0.85 }));
       const beanbagMatOlive = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x84cc16, roughness: 0.85 }));
-      const beanbagMatNavy = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.85 }));
-      group.add(createMesh(floorId, GEO.sphere, beanbagMatCyan, 0.9, 0.6, 0.9, 17.5, 0.38, -9.5, true, true));
-      group.add(createMesh(floorId, GEO.sphere, beanbagMatOlive, 0.9, 0.6, 0.9, 19.5, 0.38, -11.5, true, true));
-      group.add(createMesh(floorId, GEO.sphere, beanbagMatNavy, 0.85, 0.55, 0.85, 18.5, 0.35, -7.5, true, true));
+      const beanbagMatNavy = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.85 }));
+      group.add(createMesh(floorId, GEO.sphere, beanbagMatCyan, 0.9, 0.6, 0.9, 8.5, 0.38, -14.0, true, true));
+      group.add(createMesh(floorId, GEO.sphere, beanbagMatOlive, 0.9, 0.6, 0.9, 12.0, 0.38, -14.5, true, true));
+      group.add(createMesh(floorId, GEO.sphere, beanbagMatNavy, 0.85, 0.55, 0.85, 10.5, 0.35, -11.0, true, true));
       // Low round wooden coffee table
-      group.add(createMesh(floorId, GEO.cyl, MAT.woodLight, 0.8, 0.35, 0.8, 18.5, 0.2, -9.5, true, true));
+      group.add(createMesh(floorId, GEO.cyl, MAT.woodLight, 0.8, 0.35, 0.8, 10.5, 0.2, -13.0, true, true));
+      // Potted snake plant in beanbag corner
+      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.35, 0.55, 0.35, 14.0, 0.28, -15.0, true, true));
+      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.6, 1.1, 0.6, 14.0, 0.95, -15.0, true, false));
 
       // Register Pantry Interactions & Collisions
       envRegistryRef.current.registerInteraction({
         id: `coffee-${floorId}`,
         floor: floorId,
         type: "coffee",
-        spot: { x: kx + 0.5, z: kz + 1.2, rotY: 0 },
-        approachPos: { x: kx + 0.5, z: -15.5 },
+        spot: { x: kx, z: kz + 1.2, rotY: 0 },
+        approachPos: { x: kx, z: -13.0 },
         label: "☕ Đi pha cà phê",
         activeMsg: "☕ Đang uống cà phê",
         propType: "cup"
@@ -1926,8 +1990,8 @@ export default function MyOfficeDiorama({
         id: `water-${floorId}`,
         floor: floorId,
         type: "water",
-        spot: { x: 8.5, z: -14.0, rotY: Math.PI * 0.5 },
-        approachPos: { x: 9.8, z: -14.0 },
+        spot: { x: 4.2, z: -15.0, rotY: Math.PI * 0.5 },
+        approachPos: { x: 4.2, z: -13.0 },
         label: "💧 Đi lấy nước lọc",
         activeMsg: "💧 Đang uống nước",
         propType: "cup"
@@ -1935,8 +1999,8 @@ export default function MyOfficeDiorama({
       collisionRegistryRef.current.registerObstacle({
         id: `pantry-counter-${floorId}`,
         floor: floorId,
-        minX: kx - 4.0,
-        maxX: kx + 4.0,
+        minX: kx - 5.8,
+        maxX: kx + 5.8,
         minZ: kz - 0.8,
         maxZ: kz + 0.8,
         label: "Pantry Kitchenette Counter"
@@ -1944,8 +2008,8 @@ export default function MyOfficeDiorama({
       collisionRegistryRef.current.registerObstacle({
         id: `pantry-bar-${floorId}`,
         floor: floorId,
-        minX: barX - 3.2,
-        maxX: barX + 3.2,
+        minX: barX - 3.8,
+        maxX: barX + 3.8,
         minZ: barZ - 0.6,
         maxZ: barZ + 0.6,
         label: "Pantry High Bar Counter"
@@ -2002,6 +2066,17 @@ export default function MyOfficeDiorama({
       group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx - 5.2, 1.65, lz - 0.9, true, false));
       group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.25, 0.35, 0.25, lx + 5.2, 1.18, lz + 0.9, true, true));
       group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx + 5.2, 1.65, lz + 0.9, true, false));
+
+      // South Credenzas Framing Lounge from Workstation Pods (Matching Image 2)
+      group.add(createMesh(floorId, GEO.box, credMat, 3.6, 0.95, 0.65, lx - 2.4, 0.48, 4.8, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.65, 0.06, 0.70, lx - 2.4, 0.98, 4.8, true, true));
+      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.25, 0.35, 0.25, lx - 2.4, 1.18, 4.8, true, true));
+      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx - 2.4, 1.65, 4.8, true, false));
+
+      group.add(createMesh(floorId, GEO.box, credMat, 3.6, 0.95, 0.65, lx + 2.4, 0.48, 4.8, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.65, 0.06, 0.70, lx + 2.4, 0.98, 4.8, true, true));
+      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.25, 0.35, 0.25, lx + 2.4, 1.18, 4.8, true, true));
+      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx + 2.4, 1.65, 4.8, true, false));
 
       // Register Central Lounge Collision & Interaction
       collisionRegistryRef.current.registerObstacle({
@@ -2252,7 +2327,7 @@ export default function MyOfficeDiorama({
       buildFloorPantryAndLounge(floorId, group);
 
       // Support & Operations Service Telemetry Wall Screen
-      buildWallScreenMesh(floorId, group, -6.0, 4.2, -ROOM_D / 2 + 0.28, 6.2, 3.0, {
+      buildWallScreenMesh(floorId, group, -9.0, 4.2, -ROOM_D / 2 + 0.28, 3.8, 2.2, {
         title: "OPERATIONS & SERVICE TELEMETRY (1F)",
         line1: "Workforce Architecture: 4-Person Pod Island System",
         line2: "Support Response Rate: 99.4% SLA Adhered",
@@ -2263,22 +2338,13 @@ export default function MyOfficeDiorama({
 
     // FLOOR 2: Financial Treasury, Capital Markets & Secure Vault
     const buildFloor2FinancialTreasury = (floorId: number, group: THREE.Group) => {
-      // 1. High-Security Steel Records Archive & Vault (X = -10.0, Z = -11.0)
-      const vx = -10.0, vz = -11.0;
+      // 1. High-Security Steel Records Archive & Vault in East Utility Wing (X = 22.0, Z = -11.0)
+      const vx = 22.0, vz = -11.0;
       const vaultMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.3 }));
-      group.add(createMesh(floorId, GEO.box, vaultMat, 5.8, 5.0, 4.2, vx, 2.5, vz, true, true));
+      group.add(createMesh(floorId, GEO.box, vaultMat, 3.8, 4.4, 3.2, vx, 2.2, vz, true, true));
       // Heavy Vault Reinforced Door Frame & Round Wheel
-      group.add(createMesh(floorId, GEO.box, MAT.blackMetal, 2.2, 4.0, 0.25, vx, 2.0, vz + 2.15, true, true));
-      group.add(createMesh(floorId, GEO.cyl, MAT.chrome, 0.45, 0.08, 0.45, vx, 2.0, vz + 2.32, false, false));
-      // Archive Filing Cabinets
-      for (let i = 0; i < 4; i++) {
-        group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.2, 3.4, 0.8, vx - 1.8 + i * 1.2, 1.7, vz - 1.2, true, true));
-      }
-
-      // 2. Financial Candlestick Data Displays on West Wall
-      for (let i = 0; i < 4; i++) {
-        group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.4, 3.6, 1.4, -ROOM_W / 2 + 2.5, 1.8, -4.0 + i * 2.5, true, true));
-      }
+      group.add(createMesh(floorId, GEO.box, MAT.blackMetal, 1.8, 3.6, 0.25, vx - 1.95, 2.0, vz, true, true));
+      group.add(createMesh(floorId, GEO.cyl, MAT.chrome, 0.45, 0.08, 0.45, vx - 2.1, 2.0, vz, false, false));
 
       // Build Standard Pantry & Coffee
       buildFloorPantryAndLounge(floorId, group);
@@ -2287,37 +2353,20 @@ export default function MyOfficeDiorama({
       collisionRegistryRef.current.registerObstacle({
         id: `vault-archive-${floorId}`,
         floor: floorId,
-        minX: vx - 3.0,
-        maxX: vx + 3.0,
-        minZ: vz - 2.2,
-        maxZ: vz + 2.3,
+        minX: vx - 2.2,
+        maxX: vx + 2.2,
+        minZ: vz - 1.8,
+        maxZ: vz + 1.8,
         label: "Secure Records Archive Vault"
       });
     };
 
     // FLOOR 3: Growth Marketing, Presentation Amphitheater & Podcast Booth
     const buildFloor3MarketingAndMedia = (floorId: number, group: THREE.Group) => {
-      // 1. Presentation Amphitheater / Stepped Bleacher Lounge (X = -5.0, Z = -10.0)
-      const ax = -5.0, az = -10.0;
-      const bleacherMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0xd8c29d, roughness: 0.55 }));
-      // Tier 1 Step
-      group.add(createMesh(floorId, GEO.box, bleacherMat, 5.8, 0.45, 1.4, ax, 0.22, az, true, true));
-      // Tier 2 Step
-      group.add(createMesh(floorId, GEO.box, bleacherMat, 5.8, 0.90, 1.4, ax, 0.45, az - 1.3, true, true));
-      // Colorful Seat Cushions
-      const cushionColors = [0xf472b6, 0x38bdf8, 0xfbbf24, 0x34d399, 0xa855f7];
-      cushionColors.forEach((col, i) => {
-        group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: col }), 0.75, 0.08, 0.75, ax - 2.0 + i * 1.0, 0.49, az, false, false));
-        group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: col }), 0.75, 0.08, 0.75, ax - 2.0 + i * 1.0, 0.94, az - 1.3, false, false));
-      });
-      // 85" Pitch Presentation Screen facing amphitheater
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 4.4, 2.6, 0.12, ax, 2.8, az + 2.5, true, false));
-      group.add(createMesh(floorId, GEO.plane, new THREE.MeshBasicMaterial({ color: 0xf472b6 }), 4.2, 2.4, 1, ax, 2.8, az + 2.42, false, false));
-
-      // 2. Soundproof Podcast & Audio Recording Booth (X = -21.5, Z = 9.5)
-      const px = -21.5, pz = 9.5;
+      // 1. Soundproof Podcast & Audio Recording Booth in East Utility Wing (X = 22.0, Z = -11.0)
+      const px = 22.0, pz = -11.0;
       const boothMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 }));
-      group.add(createMesh(floorId, GEO.box, boothMat, 5.2, 4.8, 4.2, px, 2.4, pz, true, true));
+      group.add(createMesh(floorId, GEO.box, boothMat, 3.8, 4.4, 3.2, px, 2.2, pz, true, true));
       // Illuminated "ON AIR" Sign
       const onAirCanvas = document.createElement("canvas");
       onAirCanvas.width = 160;
@@ -2332,131 +2381,121 @@ export default function MyOfficeDiorama({
       const oaTex = new THREE.CanvasTexture(onAirCanvas);
       const oaPlane = new THREE.Mesh(GEO.plane, new THREE.MeshBasicMaterial({ map: oaTex }));
       oaPlane.scale.set(1.2, 0.45, 1);
-      oaPlane.position.set(px, 3.8, pz + 2.14);
+      oaPlane.rotation.y = -Math.PI / 2;
+      oaPlane.position.set(px - 1.95, 3.2, pz);
       group.add(oaPlane);
 
       // Build Standard Pantry & Coffee
       buildFloorPantryAndLounge(floorId, group);
 
-      // Register Amphitheater & Podcast Booth Collisions
-      collisionRegistryRef.current.registerObstacle({
-        id: `amphitheater-${floorId}`,
-        floor: floorId,
-        minX: ax - 3.1,
-        maxX: ax + 3.1,
-        minZ: az - 2.2,
-        maxZ: az + 2.8,
-        label: "Presentation Amphitheater"
-      });
+      // Register Podcast Booth Collisions
       collisionRegistryRef.current.registerObstacle({
         id: `podcast-booth-${floorId}`,
         floor: floorId,
-        minX: px - 2.8,
-        maxX: px + 2.8,
-        minZ: pz - 2.3,
-        maxZ: pz + 2.3,
+        minX: px - 2.2,
+        maxX: px + 2.2,
+        minZ: pz - 1.8,
+        maxZ: pz + 1.8,
         label: "Podcast Soundproof Booth"
       });
     };
 
     // FLOOR 4: Creative UI/UX Design Studios & Spatial AR/VR Labs
     const buildFloor4DesignAndSpatialLabs = (floorId: number, group: THREE.Group) => {
-      // 1. Spatial Computing AR/VR Testing Arena (X = -4.5, Z = -9.0)
-      const sx = -4.5, sz = -9.0;
-      const arenaMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x581c87, roughness: 0.3 }));
-      group.add(createMesh(floorId, GEO.cyl, arenaMat, 2.8, 0.04, 2.8, sx, 0.02, sz, false, true));
-      // Glowing tracking sensor boundary ring
-      const ringMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ color: 0xc084fc }));
-      group.add(createMesh(floorId, GEO.cyl, ringMat, 2.84, 0.02, 2.84, sx, 0.03, sz, false, false));
-      // VR Headset Pedestal Stand
-      group.add(createMesh(floorId, GEO.cyl, MAT.chrome, 0.22, 1.1, 0.22, sx, 0.55, sz, true, true));
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.45, 0.28, 0.35, sx, 1.2, sz, true, true));
-      group.add(createMesh(floorId, GEO.sphere, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 0.25, 0.18, 0.15, sx, 1.22, sz, false, false));
-
-      // 2. Hardware Prototyping Workshop Benches (X = -21.5, Z = -9.0)
-      const wx = -21.5, wz = -9.0;
-      group.add(createMesh(floorId, GEO.box, MAT.woodWarm, 5.2, 1.1, 2.0, wx, 0.55, wz, true, true));
+      // 1. Hardware Prototyping Workshop Benches in East Utility Wing (X = 22.0, Z = -11.0)
+      const wx = 22.0, wz = -11.0;
+      group.add(createMesh(floorId, GEO.box, MAT.woodWarm, 3.8, 1.1, 2.4, wx, 0.55, wz, true, true));
       // 3D Printer Props on Workbench
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.1, 1.2, 0.9, wx - 1.4, 1.7, wz, true, true));
-      group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 0.65, 0.45, 0.05, wx - 1.4, 1.6, wz + 0.46, false, false));
-      group.add(createMesh(floorId, GEO.box, MAT.chrome, 1.1, 1.2, 0.9, wx + 1.4, 1.7, wz, true, true));
-
-      // 3. Informal Ideation Beanbag Corner
-      group.add(createMesh(floorId, GEO.sphere, new THREE.MeshStandardMaterial({ color: 0x9333ea, roughness: 0.85 }), 1.3, 0.8, 1.3, -2.5, 0.6, 4.0, true, true));
-      group.add(createMesh(floorId, GEO.sphere, new THREE.MeshStandardMaterial({ color: 0xec4899, roughness: 0.85 }), 1.2, 0.75, 1.2, 0.5, 0.58, 4.8, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.1, 1.2, 0.9, wx - 0.8, 1.7, wz, true, true));
+      group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 0.65, 0.45, 0.05, wx - 0.8, 1.6, wz + 0.46, false, false));
+      group.add(createMesh(floorId, GEO.box, MAT.chrome, 1.1, 1.2, 0.9, wx + 0.8, 1.7, wz, true, true));
 
       // Build Standard Pantry & Coffee
       buildFloorPantryAndLounge(floorId, group);
 
       // Register Collisions
       collisionRegistryRef.current.registerObstacle({
-        id: `vr-arena-${floorId}`,
+        id: `workshop-bench-${floorId}`,
         floor: floorId,
-        minX: sx - 1.8,
-        maxX: sx + 1.8,
-        minZ: sz - 1.8,
-        maxZ: sz + 1.8,
-        label: "Spatial AR/VR Testing Arena"
-      });
-      collisionRegistryRef.current.registerObstacle({
-        id: `prototyping-workbench-${floorId}`,
-        floor: floorId,
-        minX: wx - 2.8,
-        maxX: wx + 2.8,
-        minZ: wz - 1.2,
-        maxZ: wz + 1.2,
-        label: "Prototyping Workbench"
+        minX: wx - 2.2,
+        maxX: wx + 2.2,
+        minZ: wz - 1.4,
+        maxZ: wz + 1.4,
+        label: "Hardware Prototyping Workshop Bench"
       });
     };
 
     // FLOOR 5: Core Engineering, Cybersecurity SOC & AI Server Bay
     const buildFloor5CoreEngineeringAndSOC = (floorId: number, group: THREE.Group) => {
-      // 1. Mission-Critical Server Racks along West Wall
-      for (let i = 0; i < 5; i++) {
-        const zPos = -4.5 + i * 2.2;
-        group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.5, 4.6, 1.5, -ROOM_W / 2 + 2.5, 2.3, zPos, true, true));
+      // 1. Mission-Critical Glass-Enclosed AI Server Datacenter Bay (East Utility Wing: X in [16.5, 20.5], Z in [-10.5, -4.5])
+      const srvX = 18.5, srvZ = -7.5;
+      const srvGlassMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({
+        color: 0x0284c7,
+        transparent: true,
+        opacity: 0.35,
+        roughness: 0.1,
+        metalness: 0.2
+      }));
+      // West viewing glass wall
+      group.add(createMesh(floorId, GEO.box, srvGlassMat, 0.08, 5.2, 5.8, 16.5, 2.6, srvZ, false, false));
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.12, 5.2, 0.12, 16.5, 2.6, srvZ - 2.9, false, false));
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.12, 5.2, 0.12, 16.5, 2.6, srvZ + 2.9, false, false));
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.12, 0.14, 5.8, 16.5, 5.2, srvZ, false, false));
+
+      // 4 High-Density Enterprise Server Racks inside the Datacenter Bay
+      for (let i = 0; i < 4; i++) {
+        const zPos = -9.2 + i * 1.2;
+        group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.4, 4.4, 0.9, srvX, 2.2, zPos, true, true));
         for (let row = 0; row < 6; row++) {
           const ledCol = (row + i) % 2 === 0 ? 0x38bdf8 : 0x10b981;
-          group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: ledCol }), 0.08, 0.14, 1.1, -ROOM_W / 2 + 3.3, 0.8 + row * 0.65, zPos, false, false));
+          group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: ledCol }), 0.08, 0.14, 0.7, srvX - 0.72, 0.8 + row * 0.65, zPos, false, false));
         }
-        // Register each server rack collision
         collisionRegistryRef.current.registerObstacle({
           id: `server-rack-${floorId}-${i}`,
           floor: floorId,
-          minX: -ROOM_W / 2 + 1.6,
-          maxX: -ROOM_W / 2 + 3.4,
-          minZ: zPos - 0.9,
-          maxZ: zPos + 0.9,
+          minX: srvX - 0.8,
+          maxX: srvX + 0.8,
+          minZ: zPos - 0.5,
+          maxZ: zPos + 0.5,
           label: `AI Server Rack ${i}`
         });
       }
 
-      // 2. Agile Sprint Scrum Whiteboard Wall (X = 6.0, Z = -14.0)
-      const sbx = 6.0, sbz = -14.0;
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 6.4, 2.8, 0.14, sbx, 3.2, sbz, true, false));
-      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 6.2, 2.6, 0.05, sbx, 3.2, sbz + 0.08, false, false));
+      // 2. Agile Sprint Scrum Whiteboard Wall on Solid North Column (X = 5.0, Z = -18.7)
+      const sbx = 5.0, sbz = -18.7;
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 3.8, 2.8, 0.14, sbx, 3.2, sbz, true, false));
+      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.6, 2.6, 0.05, sbx, 3.2, sbz + 0.08, false, false));
       // Sticky Notes
       const noteCols = [0xfef08a, 0x86efac, 0x93c5fd, 0xfca5a5];
-      for (let c = 0; c < 4; c++) {
+      for (let c = 0; c < 3; c++) {
         for (let r = 0; r < 3; r++) {
-          group.add(createMesh(floorId, GEO.plane, new THREE.MeshBasicMaterial({ color: noteCols[(c + r) % 4] }), 0.28, 0.28, 1, sbx - 2.2 + c * 1.4, 3.8 - r * 0.55, sbz + 0.12, false, false));
+          group.add(createMesh(floorId, GEO.plane, new THREE.MeshBasicMaterial({ color: noteCols[(c + r) % 4] }), 0.28, 0.28, 1, sbx - 1.2 + c * 1.2, 3.8 - r * 0.55, sbz + 0.12, false, false));
         }
       }
 
-      // 3. IT / Electrical Utility Closet (X = 16.0, Z = 11.0)
-      const ux = 16.0, uz = 11.0;
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 3.2, 4.4, 2.2, ux, 2.2, uz, true, true));
-      group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 0.08, 0.6, 0.8, ux - 1.62, 2.2, uz, false, false));
+      // 3. IT / Electrical Utility Closet (X = 22.0, Z = -11.0)
+      const ux = 22.0, uz = -11.0;
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 2.8, 4.4, 2.0, ux, 2.2, uz, true, true));
+      group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 0.08, 0.6, 0.8, ux - 1.42, 2.2, uz, false, false));
 
       // Build Standard Pantry & Coffee
       buildFloorPantryAndLounge(floorId, group);
 
-      // Register Utility Closet Collision
+      // Register Utility Closet & Server Enclosure Collision
+      collisionRegistryRef.current.registerObstacle({
+        id: `server-bay-${floorId}`,
+        floor: floorId,
+        minX: 16.3,
+        maxX: 21.0,
+        minZ: srvZ - 3.2,
+        maxZ: srvZ + 3.2,
+        label: "AI Server Bay & SOC Datacenter"
+      });
       collisionRegistryRef.current.registerObstacle({
         id: `utility-closet-${floorId}`,
         floor: floorId,
-        minX: ux - 1.8,
-        maxX: ux + 1.8,
+        minX: ux - 1.6,
+        maxX: ux + 1.6,
         minZ: uz - 1.2,
         maxZ: uz + 1.2,
         label: "IT Electrical Utility Closet"
@@ -2468,8 +2507,8 @@ export default function MyOfficeDiorama({
       // Build Standard Central Pantry & Coffee
       buildFloorPantryAndLounge(floorId, group);
 
-      // Telemetry Screen for Executive AI Fellowship
-      buildWallScreenMesh(floorId, group, -6.0, 4.2, -ROOM_D / 2 + 0.28, 6.8, 3.4, {
+      // Telemetry Screen for Executive AI Fellowship mounted on solid North column
+      buildWallScreenMesh(floorId, group, -9.0, 4.2, -ROOM_D / 2 + 0.28, 3.8, 2.2, {
         title: "EXECUTIVE BOARDROOM & RESEARCH (6F)",
         line1: "CEO Suite: Victoria Vance • Grand 10-Person Executive Boardroom",
         line2: "AI Research: 276 Specialist Collective Intelligence Syndicate",
@@ -2687,34 +2726,158 @@ export default function MyOfficeDiorama({
       group.add(createMesh(f, GEO.box, floorMat, ROOM_W, 0.6, ROOM_D, 0, -0.3, 0, false, true));
       group.add(createMesh(f, GEO.box, MAT.darkMetal, ROOM_W + 0.4, 0.2, ROOM_D + 0.4, 0, -0.5, 0, false, false));
 
-      // Cutaway Walls (Back Wall & Left Wall)
+      // Cutaway Walls with Architectural Window Bays (North & West Exterior Walls)
       const wallH = 6.8;
-      group.add(createMesh(f, GEO.box, wallMat, ROOM_W, wallH, 0.5, 0, wallH / 2, -ROOM_D / 2, true, true));
-      group.add(createMesh(f, GEO.box, trimMat, ROOM_W + 0.5, 0.2, 0.6, 0, wallH + 0.06, -ROOM_D / 2, false, false));
-      group.add(createMesh(f, GEO.box, wallMat, 0.5, wallH, ROOM_D, -ROOM_W / 2, wallH / 2, 0, true, true));
-      group.add(createMesh(f, GEO.box, trimMat, 0.6, 0.2, ROOM_D + 0.5, -ROOM_W / 2, wallH + 0.06, 0, false, false));
 
-      // Dark Skirting Baseboard along perimeter
-      group.add(createMesh(f, GEO.box, MAT.skirtingDark, ROOM_W + 0.1, 0.22, 0.55, 0, 0.11, -ROOM_D / 2, true, true));
+      // 1. NORTH WALL (Z = -ROOM_D / 2 = -19.0) with 3 Large Floor-to-Ceiling Panoramic Window Bays
+      const nwZ = -ROOM_D / 2;
+      // Solid structural columns (NW corner, center-left, center-right, East utility)
+      group.add(createMesh(f, GEO.box, wallMat, 6.0, wallH, 0.5, -24.0, wallH / 2, nwZ, true, true)); // NW corner [ -27, -21 ]
+      group.add(createMesh(f, GEO.box, wallMat, 4.0, wallH, 0.5, -9.0, wallH / 2, nwZ, true, true));  // Column 1 [ -11, -7 ]
+      group.add(createMesh(f, GEO.box, wallMat, 4.0, wallH, 0.5, 7.0, wallH / 2, nwZ, true, true));   // Column 2 [ 5, 9 ]
+      group.add(createMesh(f, GEO.box, wallMat, 10.0, wallH, 0.5, 22.0, wallH / 2, nwZ, true, true)); // East utility [ 17, 27 ]
+      // Top header trim along entire North wall
+      group.add(createMesh(f, GEO.box, trimMat, ROOM_W + 0.5, 0.2, 0.6, 0, wallH + 0.06, nwZ, false, false));
 
-      // Floor-to-Ceiling Architectural Multi-Pane Windows on Back Wall
-      const windowPositions = [-18, -6, 6, 18];
-      windowPositions.forEach(wx => {
-        // Window frame cut into wall
-        group.add(createMesh(f, GEO.box, MAT.darkMetal, 7.4, 4.2, 0.14, wx, 3.8, -ROOM_D / 2 + 0.26, false, false));
-        // Glass panes
-        group.add(createMesh(f, GEO.plane, MAT.glassWindow, 7.0, 3.8, 1, wx, 3.8, -ROOM_D / 2 + 0.28, false, false));
-        // Vertical and horizontal mullions
-        group.add(createMesh(f, GEO.box, MAT.blackMetal, 0.08, 3.8, 0.06, wx - 2.3, 3.8, -ROOM_D / 2 + 0.30, false, false));
-        group.add(createMesh(f, GEO.box, MAT.blackMetal, 0.08, 3.8, 0.06, wx + 2.3, 3.8, -ROOM_D / 2 + 0.30, false, false));
-        group.add(createMesh(f, GEO.box, MAT.blackMetal, 7.0, 0.08, 0.06, wx, 3.8, -ROOM_D / 2 + 0.30, false, false));
-        // Distant skyscraper silhouettes outside
-        group.add(createMesh(f, GEO.box, new THREE.MeshBasicMaterial({ color: 0x94a3b8 }), 3.5, 9.0, 0.5, wx - 1.2, 5.0, -ROOM_D / 2 - 2.5, false, false));
-        group.add(createMesh(f, GEO.box, new THREE.MeshBasicMaterial({ color: 0x64748b }), 2.8, 12.0, 0.5, wx + 1.8, 6.0, -ROOM_D / 2 - 3.2, false, false));
+      // 3 Panoramic Window Openings on North Wall:
+      // Bay 1: X in [-21, -11] (10m wide)
+      // Bay 2: X in [-7, 5] (12m wide - directly behind the high bar counter!)
+      // Bay 3: X in [9, 17] (8m wide - directly behind the beanbag nook!)
+      const northWindowBays = [
+        { cx: -16.0, w: 10.0 },
+        { cx: -1.0, w: 12.0 },
+        { cx: 13.0, w: 8.0 },
+      ];
+
+      northWindowBays.forEach(bay => {
+        // Lower sill apron (spandrel)
+        group.add(createMesh(f, GEO.box, wallMat, bay.w, 0.8, 0.5, bay.cx, 0.4, nwZ, true, true));
+        // Upper header beam
+        group.add(createMesh(f, GEO.box, wallMat, bay.w, 0.8, 0.5, bay.cx, wallH - 0.4, nwZ, true, true));
+        // Slim dark window casing around the opening borders (open window!)
+        const caseThick = 0.12;
+        const caseDepth = 0.16;
+        const bayOpenH = wallH - 1.6;
+        const bayMidY = wallH / 2;
+        // Left jamb
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, caseThick, bayOpenH, caseDepth, bay.cx - bay.w / 2 + caseThick / 2, bayMidY, nwZ + 0.22, false, false));
+        // Right jamb
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, caseThick, bayOpenH, caseDepth, bay.cx + bay.w / 2 - caseThick / 2, bayMidY, nwZ + 0.22, false, false));
+        // Top header trim
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, bay.w, caseThick, caseDepth, bay.cx, wallH - 0.8 - caseThick / 2, nwZ + 0.22, false, false));
+        // Bottom sill trim
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, bay.w, caseThick, caseDepth, bay.cx, 0.8 + caseThick / 2, nwZ + 0.22, false, false));
+
+        // Clear sky-tinted panoramic glass
+        const winGlassMat = registerFloorMaterial(f, new THREE.MeshStandardMaterial({
+          color: 0xe0f2fe,
+          roughness: 0.05,
+          transparent: true,
+          opacity: 0.16,
+          depthWrite: false
+        }));
+        group.add(createMesh(f, GEO.plane, winGlassMat, bay.w - 0.24, bayOpenH - 0.2, 1, bay.cx, bayMidY, nwZ + 0.24, false, false));
+        // Vertical mullions dividing each bay into 3-4 glass panes
+        const mullionStep = bay.w / 4;
+        for (let m = 1; m < 4; m++) {
+          group.add(createMesh(f, GEO.box, MAT.blackMetal, 0.08, bayOpenH, 0.08, bay.cx - bay.w / 2 + m * mullionStep, bayMidY, nwZ + 0.26, false, false));
+        }
+        // Horizontal transom bar at eye level
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, bay.w, 0.08, 0.08, bay.cx, 4.0, nwZ + 0.26, false, false));
       });
 
-      // Interior Wall Plaque
-      group.add(buildFloorSign(f, cfg));
+      // 2. WEST WALL (X = -ROOM_W / 2 = -27.0) with 2 Large Floor-to-Ceiling Panoramic Window Bays
+      const wwX = -ROOM_W / 2;
+      // Solid structural columns (NW corner, center dividing column, SW corner)
+      group.add(createMesh(f, GEO.box, wallMat, 0.5, wallH, 4.0, wwX, wallH / 2, -17.0, true, true)); // NW [ -19, -15 ]
+      group.add(createMesh(f, GEO.box, wallMat, 0.5, wallH, 4.0, wwX, wallH / 2, -1.0, true, true));  // Center [ -3, 1 ]
+      group.add(createMesh(f, GEO.box, wallMat, 0.5, wallH, 6.0, wwX, wallH / 2, 16.0, true, true));  // SW [ 13, 19 ]
+      // Top header trim along entire West wall
+      group.add(createMesh(f, GEO.box, trimMat, 0.6, 0.2, ROOM_D + 0.5, wwX, wallH + 0.06, 0, false, false));
+
+      // 2 Panoramic Window Openings on West Wall:
+      // Bay 1: Z in [-15, -3] (12m wide - in Focus Room & Executive Suite)
+      // Bay 2: Z in [1, 13] (12m wide - in Grand Boardroom!)
+      const westWindowBays = [
+        { cz: -9.0, d: 12.0 },
+        { cz: 7.0, d: 12.0 },
+      ];
+
+      westWindowBays.forEach(bay => {
+        // Lower sill apron
+        group.add(createMesh(f, GEO.box, wallMat, 0.5, 0.8, bay.d, wwX, 0.4, bay.cz, true, true));
+        // Upper header beam
+        group.add(createMesh(f, GEO.box, wallMat, 0.5, 0.8, bay.d, wwX, wallH - 0.4, bay.cz, true, true));
+        // Slim dark window casing around opening borders (open window!)
+        const caseThick = 0.12;
+        const caseDepth = 0.16;
+        const bayOpenH = wallH - 1.6;
+        const bayMidY = wallH / 2;
+        // North jamb
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, caseDepth, bayOpenH, caseThick, wwX + 0.22, bayMidY, bay.cz - bay.d / 2 + caseThick / 2, false, false));
+        // South jamb
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, caseDepth, bayOpenH, caseThick, wwX + 0.22, bayMidY, bay.cz + bay.d / 2 - caseThick / 2, false, false));
+        // Top header trim
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, caseDepth, caseThick, bay.d, wwX + 0.22, wallH - 0.8 - caseThick / 2, bay.cz, false, false));
+        // Bottom sill trim
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, caseDepth, caseThick, bay.d, wwX + 0.22, 0.8 + caseThick / 2, bay.cz, false, false));
+
+        // Clear sky-tinted panoramic glass
+        const winGlassMat = registerFloorMaterial(f, new THREE.MeshStandardMaterial({
+          color: 0xe0f2fe,
+          roughness: 0.05,
+          transparent: true,
+          opacity: 0.16,
+          depthWrite: false
+        }));
+        const wGlass = createMesh(f, GEO.plane, winGlassMat, bay.d - 0.24, bayOpenH - 0.2, 1, wwX + 0.24, bayMidY, bay.cz, false, false);
+        wGlass.rotation.y = Math.PI / 2;
+        group.add(wGlass);
+        // Vertical mullions
+        const mullionStep = bay.d / 4;
+        for (let m = 1; m < 4; m++) {
+          group.add(createMesh(f, GEO.box, MAT.blackMetal, 0.08, bayOpenH, 0.08, wwX + 0.26, bayMidY, bay.cz - bay.d / 2 + m * mullionStep, false, false));
+        }
+        // Horizontal transom bar
+        group.add(createMesh(f, GEO.box, MAT.blackMetal, 0.08, 0.08, bay.d, wwX + 0.26, 4.0, bay.cz, false, false));
+      });
+
+      // 3. EXTERIOR 3D CITY SKYLINE (Visible through North & West windows)
+      const skyTowerConfigs = [
+        // North Skyline (Z in [-32, -22], X in [-24, 20])
+        { x: -22.0, z: -25.0, w: 7.5, h: 22.0, d: 6.5, col: 0x94a3b8 },
+        { x: -14.0, z: -28.0, w: 6.0, h: 28.0, d: 5.5, col: 0x64748b },
+        { x: -5.0,  z: -24.0, w: 8.0, h: 18.0, d: 7.0, col: 0xcbd5e1 },
+        { x: 3.0,   z: -27.0, w: 5.5, h: 32.0, d: 6.0, col: 0x475569 },
+        { x: 12.0,  z: -25.0, w: 7.0, h: 24.0, d: 6.0, col: 0x94a3b8 },
+        { x: 20.0,  z: -28.0, w: 8.5, h: 19.0, d: 7.0, col: 0x64748b },
+
+        // West Skyline (X in [-38, -30], Z in [-16, 16])
+        { x: -33.0, z: -14.0, w: 6.5, h: 26.0, d: 6.0, col: 0x64748b },
+        { x: -35.0, z: -6.0,  w: 7.0, h: 30.0, d: 6.5, col: 0x334155 },
+        { x: -32.0, z: 2.0,   w: 6.0, h: 20.0, d: 7.0, col: 0x94a3b8 },
+        { x: -36.0, z: 10.0,  w: 7.5, h: 25.0, d: 6.0, col: 0x475569 },
+        { x: -33.0, z: 16.0,  w: 6.0, h: 17.0, d: 5.5, col: 0xcbd5e1 },
+      ];
+
+      skyTowerConfigs.forEach(st => {
+        // Skyscraper body
+        const towerMat = new THREE.MeshStandardMaterial({ color: st.col, roughness: 0.4, metalness: 0.3 });
+        group.add(createMesh(f, GEO.box, towerMat, st.w, st.h, st.d, st.x, st.h / 2, st.z, false, false));
+        // Rooftop mechanical penthouse
+        group.add(createMesh(f, GEO.box, MAT.darkMetal, st.w * 0.5, 2.5, st.d * 0.5, st.x, st.h + 1.25, st.z, false, false));
+        // Cool blue glass facade strips
+        const facadeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+        group.add(createMesh(f, GEO.box, facadeMat, st.w * 0.85, st.h * 0.75, 0.05, st.x, st.h * 0.45, st.z + st.d / 2 + 0.03, false, false));
+      });
+
+      // Dark Skirting Baseboard along solid perimeter columns
+      group.add(createMesh(f, GEO.box, MAT.skirtingDark, ROOM_W + 0.1, 0.22, 0.55, 0, 0.11, nwZ, true, true));
+
+      // Interior Wall Plaque (Mounted on Solid North Pillar at X = 7.0)
+      const signMesh = buildFloorSign(f, cfg);
+      signMesh.position.set(7.0, 5.2, nwZ + 0.28);
+      group.add(signMesh);
 
       // Register Room Perimeter Wall Obstacles in Collision System
       collisionRegistryRef.current.registerObstacle({
@@ -2775,7 +2938,7 @@ export default function MyOfficeDiorama({
           buildFloor1OperationsAndSupport(f, group);
         } else if (f === 2) {
           buildFloor2FinancialTreasury(f, group);
-          buildWallScreenMesh(f, group, -6.0, 4.2, -ROOM_D / 2 + 0.28, 6.2, 3.0, {
+          buildWallScreenMesh(f, group, -9.0, 4.2, -ROOM_D / 2 + 0.28, 3.8, 2.2, {
             title: "FINANCIAL CONTROLLER & TREASURY (2F)",
             line1: "Token Budget Efficiency: 92% Zero-Cost Policy",
             line2: "Capital Reserves: $2.4M Solid Runway",
@@ -2784,7 +2947,7 @@ export default function MyOfficeDiorama({
           });
         } else if (f === 3) {
           buildFloor3MarketingAndMedia(f, group);
-          buildWallScreenMesh(f, group, -6.0, 4.2, -ROOM_D / 2 + 0.28, 6.2, 3.0, {
+          buildWallScreenMesh(f, group, -9.0, 4.2, -ROOM_D / 2 + 0.28, 3.8, 2.2, {
             title: "GROWTH MARKETING & ENTERPRISE SALES (3F)",
             line1: "Lead Velocity: +38% MoM Acceleration",
             line2: "Omnichannel Ads: ROAS 4.8x Achieved",
@@ -2793,7 +2956,7 @@ export default function MyOfficeDiorama({
           });
         } else if (f === 4) {
           buildFloor4DesignAndSpatialLabs(f, group);
-          buildWallScreenMesh(f, group, -6.0, 4.2, -ROOM_D / 2 + 0.28, 6.2, 3.0, {
+          buildWallScreenMesh(f, group, -9.0, 4.2, -ROOM_D / 2 + 0.28, 3.8, 2.2, {
             title: "CREATIVE STUDIO & SPATIAL COMPUTING (4F)",
             line1: "Apple iMac 24\" + Magic Keyboard & Mouse Setup",
             line2: "Smooth Dynamic Behaviors: Anti-Clipping, Drinking Props",
@@ -2802,7 +2965,7 @@ export default function MyOfficeDiorama({
           });
         } else if (f === 5) {
           buildFloor5CoreEngineeringAndSOC(f, group);
-          buildWallScreenMesh(f, group, -6.0, 4.2, -ROOM_D / 2 + 0.28, 6.5, 3.2, {
+          buildWallScreenMesh(f, group, -9.0, 4.2, -ROOM_D / 2 + 0.28, 3.8, 2.2, {
             title: "CORE ENGINEERING & CYBERSECURITY SOC (5F)",
             line1: "Workforce: 101 Specialists in 4-Person Pods",
             line2: "Zero-Lag Direct Tracking: Click to Follow Specialist",
@@ -3411,15 +3574,15 @@ export default function MyOfficeDiorama({
     };
 
     const leadershipSuiteMapping: Record<string, { deskPos: { x: number; z: number }; chairPos: { x: number; z: number; rotY: number }; floor: number }> = {
-      "agent-exec-ceo": { deskPos: { x: 1.5, z: -12.5 }, chairPos: { x: 1.5, z: -11.4, rotY: 0 }, floor: 6 },
-      "agent-ops-recruiter": { deskPos: { x: 1.5, z: -12.5 }, chairPos: { x: 1.5, z: -11.4, rotY: 0 }, floor: 1 },
-      "agent-support-lead": { deskPos: { x: -8.5, z: -12.5 }, chairPos: { x: -8.5, z: -10.8, rotY: 0 }, floor: 1 },
-      "agent-fin-controller": { deskPos: { x: 1.5, z: -12.5 }, chairPos: { x: 1.5, z: -11.4, rotY: 0 }, floor: 2 },
-      "agent-mkt-growth": { deskPos: { x: 1.5, z: -12.5 }, chairPos: { x: 1.5, z: -11.4, rotY: 0 }, floor: 3 },
-      "agent-sales-director": { deskPos: { x: -8.5, z: -12.5 }, chairPos: { x: -8.5, z: -10.8, rotY: 0 }, floor: 3 },
-      "agent-design-lead": { deskPos: { x: 1.5, z: -12.5 }, chairPos: { x: 1.5, z: -11.4, rotY: 0 }, floor: 4 },
-      "agent-eng-lead": { deskPos: { x: 1.5, z: -12.5 }, chairPos: { x: 1.5, z: -11.4, rotY: 0 }, floor: 5 },
-      "agent-research-ai": { deskPos: { x: -8.5, z: -12.5 }, chairPos: { x: -8.5, z: -10.8, rotY: 0 }, floor: 6 },
+      "agent-exec-ceo": { deskPos: { x: -20.0, z: -12.5 }, chairPos: { x: -20.0, z: -11.4, rotY: 0 }, floor: 6 },
+      "agent-ops-recruiter": { deskPos: { x: -20.0, z: -12.5 }, chairPos: { x: -20.0, z: -11.4, rotY: 0 }, floor: 1 },
+      "agent-support-lead": { deskPos: { x: -20.0, z: -3.0 }, chairPos: { x: -20.0, z: -1.8, rotY: 0 }, floor: 1 },
+      "agent-fin-controller": { deskPos: { x: -20.0, z: -12.5 }, chairPos: { x: -20.0, z: -11.4, rotY: 0 }, floor: 2 },
+      "agent-mkt-growth": { deskPos: { x: -20.0, z: -12.5 }, chairPos: { x: -20.0, z: -11.4, rotY: 0 }, floor: 3 },
+      "agent-sales-director": { deskPos: { x: -20.0, z: -3.0 }, chairPos: { x: -20.0, z: -1.8, rotY: 0 }, floor: 3 },
+      "agent-design-lead": { deskPos: { x: -20.0, z: -12.5 }, chairPos: { x: -20.0, z: -11.4, rotY: 0 }, floor: 4 },
+      "agent-eng-lead": { deskPos: { x: -20.0, z: -12.5 }, chairPos: { x: -20.0, z: -11.4, rotY: 0 }, floor: 5 },
+      "agent-research-ai": { deskPos: { x: -20.0, z: -3.0 }, chairPos: { x: -20.0, z: -1.8, rotY: 0 }, floor: 6 },
     };
 
     Object.values(CANONICAL_AGENTS).forEach(ag => {
@@ -4037,7 +4200,7 @@ export default function MyOfficeDiorama({
       stopTrackingCamera();
       s.destX = 0;
       s.destY = baseY;
-      s.destZ = -1.5;
+      s.destZ = 11.5;
       s.destRadius = 26;
       s.destTheta = Math.PI / 4;
       s.destPhi = Math.PI / 3.3;
@@ -4045,9 +4208,9 @@ export default function MyOfficeDiorama({
       setZoomLevel(175);
     } else if (preset === "boardroom") {
       stopTrackingCamera();
-      s.destX = -17.5;
+      s.destX = -20.0;
       s.destY = baseY;
-      s.destZ = -9.0;
+      s.destZ = 8.5;
       s.destRadius = 20;
       s.destTheta = 0.65;
       s.destPhi = Math.PI / 3.6;
@@ -4055,12 +4218,21 @@ export default function MyOfficeDiorama({
       setZoomLevel(230);
     } else if (preset === "servers") {
       stopTrackingCamera();
-      s.destX = -18.5;
-      s.destY = baseY;
-      s.destZ = 1.0;
-      s.destRadius = 22;
-      s.destTheta = 0.85;
-      s.destPhi = Math.PI / 3.4;
+      if (currentFloorRef.current === 5) {
+        s.destX = 18.0;
+        s.destY = baseY;
+        s.destZ = -7.5;
+        s.destRadius = 20;
+        s.destTheta = 0.85;
+        s.destPhi = Math.PI / 3.4;
+      } else {
+        s.destX = 0;
+        s.destY = baseY;
+        s.destZ = 0.5;
+        s.destRadius = 24;
+        s.destTheta = Math.PI / 4;
+        s.destPhi = Math.PI / 3.2;
+      }
       s.isCinematicMoving = true;
       setZoomLevel(210);
     } else if (preset === "avatar") {
@@ -4788,8 +4960,8 @@ export default function MyOfficeDiorama({
                   : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
                 }`}
             >
-              <span>🖥️</span>
-              <span>Máy chủ</span>
+              <span>{currentFloor === 5 ? "🖥️" : "🛋️"}</span>
+              <span>{currentFloor === 5 ? "Máy chủ" : "Khu trung tâm"}</span>
             </button>
           </div>
 
