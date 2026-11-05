@@ -1340,9 +1340,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/v1/endpoints/agents.py": {
-    "mtime": 1793617251.1463943,
-    "seen": 1793617881.817642,
-    "ast_hash": "44a20f9a1ded88fb7c5d543cb52ffa9c",
+    "mtime": 1793768031.0076528,
+    "seen": 1793794565.8449512,
+    "ast_hash": "02c95271b31349ffd08fe87aa34e41d1",
     "semantic_hash": ""
   },
   "backend/app/api/v1/endpoints/approvals.py": {
@@ -1400,9 +1400,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/v1/router.py": {
-    "mtime": 1793641756.2393293,
-    "seen": 1793642717.242315,
-    "ast_hash": "44b737f8f342136710bc7146b25610c8",
+    "mtime": 1793736343.0728762,
+    "seen": 1793737252.8012328,
+    "ast_hash": "3b969dc8e6e20455119248c0de9711b2",
     "semantic_hash": ""
   },
   "backend/app/config.py": {
@@ -1436,9 +1436,9 @@
     "semantic_hash": "b74e4a77d8ede4055b82104383b22fb6"
   },
   "backend/app/main.py": {
-    "mtime": 1793520350.0875506,
-    "seen": 1793521073.686046,
-    "ast_hash": "22a0d8ee99f6966d45e77c781b7e1a51",
+    "mtime": 1793766756.8137853,
+    "seen": 1793767937.434515,
+    "ast_hash": "5f81b3dc00f7f3c0fc428540beec2c07",
     "semantic_hash": ""
   },
   "backend/app/models.py": {
@@ -1448,9 +1448,9 @@
     "semantic_hash": "2c7c550f80c25617e06b5e5b6b954310"
   },
   "backend/app/models/__init__.py": {
-    "mtime": 1793641323.6644576,
-    "seen": 1793642717.2423308,
-    "ast_hash": "49efffd392b02bbbaf427d73acea9ebd",
+    "mtime": 1793736214.7712793,
+    "seen": 1793737252.801249,
+    "ast_hash": "c211025f78a81c0a0a82c1ed60d59774",
     "semantic_hash": ""
   },
   "backend/app/models/agent.py": {
@@ -1544,9 +1544,9 @@
     "semantic_hash": "3dfee6ab9692a0503bc2d7624cb1ec8c"
   },
   "backend/app/schemas/agent.py": {
-    "mtime": 1793617164.0626552,
-    "seen": 1793617881.817695,
-    "ast_hash": "922e5af22c5b5a18567332eba7245538",
+    "mtime": 1793768031.162075,
+    "seen": 1793794565.845008,
+    "ast_hash": "359c7c34739fe46f05320925cd8bf73a",
     "semantic_hash": ""
   },
   "backend/app/schemas/approval.py": {
@@ -1604,9 +1604,9 @@
     "semantic_hash": ""
   },
   "backend/app/services/agent_service.py": {
-    "mtime": 1793617225.8700635,
-    "seen": 1793617881.8177102,
-    "ast_hash": "9a5666aa1dc3631ff273406251e98127",
+    "mtime": 1793768031.183973,
+    "seen": 1793794565.8450282,
+    "ast_hash": "845c3d90c073bf46e7284eea03049487",
     "semantic_hash": ""
   },
   "backend/app/services/approval_service.py": {
@@ -2289,40 +2289,10 @@
     "semantic_hash": "2c919a586571acc4a55eb62ceef53b5f"
   },
   "frontend/app/page.tsx": {
-    "mtime": 1793601665.7285368,
-    "seen": 1793604550.026386,
-    "ast_hash": "4a16d8507dfb63324ec82ec05031adfc",
+    "mtime": 1793735340.3040695,
+    "seen": 1793737252.801475,
+    "ast_hash": "f8dd8ef10dabeefd43958fa346b4f611",
     "semantic_hash": ""
-  },
-  "frontend/components/canvas/AgentAvatar.tsx": {
-    "mtime": 1793381021.3615572,
-    "seen": 1793384979.2890282,
-    "ast_hash": "d702efb5c36ec0677572034f27c386a4",
-    "semantic_hash": "d702efb5c36ec0677572034f27c386a4"
-  },
-  "frontend/components/canvas/CameraController.tsx": {
-    "mtime": 1793381021.3623803,
-    "seen": 1793384979.2890291,
-    "ast_hash": "bc65522ef4a01a1315aebc5b21f78d53",
-    "semantic_hash": "bc65522ef4a01a1315aebc5b21f78d53"
-  },
-  "frontend/components/canvas/CityCanvas.tsx": {
-    "mtime": 1793381021.3626263,
-    "seen": 1793384979.2890298,
-    "ast_hash": "c5eb32f67275ea5156d68cfa5ae48d73",
-    "semantic_hash": "c5eb32f67275ea5156d68cfa5ae48d73"
-  },
-  "frontend/components/canvas/IslandTerrain.tsx": {
-    "mtime": 1793381021.3620949,
-    "seen": 1793384979.289031,
-    "ast_hash": "51a7a51f8e9fd78dd69be0527508bdb8",
-    "semantic_hash": "51a7a51f8e9fd78dd69be0527508bdb8"
-  },
-  "frontend/components/canvas/Ocean.tsx": {
-    "mtime": 1793381021.3628852,
-    "seen": 1793384979.289032,
-    "ast_hash": "bc12bb79dd0da9131897b94d4b083ada",
-    "semantic_hash": "bc12bb79dd0da9131897b94d4b083ada"
   },
   "frontend/components/hud/CaptainApprovalModal.tsx": {
     "mtime": 1793381847.8214357,
@@ -2408,54 +2378,6 @@
     "ast_hash": "6b42480f6bc065d713111cd3feef0a92",
     "semantic_hash": ""
   },
-  "frontend/components/world/Pathways.tsx": {
-    "mtime": 1793382031.8695858,
-    "seen": 1793384979.2890508,
-    "ast_hash": "a76aded3a301cae6ed866f50a1e3aed3",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/TaskHandoffVFX.tsx": {
-    "mtime": 1793382019.5873384,
-    "seen": 1793384979.289052,
-    "ast_hash": "5ca4fed083131b9140e68e3e57c7db26",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/WorldCamera.tsx": {
-    "mtime": 1793382044.4629424,
-    "seen": 1793384979.289053,
-    "ast_hash": "887f6dfd9e2cfe31d4b8b5010df800d4",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/WorldCanvas.tsx": {
-    "mtime": 1793382055.232493,
-    "seen": 1793384979.289054,
-    "ast_hash": "fdf8ceb385b5511619da1c07077efbec",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/WorldLighting.tsx": {
-    "mtime": 1793381870.3238654,
-    "seen": 1793384979.2890549,
-    "ast_hash": "d45736e92d92495652a72a2e485ece53",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/characters/AgentCharacter.tsx": {
-    "mtime": 1793558107.7665572,
-    "seen": 1793560040.908397,
-    "ast_hash": "f8c64c3a9ed598489a31474b47093ca4",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/characters/AgentStatusIndicator.tsx": {
-    "mtime": 1793558107.8016105,
-    "seen": 1793560040.9083982,
-    "ast_hash": "a3a4bcbc243cdc405c0a6a5f03d6b23f",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/characters/CrewNavigation.ts": {
-    "mtime": 1793381021.359894,
-    "seen": 1793384979.2890592,
-    "ast_hash": "30b677e3157a97f6d65037fff7b5210b",
-    "semantic_hash": "30b677e3157a97f6d65037fff7b5210b"
-  },
   "frontend/data/areaConfig.ts": {
     "mtime": 1793381691.3322074,
     "seen": 1793384979.28906,
@@ -2481,9 +2403,9 @@
     "semantic_hash": "51e95cee301d36a895129a2fe20ce62e"
   },
   "frontend/lib/api/agents.ts": {
-    "mtime": 1793626998.7699895,
-    "seen": 1793630217.3973958,
-    "ast_hash": "17d14f4be80a35cd527fe873cdc3b111",
+    "mtime": 1793768031.5643847,
+    "seen": 1793794565.8452969,
+    "ast_hash": "c17567b8abcbaa4fd55d518de3d1a39a",
     "semantic_hash": ""
   },
   "frontend/lib/api/client.ts": {
@@ -2656,24 +2578,6 @@
     "mtime": 1793382275.400907,
     "seen": 1793384979.289043,
     "ast_hash": "b54698bef8aeea7f6c4875c1863269f7",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/OfficeArchitecture.tsx": {
-    "mtime": 1793381907.2060354,
-    "seen": 1793384979.289048,
-    "ast_hash": "3ebc4aa318a4f6df13661caddbccf52c",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/OfficeFurniture.tsx": {
-    "mtime": 1793381951.2904584,
-    "seen": 1793384979.28905,
-    "ast_hash": "978ce9bcd4bdcb32ce2b7077404dfa73",
-    "semantic_hash": ""
-  },
-  "frontend/components/world/characters/CorporateAgentAvatar.tsx": {
-    "mtime": 1793558107.831123,
-    "seen": 1793560040.908399,
-    "ast_hash": "09b695064dfd8cbe7b06c7a656128208",
     "semantic_hash": ""
   },
   "ARCHITECTURE.md": {
@@ -6145,9 +6049,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/v1/endpoints/specialists.py": {
-    "mtime": 1793467180.0513747,
-    "seen": 1793471403.166209,
-    "ast_hash": "7ea0e7bf03f804dd96e601fffa07f6dd",
+    "mtime": 1793800298.7774131,
+    "seen": 1793806864.267852,
+    "ast_hash": "73f8dc412fbd410d80dfad45829b1eb1",
     "semantic_hash": ""
   },
   "backend/app/models/specialist.py": {
@@ -6175,9 +6079,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/v1/endpoints/recruitment.py": {
-    "mtime": 1793460693.443366,
-    "seen": 1793462524.845079,
-    "ast_hash": "5d14730171d8ce571efe2e6794f2ce87",
+    "mtime": 1793766749.4124825,
+    "seen": 1793767937.4344928,
+    "ast_hash": "f8ed56e6330265d47239e6e49aa878a3",
     "semantic_hash": ""
   },
   "backend/app/models/recruitment.py": {
@@ -6199,15 +6103,15 @@
     "semantic_hash": ""
   },
   "frontend/components/hud/SpecialistRecruitmentModal.tsx": {
-    "mtime": 1793467169.5146322,
-    "seen": 1793471403.166411,
-    "ast_hash": "bc546883cda6d29e0d5c6070e5fb3435",
+    "mtime": 1793768031.4001935,
+    "seen": 1793794565.8452191,
+    "ast_hash": "9fa5343ed791934681041e23643c6445",
     "semantic_hash": ""
   },
   "frontend/lib/api/recruitment.ts": {
-    "mtime": 1793386546.8123126,
-    "seen": 1793386739.4701781,
-    "ast_hash": "bfd511dfc393267c5668358090158c80",
+    "mtime": 1793768031.5776749,
+    "seen": 1793794565.845302,
+    "ast_hash": "ad38d8013a0645ed432df8dca548f0ce",
     "semantic_hash": ""
   },
   "backend/app/autonomous_company/__init__.py": {
@@ -6379,9 +6283,9 @@
     "semantic_hash": ""
   },
   "backend/app/services/workstation_service.py": {
-    "mtime": 1793617266.8491411,
-    "seen": 1793617881.817722,
-    "ast_hash": "a5897f1ed2d84506b529a3810696e602",
+    "mtime": 1793768031.23423,
+    "seen": 1793794565.845045,
+    "ast_hash": "a1f53b1223974498f24ad412ee926c65",
     "semantic_hash": ""
   },
   "backend/app/tests/test_phase2_workforce_integrity.py": {
@@ -7537,9 +7441,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/DepartmentZone.tsx": {
-    "mtime": 1793725255.779373,
-    "seen": 1793726133.544487,
-    "ast_hash": "3b81e31ceea36b481bbb319d4fdd80a8",
+    "mtime": 1793735828.3284082,
+    "seen": 1793737252.801496,
+    "ast_hash": "df83b06d206a3378f8975f997aaeba55",
     "semantic_hash": ""
   },
   "frontend/components/office/EmptyOfficeState.tsx": {
@@ -7549,15 +7453,15 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeCamera.tsx": {
-    "mtime": 1793696076.362254,
-    "seen": 1793704538.112774,
-    "ast_hash": "2ff2ab5ac34f84187c55e719cbef53e0",
+    "mtime": 1793735828.3294997,
+    "seen": 1793737252.801506,
+    "ast_hash": "a836575a536f8c49466cce8fdb0d46c9",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeCanvas.tsx": {
-    "mtime": 1793722637.9372892,
-    "seen": 1793723844.619501,
-    "ast_hash": "cf2b272b44da8ba6feb248b4765e141d",
+    "mtime": 1793735828.3298903,
+    "seen": 1793737252.801507,
+    "ast_hash": "fa4ea1896ccda42592a9cf3612b94cb1",
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeEnvironment.tsx": {
@@ -7591,9 +7495,9 @@
     "semantic_hash": ""
   },
   "frontend/components/office/OfficeScene.tsx": {
-    "mtime": 1793724096.3337667,
-    "seen": 1793726133.54453,
-    "ast_hash": "0f53007139fd0d15f8f026b77568f733",
+    "mtime": 1793735828.330139,
+    "seen": 1793737252.801513,
+    "ast_hash": "9bfce778fb56901a172d960aa7da534f",
     "semantic_hash": ""
   },
   "frontend/components/office/Workstation.tsx": {
@@ -7981,8 +7885,8 @@
     "semantic_hash": ""
   },
   "frontend/store/meetingStore.ts": {
-    "mtime": 1793710182.2046576,
-    "seen": 1793713913.023135,
+    "mtime": 1793733334.6475942,
+    "seen": 1793737252.80158,
     "ast_hash": "2200375055ac14f588a9a6a33d293578",
     "semantic_hash": ""
   },
@@ -8425,14 +8329,14 @@
     "semantic_hash": ""
   },
   "frontend/components/office/CorporateBuilding.tsx": {
-    "mtime": 1793725223.507238,
-    "seen": 1793726133.5444841,
-    "ast_hash": "b462365df78edbf5cd11747ddf9b0492",
+    "mtime": 1793735828.3279662,
+    "seen": 1793737252.801495,
+    "ast_hash": "73f33f64f17ed56ea5cbb083eb7d9056",
     "semantic_hash": ""
   },
   "frontend/components/office/FloorInteriors.tsx": {
-    "mtime": 1793725243.4313958,
-    "seen": 1793726133.544492,
+    "mtime": 1793727153.143127,
+    "seen": 1793732620.134638,
     "ast_hash": "da35cae6ec04d03af95c7980b773ddcf",
     "semantic_hash": ""
   },
@@ -8635,14 +8539,14 @@
     "semantic_hash": ""
   },
   "frontend/components/office/InstancedAgents.tsx": {
-    "mtime": 1793725168.097911,
-    "seen": 1793726133.544495,
-    "ast_hash": "bfd89a276ee8e99b718a39e184e47928",
+    "mtime": 1793735828.3290668,
+    "seen": 1793737252.8014998,
+    "ast_hash": "7e48a6e2869e758c236cfd8e54d59963",
     "semantic_hash": ""
   },
   "frontend/components/office/InstancedWorkstations.tsx": {
-    "mtime": 1793725190.155318,
-    "seen": 1793726133.544497,
+    "mtime": 1793727153.2648437,
+    "seen": 1793732620.1346402,
     "ast_hash": "e8cbd764e63bf236f246336251fb97b2",
     "semantic_hash": ""
   },
@@ -8677,15 +8581,231 @@
     "semantic_hash": ""
   },
   "frontend/lib/simulation/officeSimulationEngine.ts": {
-    "mtime": 1793725338.884145,
-    "seen": 1793726133.544706,
-    "ast_hash": "ea178cf21ac0a217a4377049def82282",
+    "mtime": 1793735828.3314888,
+    "seen": 1793737252.801572,
+    "ast_hash": "4107654a9dbb70dcd935dcd2d9a057a3",
     "semantic_hash": ""
   },
   "frontend/tests/phase4_simulation_engine.test.ts": {
-    "mtime": 1793725301.5873854,
-    "seen": 1793726133.544787,
+    "mtime": 1793727153.3784485,
+    "seen": 1793732620.134754,
     "ast_hash": "d09026ef255969057b850a0ff0f8aeac",
+    "semantic_hash": ""
+  },
+  "frontend/components/chat/AgentChatCommandCenter.tsx": {
+    "mtime": 1793735828.3273425,
+    "seen": 1793737252.801476,
+    "ast_hash": "9b7bafbe3134ad9cd19e4ec682fdb16a",
+    "semantic_hash": ""
+  },
+  "frontend/components/office/ElevatorSystem.tsx": {
+    "mtime": 1793735828.3285804,
+    "seen": 1793737252.801497,
+    "ast_hash": "2f10f121543dc303bc89c2624729d226",
+    "semantic_hash": ""
+  },
+  "frontend/components/office/SimulationHUD.tsx": {
+    "mtime": 1793735828.3303316,
+    "seen": 1793737252.801514,
+    "ast_hash": "5afb6fa7218e56f639d1619c2ec63d0f",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/phase5_simulation_game.spec.ts": {
+    "mtime": 1793735828.3306315,
+    "seen": 1793737252.801544,
+    "ast_hash": "5c7494c975d492421b4a8f9f88fc20fc",
+    "semantic_hash": ""
+  },
+  "frontend/lib/ai/agentRouter.ts": {
+    "mtime": 1793735828.3307986,
+    "seen": 1793737252.801553,
+    "ast_hash": "648201870d3f9a258434ac0998edd405",
+    "semantic_hash": ""
+  },
+  "frontend/lib/office/floorDefinitions.ts": {
+    "mtime": 1793747751.2406564,
+    "seen": 1793767937.434839,
+    "ast_hash": "e55e4148ba523cef289383fd7e15f842",
+    "semantic_hash": ""
+  },
+  "frontend/lib/office/workstationCoordinates.ts": {
+    "mtime": 1793735828.3312697,
+    "seen": 1793737252.80157,
+    "ast_hash": "4e2037eda942042628d41cfd2e2eaeb0",
+    "semantic_hash": ""
+  },
+  "frontend/tests/phase5_simulation_game.test.ts": {
+    "mtime": 1793735828.3317528,
+    "seen": 1793737252.801601,
+    "ast_hash": "393809958468505f4c0a096821694fc8",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/agent_city_5_0/screenshot_01_game_overview_simulation.png": {
+    "mtime": 1793732519.0993235,
+    "seen": 1793732620.1357281,
+    "ast_hash": "3db60e920231eb2321308b16aab174de",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/agent_city_5_0/screenshot_02_chibi_characters_sitting.png": {
+    "mtime": 1793732524.2021248,
+    "seen": 1793732620.1357288,
+    "ast_hash": "7dd50e146130bdaeff8affa756c1d5e6",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/agent_city_5_0/screenshot_03_interactive_elevator.png": {
+    "mtime": 1793732528.6045802,
+    "seen": 1793732620.13573,
+    "ast_hash": "94d09de788e6f2b7f3ab171fc7221df3",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/agent_city_5_0/screenshot_04_ai_command_center.png": {
+    "mtime": 1793732537.3927307,
+    "seen": 1793732620.135731,
+    "ast_hash": "25d1371a358d22d4eba6dd629a8dcaae",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/agent_city_5_0/screenshot_05_camera_drag_rotated.png": {
+    "mtime": 1793732552.975793,
+    "seen": 1793732620.135732,
+    "ast_hash": "ebbf977729f18c6e4347950cf353ac50",
+    "semantic_hash": ""
+  },
+  "backend/app/api/v1/endpoints/conversations.py": {
+    "mtime": 1793737308.293106,
+    "seen": 1793767937.434486,
+    "ast_hash": "b31756758c2d0a4891a07b9056903373",
+    "semantic_hash": ""
+  },
+  "backend/app/models/conversation.py": {
+    "mtime": 1793737308.3829827,
+    "seen": 1793767937.4345229,
+    "ast_hash": "68cf1b31e0500a2b0897a11d04abedb4",
+    "semantic_hash": ""
+  },
+  "backend/app/services/conversation_service.py": {
+    "mtime": 1793806600.9181576,
+    "seen": 1793806864.267925,
+    "ast_hash": "f69c98509fe93ea9d0b0108175c03054",
+    "semantic_hash": ""
+  },
+  "frontend/components/office/MyOfficeDiorama.tsx": {
+    "mtime": 1793806487.8784788,
+    "seen": 1793806864.268148,
+    "ast_hash": "1df8771b5ecd601c2b4aad3688103983",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/agent_city_5_1_certification.spec.ts": {
+    "mtime": 1793747745.6714833,
+    "seen": 1793767937.434792,
+    "ast_hash": "e01214b7af6c3bc17e597e78804b9ea2",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/my_office_diorama.spec.ts": {
+    "mtime": 1793734767.3716993,
+    "seen": 1793737252.8015392,
+    "ast_hash": "357a06e03040b9218b1dda3930515b2e",
+    "semantic_hash": ""
+  },
+  "frontend/lib/office/departmentFloorMapping.ts": {
+    "mtime": 1793804755.715319,
+    "seen": 1793806864.268221,
+    "ast_hash": "fd8d150435c4e5c64c1dab0e124f5b05",
+    "semantic_hash": ""
+  },
+  "test-results/.last-run.json": {
+    "mtime": 1793737213.7520287,
+    "seen": 1793737252.8016388,
+    "ast_hash": "f196824657d8858bc7fa44eecbba38b1",
+    "semantic_hash": ""
+  },
+  "frontend/docs/screenshots/my_office/01_my_office_1f_tech.png": {
+    "mtime": 1793735249.870135,
+    "seen": 1793737252.802465,
+    "ast_hash": "7bf948ace9ab0c12da6132d6aa330743",
+    "semantic_hash": ""
+  },
+  "frontend/docs/screenshots/my_office/02_elevator_remote_keypad.png": {
+    "mtime": 1793735251.2108881,
+    "seen": 1793737252.802465,
+    "ast_hash": "ad23a527690714f39d62d8bfb805e577",
+    "semantic_hash": ""
+  },
+  "frontend/docs/screenshots/my_office/03_my_office_2f_finance.png": {
+    "mtime": 1793735253.9458644,
+    "seen": 1793737252.8024662,
+    "ast_hash": "9fbe13a6248b366cc521e8cb95eb672a",
+    "semantic_hash": ""
+  },
+  "frontend/docs/screenshots/my_office/04_my_office_3f_creative.png": {
+    "mtime": 1793735256.663245,
+    "seen": 1793737252.802467,
+    "ast_hash": "30c1adf9df7ffe4cbbff817d22f8abe6",
+    "semantic_hash": ""
+  },
+  "frontend/docs/screenshots/my_office/05_my_office_4f_executive.png": {
+    "mtime": 1793735262.4851851,
+    "seen": 1793737252.802468,
+    "ast_hash": "b47073ab6d49b6ec09f39e29b6651522",
+    "semantic_hash": ""
+  },
+  "frontend/docs/screenshots/my_office/06_smart_auto_router_in_action.png": {
+    "mtime": 1793735268.1660824,
+    "seen": 1793737252.802469,
+    "ast_hash": "23f18b498756d84708daf9d8326ffd57",
+    "semantic_hash": ""
+  },
+  "backend/app/services/workforce_provisioning_service.py": {
+    "mtime": 1793800297.9617658,
+    "seen": 1793806864.267937,
+    "ast_hash": "81ddb8db079ca7883ab7df2ed2ab1944",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_agent_city_5_1_8_workforce.py": {
+    "mtime": 1793768000.8350742,
+    "seen": 1793794565.845129,
+    "ast_hash": "ab3a5605ac0601ebef6ffb015a6dd7bd",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_workforce_provisioning.py": {
+    "mtime": 1793768031.2613692,
+    "seen": 1793794565.845133,
+    "ast_hash": "cbdeaf8aaf41a221077d379dea89766b",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/agent_city_5_1_8_workforce_e2e.spec.ts": {
+    "mtime": 1793768031.5536432,
+    "seen": 1793794565.845262,
+    "ast_hash": "094215b54439d34c6fc6c8d56fdb3d68",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/agent_city_5_1_9_audit.spec.ts": {
+    "mtime": 1793794244.4016013,
+    "seen": 1793794565.845263,
+    "ast_hash": "4a7e33d7cbe1fdecb20ab27562e56f84",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/audit_5_1_9_benchmark_raw.json": {
+    "mtime": 1793794461.1815012,
+    "seen": 1793794565.8452659,
+    "ast_hash": "98eea788bf2270b8cce8467f8c6a08b0",
+    "semantic_hash": ""
+  },
+  "workforce_mapping_5_1_9.json": {
+    "mtime": 1793793690.591215,
+    "seen": 1793794565.845388,
+    "ast_hash": "1f7a60b6a6c4f9b869e213734843fcc5",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/targeted_specialist_audit.spec.ts": {
+    "mtime": 1793805992.4575357,
+    "seen": 1793806864.268199,
+    "ast_hash": "7a26a838a7d8d25e9e3f4c1648263684",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/cozy_office_5_2_verification.spec.ts": {
+    "mtime": 1793806785.1795273,
+    "seen": 1793806864.268179,
+    "ast_hash": "091c6babec1ac151b99fcdd9eb43bf89",
     "semantic_hash": ""
   },
   "frontend/package-lock.json": {

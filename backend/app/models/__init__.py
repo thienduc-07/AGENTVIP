@@ -23,6 +23,10 @@ from backend.app.models.execution import (
     ExecutionModel,
     TerminalLineModel,
 )
+from backend.app.models.conversation import (
+    ConversationModel,
+    ConversationMessageModel,
+)
 
 __all__ = [
     "AgentModel",
@@ -52,5 +56,7 @@ __all__ = [
     "MeetingTranscriptModel",
     "ExecutionModel",
     "TerminalLineModel",
+    "ConversationModel",
+    "ConversationMessageModel",
 ]
 

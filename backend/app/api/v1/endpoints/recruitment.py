@@ -369,3 +369,18 @@ def get_agent_performance(
             detail=f"Performance record for agent '{agent_id}' not found.",
         )
     return perf.to_dict()
+
+@router.post("/provision-workforce")
+def provision_workforce(
+    organization_id: Optional[str] = Query("org_default_company"),
+    db: Session = Depends(get_db),
+):
+    """
+    Idempotently provision all 268 specialists into the company workforce.
+    Preserves leadership agents, creates missing agents, allocates collision-free workstations.
+    """
+    from backend.app.services.workforce_provisioning_service import workforce_provisioning_service
+    return workforce_provisioning_service.provision_full_workforce(
+        db=db,
+        organization_id=organization_id or "org_default_company",
+    )

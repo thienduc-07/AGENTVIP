@@ -36,6 +36,11 @@ async def lifespan(app: FastAPI):
     try:
         seed_database()
         logger.info("Corporate seed verified successfully.")
+
+        # Automatic Workforce Provisioning: Ensure all 268 specialists are integrated
+        from backend.app.services.workforce_provisioning_service import workforce_provisioning_service
+        workforce_provisioning_service.provision_full_workforce(db)
+        logger.info("Automatic workforce provisioning verified successfully.")
         
         # Initialize runtime and background task dispatcher
         if settings.DISPATCHER_ENABLED:

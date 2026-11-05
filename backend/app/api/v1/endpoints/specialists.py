@@ -120,7 +120,7 @@ def list_specialists(
     lifecycle_state: Optional[str] = Query(None, description="Filter by lifecycle state"),
     validation_status: Optional[str] = Query(None, description="Filter by validation status"),
     skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=500),
     db: Session = Depends(get_db),
 ):
     """
@@ -137,10 +137,16 @@ def list_specialists(
     if validation_status:
         query = query.filter(SpecialistDefinitionModel.validation_status == validation_status.upper())
     if search:
-        s = f"%{search.strip()}%"
+        raw_s = search.strip()
+        s = f"%{raw_s}%"
+        slug_s = f"%{raw_s.lower().replace(' ', '-')}%"
+        and_s = f"%{raw_s.replace('3D Scene', '3D & Scene')}%"
         query = query.filter(
             or_(
                 SpecialistDefinitionModel.name.ilike(s),
+                SpecialistDefinitionModel.name.ilike(and_s),
+                SpecialistDefinitionModel.slug.ilike(s),
+                SpecialistDefinitionModel.slug.ilike(slug_s),
                 SpecialistDefinitionModel.role.ilike(s),
                 SpecialistDefinitionModel.description.ilike(s),
             )

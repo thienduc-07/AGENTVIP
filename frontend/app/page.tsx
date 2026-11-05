@@ -13,11 +13,15 @@ import InteractiveMissionTerminal from "@/components/hud/InteractiveMissionTermi
 import { useWorldStore } from "@/store/worldStore";
 import { PendingAction, Task, EventLog } from "@/types";
 import { getAgents } from "@/lib/api/agents";
+import { ensureAuthenticatedSession } from "@/lib/api/client";
 import { createTask } from "@/lib/api/tasks";
 import { syncManager } from "@/lib/websocket/syncManager";
 import { stateBridge } from "@/lib/stateBridge";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (typeof window !== "undefined" ? "" : "http://localhost:8000");
 
 const AGENT_MAPPING: Record<string, string> = {
   leo: "agent-eng-lead",
@@ -46,21 +50,30 @@ export default function CorporateHQ3DWorldPage() {
 
   // 1. Initial Data Fetch from FastAPI backend
   useEffect(() => {
-    fetchAgents();
-    checkPendingApprovals();
-  }, []);
+    let isMounted = true;
+    const initBackend = async () => {
+      setBackendStatus("connecting", null);
+      try {
+        await ensureAuthenticatedSession();
+        if (!isMounted) return;
+        const data = await getAgents();
+        if (!isMounted) return;
+        syncAgentsFromBackend(data);
+        setBackendStatus("connected", null);
+        syncManager.connect();
+      } catch (err: any) {
+        console.warn("Backend API not reachable:", err);
+        setBackendStatus("error", err?.message || "Không thể kết nối tới backend");
+      }
+      checkPendingApprovals();
+    };
 
-  const fetchAgents = async () => {
-    setBackendStatus("connecting", null);
-    try {
-      const data = await getAgents();
-      syncAgentsFromBackend(data);
-      setBackendStatus("connected", null);
-    } catch (err: any) {
-      console.warn("Backend API not reachable:", err);
-      setBackendStatus("error", err?.message || "Không thể kết nối tới backend");
-    }
-  };
+    initBackend();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const checkPendingApprovals = async () => {
     try {
@@ -124,7 +137,6 @@ export default function CorporateHQ3DWorldPage() {
     });
 
     const stopBridge = stateBridge.start();
-    syncManager.connect();
 
     return () => {
       unsubSnapshot();

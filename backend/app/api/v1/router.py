@@ -17,6 +17,7 @@ from backend.app.api.v1.endpoints import (
     world,
     meetings,
     executions,
+    conversations,
 )
 
 api_v1_router = APIRouter(prefix="/api/v1")
@@ -37,6 +38,7 @@ api_v1_router.include_router(specialists.router, prefix="/specialists", tags=["s
 api_v1_router.include_router(recruitment.router, prefix="/recruitment", tags=["recruitment"])
 api_v1_router.include_router(workstations.router)
 api_v1_router.include_router(executions.router)
+api_v1_router.include_router(conversations.router)
 api_v1_router.include_router(world.router)
 api_v1_router.include_router(meetings.router)
 

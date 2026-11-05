@@ -13,7 +13,7 @@ from backend.app.models.recruitment import RecruitmentRecordModel
 class AgentService:
     @staticmethod
     def list_agents(db: Session, organization_id: Optional[str] = None, limit: int = 50, offset: int = 0) -> List[AgentModel]:
-        limit = min(max(1, limit), 100)
+        limit = min(max(1, limit), 500)
         offset = max(0, offset)
         if organization_id:
             recruited_ids = [

@@ -93,7 +93,7 @@ export default function SpecialistRecruitmentModal() {
         division: selectedDivision !== "all" ? selectedDivision : undefined,
         department: selectedDepartment !== "all" ? selectedDepartment : undefined,
         search: searchQuery.trim() || undefined,
-        limit: 100,
+        limit: 300,
       });
       setSpecialists(res.items);
       setTotalCount(res.total);
@@ -610,20 +610,27 @@ export default function SpecialistRecruitmentModal() {
               >
                 Close
               </button>
-              <button
-                onClick={handleRecruitSubmit}
-                disabled={isRecruiting}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-500/25 transition-all cursor-pointer flex items-center gap-2"
-              >
-                {isRecruiting ? (
-                  <span className="animate-pulse">Deploying Specialist...</span>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    Recruit & Deploy to Department
-                  </>
-                )}
-              </button>
+              {inspectingSpecialist.lifecycle_state === "ACTIVE" || inspectingSpecialist.lifecycle_state === "RECRUITED" ? (
+                <div className="px-5 py-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 font-bold flex items-center gap-2 cursor-default">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  Đã Biên Chế (Active in Company)
+                </div>
+              ) : (
+                <button
+                  onClick={handleRecruitSubmit}
+                  disabled={isRecruiting}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-500/25 transition-all cursor-pointer flex items-center gap-2"
+                >
+                  {isRecruiting ? (
+                    <span className="animate-pulse">Deploying Specialist...</span>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Recruit & Deploy to Department
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         )}

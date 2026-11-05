@@ -87,7 +87,7 @@ export class SyncManager {
   constructor(config: SyncManagerConfig = {}) {
     const defaultWsUrl =
       typeof window !== "undefined"
-        ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/api/v1/events/ws`
+        ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${process.env.NEXT_PUBLIC_WS_HOST || "localhost:8000"}/api/v1/events/ws`
         : "ws://localhost:8000/api/v1/events/ws";
 
     this.config = {
@@ -132,13 +132,19 @@ export class SyncManager {
       return;
     }
 
+    const activeToken = this.config.token || getAuthToken();
+    if (!activeToken && typeof window !== "undefined") {
+      // Defer connection until authenticated session token is available
+      return;
+    }
+
     this.isIntentionallyClosed = false;
     this.cleanupSocket();
     this.setConnectionState("CONNECTING");
 
     try {
       const url = this.buildWebSocketUrl();
-      const protocols = this.config.token ? [`bearer.${this.config.token}`] : undefined;
+      const protocols = activeToken ? [`bearer.${activeToken}`] : undefined;
       this.ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
       this.setupSocketHandlers(this.ws);
     } catch (err: any) {

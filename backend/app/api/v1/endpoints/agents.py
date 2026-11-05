@@ -47,7 +47,7 @@ def get_agent_registry_definition(agent_type: str):
 
 @router.get("", response_model=List[AgentResponse])
 def list_agents(
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     tenant_org: str = Depends(get_current_tenant_org),
     user: UserContext = Depends(get_current_user),

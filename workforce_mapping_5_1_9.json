@@ -1,0 +1,2210 @@
+[
+  {
+    "backend_agent_id": "agent-spec-academic-anthropologist-c379b465",
+    "frontend_character_id": "agent-spec-academic-anthropologist-c379b465",
+    "floor": 6,
+    "division": "academic",
+    "workstation": "Desk #2 (4.7, 1.5)",
+    "room": "academic_fellowship"
+  },
+  {
+    "backend_agent_id": "agent-spec-academic-geographer",
+    "frontend_character_id": "agent-spec-academic-geographer",
+    "floor": 6,
+    "division": "academic",
+    "workstation": "Desk #4 (2.5, 3.5)",
+    "room": "academic_fellowship"
+  },
+  {
+    "backend_agent_id": "agent-spec-academic-historian",
+    "frontend_character_id": "agent-spec-academic-historian",
+    "floor": 6,
+    "division": "academic",
+    "workstation": "Desk #5 (4.7, 3.5)",
+    "room": "academic_fellowship"
+  },
+  {
+    "backend_agent_id": "agent-spec-academic-narratologist",
+    "frontend_character_id": "agent-spec-academic-narratologist",
+    "floor": 6,
+    "division": "academic",
+    "workstation": "Desk #3 (6.9, 1.5)",
+    "room": "academic_fellowship"
+  },
+  {
+    "backend_agent_id": "agent-spec-academic-psychologist",
+    "frontend_character_id": "agent-spec-academic-psychologist",
+    "floor": 6,
+    "division": "academic",
+    "workstation": "Desk #7 (2.5, 5.5)",
+    "room": "academic_fellowship"
+  },
+  {
+    "backend_agent_id": "agent-spec-academic-statistician",
+    "frontend_character_id": "agent-spec-academic-statistician",
+    "floor": 6,
+    "division": "academic",
+    "workstation": "Desk #6 (6.9, 3.5)",
+    "room": "academic_fellowship"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-brand-guardian",
+    "frontend_character_id": "agent-spec-design-brand-guardian",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #5 (-11.5, -3.7)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-image-prompt-engineer",
+    "frontend_character_id": "agent-spec-design-image-prompt-engineer",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #8 (-4.9, -3.7)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-inclusive-visuals-specialist",
+    "frontend_character_id": "agent-spec-design-inclusive-visuals-specialist",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #9 (-11.5, -1.9)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-persona-walkthrough",
+    "frontend_character_id": "agent-spec-design-persona-walkthrough",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #7 (-7.1, -3.7)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-ui-designer",
+    "frontend_character_id": "agent-spec-design-ui-designer",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #6 (-9.3, -3.7)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-ui-finish-gate-reviewer",
+    "frontend_character_id": "agent-spec-design-ui-finish-gate-reviewer",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #1 (-11.5, -5.5)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-ux-architect",
+    "frontend_character_id": "agent-spec-design-ux-architect",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #2 (-9.3, -5.5)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-ux-researcher",
+    "frontend_character_id": "agent-spec-design-ux-researcher",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #4 (-4.9, -5.5)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-visual-storyteller",
+    "frontend_character_id": "agent-spec-design-visual-storyteller",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #10 (-9.3, -1.9)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-design-whimsy-injector",
+    "frontend_character_id": "agent-spec-design-whimsy-injector",
+    "floor": 4,
+    "division": "design",
+    "workstation": "Desk #3 (-7.1, -5.5)",
+    "room": "design_studio"
+  },
+  {
+    "backend_agent_id": "agent-eng-lead",
+    "frontend_character_id": "agent-eng-lead",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #1 (-12.2, -6.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-ai-data-remediation-engineer",
+    "frontend_character_id": "agent-spec-engineering-ai-data-remediation-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #61 (-4.8, 4.0)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-ai-engineer",
+    "frontend_character_id": "agent-spec-engineering-ai-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #36 (-12.2, -0.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-api-platform-engineer",
+    "frontend_character_id": "agent-spec-engineering-api-platform-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #30 (-10.3, -1.4)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-ats-validator-architect",
+    "frontend_character_id": "agent-spec-engineering-ats-validator-architect",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #20 (-3.0, -4.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-autonomous-optimization-architect",
+    "frontend_character_id": "agent-spec-engineering-autonomous-optimization-architect",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #9 (-10.3, -5.5)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-backend-architect",
+    "frontend_character_id": "agent-spec-engineering-backend-architect",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #13 (-3.0, -5.5)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-china-network-engineer",
+    "frontend_character_id": "agent-spec-engineering-china-network-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #15 (-12.2, -4.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-cms-developer",
+    "frontend_character_id": "agent-spec-engineering-cms-developer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #50 (-12.2, 2.6)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-code-reviewer",
+    "frontend_character_id": "agent-spec-engineering-code-reviewer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #14 (-1.1, -5.5)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-codebase-onboarding-engineer",
+    "frontend_character_id": "agent-spec-engineering-codebase-onboarding-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #47 (-4.8, 1.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-data-engineer",
+    "frontend_character_id": "agent-spec-engineering-data-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #55 (-3.0, 2.6)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-data-visualization-engineer",
+    "frontend_character_id": "agent-spec-engineering-data-visualization-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #5 (-4.8, -6.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-database-optimizer",
+    "frontend_character_id": "agent-spec-engineering-database-optimizer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #37 (-10.3, -0.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-database-reliability-engineer",
+    "frontend_character_id": "agent-spec-engineering-database-reliability-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #19 (-4.8, -4.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-desktop-app-engineer",
+    "frontend_character_id": "agent-spec-engineering-desktop-app-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #53 (-6.7, 2.6)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-developer-tooling-engineer",
+    "frontend_character_id": "agent-spec-engineering-developer-tooling-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #17 (-8.5, -4.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-devops-automator",
+    "frontend_character_id": "agent-spec-engineering-devops-automator",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #51 (-10.3, 2.6)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-drupal-performance",
+    "frontend_character_id": "agent-spec-engineering-drupal-performance",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #23 (-10.3, -2.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-drupal-shopping-cart",
+    "frontend_character_id": "agent-spec-engineering-drupal-shopping-cart",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #4 (-6.7, -6.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-electrical-engineer",
+    "frontend_character_id": "agent-spec-engineering-electrical-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #8 (-12.2, -5.5)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-email-intelligence-engineer",
+    "frontend_character_id": "agent-spec-engineering-email-intelligence-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #29 (-12.2, -1.4)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-embedded-firmware-engineer",
+    "frontend_character_id": "agent-spec-engineering-embedded-firmware-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #26 (-4.8, -2.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-feishu-integration-developer",
+    "frontend_character_id": "agent-spec-engineering-feishu-integration-developer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #31 (-8.5, -1.4)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-filament-optimization-specialist",
+    "frontend_character_id": "agent-spec-engineering-filament-optimization-specialist",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #12 (-4.8, -5.5)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-finops-engineer",
+    "frontend_character_id": "agent-spec-engineering-finops-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #35 (-1.1, -1.4)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-frontend-developer",
+    "frontend_character_id": "agent-spec-engineering-frontend-developer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #67 (-6.7, 5.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-gaussdb-expert",
+    "frontend_character_id": "agent-spec-engineering-gaussdb-expert",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #66 (-8.5, 5.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-git-workflow-master",
+    "frontend_character_id": "agent-spec-engineering-git-workflow-master",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #48 (-3.0, 1.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-i18n-engineer",
+    "frontend_character_id": "agent-spec-engineering-i18n-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #59 (-8.5, 4.0)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-identity-access-engineer",
+    "frontend_character_id": "agent-spec-engineering-identity-access-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #39 (-6.7, -0.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-incident-response-commander",
+    "frontend_character_id": "agent-spec-engineering-incident-response-commander",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #64 (-12.2, 5.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-iot-fleet-engineer",
+    "frontend_character_id": "agent-spec-engineering-iot-fleet-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #24 (-8.5, -2.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-it-service-manager",
+    "frontend_character_id": "agent-spec-engineering-it-service-manager",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #44 (-10.3, 1.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-knowledge-graph-engineer",
+    "frontend_character_id": "agent-spec-engineering-knowledge-graph-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #40 (-4.8, -0.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-llm-post-training-engineer",
+    "frontend_character_id": "agent-spec-engineering-llm-post-training-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #41 (-3.0, -0.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-minimal-change-engineer",
+    "frontend_character_id": "agent-spec-engineering-minimal-change-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #7 (-1.1, -6.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-mobile-app-builder",
+    "frontend_character_id": "agent-spec-engineering-mobile-app-builder",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #3 (-8.5, -6.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-mobile-release-engineer",
+    "frontend_character_id": "agent-spec-engineering-mobile-release-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #58 (-10.3, 4.0)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-multi-agent-systems-architect",
+    "frontend_character_id": "agent-spec-engineering-multi-agent-systems-architect",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #42 (-1.1, -0.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-network-engineer",
+    "frontend_character_id": "agent-spec-engineering-network-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #54 (-4.8, 2.6)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-orgscript-engineer",
+    "frontend_character_id": "agent-spec-engineering-orgscript-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #32 (-6.7, -1.4)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-payments-billing-engineer",
+    "frontend_character_id": "agent-spec-engineering-payments-billing-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #28 (-1.1, -2.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-pdf-engine-architect",
+    "frontend_character_id": "agent-spec-engineering-pdf-engine-architect",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #57 (-12.2, 4.0)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-platform-engineer",
+    "frontend_character_id": "agent-spec-engineering-platform-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #33 (-4.8, -1.4)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-privacy-engineer",
+    "frontend_character_id": "agent-spec-engineering-privacy-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #21 (-1.1, -4.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-prompt-engineer",
+    "frontend_character_id": "agent-spec-engineering-prompt-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #43 (-12.2, 1.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-rag-pipeline-engineer",
+    "frontend_character_id": "agent-spec-engineering-rag-pipeline-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #45 (-8.5, 1.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-rapid-prototyper",
+    "frontend_character_id": "agent-spec-engineering-rapid-prototyper",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #25 (-6.7, -2.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-realtime-collaboration-engineer",
+    "frontend_character_id": "agent-spec-engineering-realtime-collaboration-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #60 (-6.7, 4.0)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-rust-refactoring-specialist",
+    "frontend_character_id": "agent-spec-engineering-rust-refactoring-specialist",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #11 (-6.7, -5.5)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-search-relevance-engineer",
+    "frontend_character_id": "agent-spec-engineering-search-relevance-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #63 (-1.1, 4.0)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-section-508-specialist",
+    "frontend_character_id": "agent-spec-engineering-section-508-specialist",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #34 (-3.0, -1.4)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-senior-developer",
+    "frontend_character_id": "agent-spec-engineering-senior-developer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #46 (-6.7, 1.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-servicenow-developer-mentor",
+    "frontend_character_id": "agent-spec-engineering-servicenow-developer-mentor",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #49 (-1.1, 1.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-software-architect",
+    "frontend_character_id": "agent-spec-engineering-software-architect",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #2 (-10.3, -6.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-solidity-smart-contract-engineer",
+    "frontend_character_id": "agent-spec-engineering-solidity-smart-contract-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #62 (-3.0, 4.0)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-sre",
+    "frontend_character_id": "agent-spec-engineering-sre",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #52 (-8.5, 2.6)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-technical-writer",
+    "frontend_character_id": "agent-spec-engineering-technical-writer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #18 (-6.7, -4.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-universal-document-compiler",
+    "frontend_character_id": "agent-spec-engineering-universal-document-compiler",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #16 (-10.3, -4.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-uswds-developer",
+    "frontend_character_id": "agent-spec-engineering-uswds-developer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #6 (-3.0, -6.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-video-streaming-engineer",
+    "frontend_character_id": "agent-spec-engineering-video-streaming-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #38 (-8.5, -0.1)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-voice-ai-integration-engineer",
+    "frontend_character_id": "agent-spec-engineering-voice-ai-integration-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #56 (-1.1, 2.6)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-webassembly-engineer",
+    "frontend_character_id": "agent-spec-engineering-webassembly-engineer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #10 (-8.5, -5.5)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-wechat-mini-program-developer",
+    "frontend_character_id": "agent-spec-engineering-wechat-mini-program-developer",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #22 (-12.2, -2.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-wordpress-performance",
+    "frontend_character_id": "agent-spec-engineering-wordpress-performance",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #65 (-10.3, 5.3)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-spec-engineering-wordpress-shopping-cart",
+    "frontend_character_id": "agent-spec-engineering-wordpress-shopping-cart",
+    "floor": 5,
+    "division": "engineering",
+    "workstation": "Desk #27 (-3.0, -2.8)",
+    "room": "engineering_bay"
+  },
+  {
+    "backend_agent_id": "agent-exec-ceo",
+    "frontend_character_id": "agent-exec-ceo",
+    "floor": 6,
+    "division": "executive",
+    "workstation": "Desk #1 (-4.5, 0.0)",
+    "room": "executive_suite"
+  },
+  {
+    "backend_agent_id": "agent-fin-controller",
+    "frontend_character_id": "agent-fin-controller",
+    "floor": 2,
+    "division": "finance",
+    "workstation": "Desk #1 (2.0, -5.0)",
+    "room": "finance_office"
+  },
+  {
+    "backend_agent_id": "agent-spec-finance-bookkeeper-controller",
+    "frontend_character_id": "agent-spec-finance-bookkeeper-controller",
+    "floor": 2,
+    "division": "finance",
+    "workstation": "Desk #6 (6.4, -3.0)",
+    "room": "finance_office"
+  },
+  {
+    "backend_agent_id": "agent-spec-finance-financial-analyst",
+    "frontend_character_id": "agent-spec-finance-financial-analyst",
+    "floor": 2,
+    "division": "finance",
+    "workstation": "Desk #3 (6.4, -5.0)",
+    "room": "finance_office"
+  },
+  {
+    "backend_agent_id": "agent-spec-finance-fpa-analyst",
+    "frontend_character_id": "agent-spec-finance-fpa-analyst",
+    "floor": 2,
+    "division": "finance",
+    "workstation": "Desk #5 (4.2, -3.0)",
+    "room": "finance_office"
+  },
+  {
+    "backend_agent_id": "agent-spec-finance-investment-researcher",
+    "frontend_character_id": "agent-spec-finance-investment-researcher",
+    "floor": 2,
+    "division": "finance",
+    "workstation": "Desk #4 (2.0, -3.0)",
+    "room": "finance_office"
+  },
+  {
+    "backend_agent_id": "agent-spec-finance-tax-strategist",
+    "frontend_character_id": "agent-spec-finance-tax-strategist",
+    "floor": 2,
+    "division": "finance",
+    "workstation": "Desk #2 (4.2, -5.0)",
+    "room": "finance_office"
+  },
+  {
+    "backend_agent_id": "agent-spec-economy-designer",
+    "frontend_character_id": "agent-spec-economy-designer",
+    "floor": 4,
+    "division": "game-development",
+    "workstation": "Desk #1 (2.0, -5.5)",
+    "room": "game_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-game-audio-engineer",
+    "frontend_character_id": "agent-spec-game-audio-engineer",
+    "floor": 4,
+    "division": "game-development",
+    "workstation": "Desk #2 (4.2, -5.5)",
+    "room": "game_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-game-designer-43630eb3",
+    "frontend_character_id": "agent-spec-game-designer-43630eb3",
+    "floor": 4,
+    "division": "game-development",
+    "workstation": "Desk #6 (6.4, -3.5)",
+    "room": "game_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-level-designer",
+    "frontend_character_id": "agent-spec-level-designer",
+    "floor": 4,
+    "division": "game-development",
+    "workstation": "Desk #4 (2.0, -3.5)",
+    "room": "game_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-narrative-designer",
+    "frontend_character_id": "agent-spec-narrative-designer",
+    "floor": 4,
+    "division": "game-development",
+    "workstation": "Desk #5 (4.2, -3.5)",
+    "room": "game_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-technical-artist",
+    "frontend_character_id": "agent-spec-technical-artist",
+    "floor": 4,
+    "division": "game-development",
+    "workstation": "Desk #3 (6.4, -5.5)",
+    "room": "game_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-3d-scene-developer",
+    "frontend_character_id": "agent-spec-gis-3d-scene-developer",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #5 (1.5, 6.2)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-analyst",
+    "frontend_character_id": "agent-spec-gis-analyst",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #13 (1.5, 8.6)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-bim-specialist",
+    "frontend_character_id": "agent-spec-gis-bim-specialist",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #7 (5.3, 6.2)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-cartography-designer",
+    "frontend_character_id": "agent-spec-gis-cartography-designer",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #11 (5.3, 7.4)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-drone-reality-mapping",
+    "frontend_character_id": "agent-spec-gis-drone-reality-mapping",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #6 (3.4, 6.2)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-geoai-ml-engineer",
+    "frontend_character_id": "agent-spec-gis-geoai-ml-engineer",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #1 (1.5, 5.0)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-geoprocessing-specialist",
+    "frontend_character_id": "agent-spec-gis-geoprocessing-specialist",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #2 (3.4, 5.0)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-qa-engineer",
+    "frontend_character_id": "agent-spec-gis-qa-engineer",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #4 (7.2, 5.0)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-solution-engineer",
+    "frontend_character_id": "agent-spec-gis-solution-engineer",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #10 (3.4, 7.4)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-spatial-data-engineer",
+    "frontend_character_id": "agent-spec-gis-spatial-data-engineer",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #12 (7.2, 7.4)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-spatial-data-scientist",
+    "frontend_character_id": "agent-spec-gis-spatial-data-scientist",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #3 (5.3, 5.0)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-technical-consultant",
+    "frontend_character_id": "agent-spec-gis-technical-consultant",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #8 (7.2, 6.2)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-gis-web-gis-developer",
+    "frontend_character_id": "agent-spec-gis-web-gis-developer",
+    "floor": 5,
+    "division": "gis",
+    "workstation": "Desk #9 (1.5, 7.4)",
+    "room": "gis_center"
+  },
+  {
+    "backend_agent_id": "agent-spec-healthcare-clinical-evidence-agent",
+    "frontend_character_id": "agent-spec-healthcare-clinical-evidence-agent",
+    "floor": 1,
+    "division": "healthcare",
+    "workstation": "Desk #2 (-5.8, 3.5)",
+    "room": "healthcare_desk"
+  },
+  {
+    "backend_agent_id": "agent-spec-healthcare-innovation-strategist",
+    "frontend_character_id": "agent-spec-healthcare-innovation-strategist",
+    "floor": 1,
+    "division": "healthcare",
+    "workstation": "Desk #3 (-3.6, 3.5)",
+    "room": "healthcare_desk"
+  },
+  {
+    "backend_agent_id": "agent-spec-healthcare-sovereign-health-systems-agent",
+    "frontend_character_id": "agent-spec-healthcare-sovereign-health-systems-agent",
+    "floor": 1,
+    "division": "healthcare",
+    "workstation": "Desk #1 (-8.0, 3.5)",
+    "room": "healthcare_desk"
+  },
+  {
+    "backend_agent_id": "agent-mkt-growth",
+    "frontend_character_id": "agent-mkt-growth",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #1 (-12.0, -6.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-aeo-foundations",
+    "frontend_character_id": "agent-spec-marketing-aeo-foundations",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #31 (-12.0, 0.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-agentic-search-optimizer",
+    "frontend_character_id": "agent-spec-marketing-agentic-search-optimizer",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #7 (-12.0, -5.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-ai-citation-strategist",
+    "frontend_character_id": "agent-spec-marketing-ai-citation-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #38 (-10.1, 1.6)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-app-store-optimizer",
+    "frontend_character_id": "agent-spec-marketing-app-store-optimizer",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #23 (-4.4, -2.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-baidu-seo-specialist",
+    "frontend_character_id": "agent-spec-marketing-baidu-seo-specialist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #19 (-12.0, -2.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-bilibili-content-strategist",
+    "frontend_character_id": "agent-spec-marketing-bilibili-content-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #32 (-10.1, 0.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-book-co-author",
+    "frontend_character_id": "agent-spec-marketing-book-co-author",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #4 (-6.3, -6.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-carousel-growth-engine",
+    "frontend_character_id": "agent-spec-marketing-carousel-growth-engine",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #18 (-2.5, -3.8)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-china-ecommerce-operator",
+    "frontend_character_id": "agent-spec-marketing-china-ecommerce-operator",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #10 (-6.3, -5.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-china-market-localization-strategist",
+    "frontend_character_id": "agent-spec-marketing-china-market-localization-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #24 (-2.5, -2.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-content-creator",
+    "frontend_character_id": "agent-spec-marketing-content-creator",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #30 (-2.5, -1.1)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-cross-border-ecommerce",
+    "frontend_character_id": "agent-spec-marketing-cross-border-ecommerce",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #5 (-4.4, -6.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-developer-community-builder",
+    "frontend_character_id": "agent-spec-marketing-developer-community-builder",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #13 (-12.0, -3.8)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-douyin-strategist",
+    "frontend_character_id": "agent-spec-marketing-douyin-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #2 (-10.1, -6.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-email-strategist",
+    "frontend_character_id": "agent-spec-marketing-email-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #37 (-12.0, 1.6)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-global-podcast-strategist",
+    "frontend_character_id": "agent-spec-marketing-global-podcast-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #8 (-10.1, -5.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-growth-hacker",
+    "frontend_character_id": "agent-spec-marketing-growth-hacker",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #35 (-4.4, 0.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-instagram-curator",
+    "frontend_character_id": "agent-spec-marketing-instagram-curator",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #11 (-4.4, -5.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-kuaishou-strategist",
+    "frontend_character_id": "agent-spec-marketing-kuaishou-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #14 (-10.1, -3.8)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-linkedin-content-creator",
+    "frontend_character_id": "agent-spec-marketing-linkedin-content-creator",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #21 (-8.2, -2.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-livestream-commerce-coach",
+    "frontend_character_id": "agent-spec-marketing-livestream-commerce-coach",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #28 (-6.3, -1.1)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-multi-platform-publisher",
+    "frontend_character_id": "agent-spec-marketing-multi-platform-publisher",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #9 (-8.2, -5.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-podcast-strategist",
+    "frontend_character_id": "agent-spec-marketing-podcast-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #33 (-8.2, 0.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-pr-communications-manager",
+    "frontend_character_id": "agent-spec-marketing-pr-communications-manager",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #36 (-2.5, 0.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-private-domain-operator",
+    "frontend_character_id": "agent-spec-marketing-private-domain-operator",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #17 (-4.4, -3.8)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-reddit-community-builder",
+    "frontend_character_id": "agent-spec-marketing-reddit-community-builder",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #6 (-2.5, -6.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-seo-specialist",
+    "frontend_character_id": "agent-spec-marketing-seo-specialist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #26 (-10.1, -1.1)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-short-video-editing-coach",
+    "frontend_character_id": "agent-spec-marketing-short-video-editing-coach",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #16 (-6.3, -3.8)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-social-media-strategist",
+    "frontend_character_id": "agent-spec-marketing-social-media-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #15 (-8.2, -3.8)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-tiktok-strategist",
+    "frontend_character_id": "agent-spec-marketing-tiktok-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #27 (-8.2, -1.1)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-twitter-engager",
+    "frontend_character_id": "agent-spec-marketing-twitter-engager",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #29 (-4.4, -1.1)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-video-optimization-specialist",
+    "frontend_character_id": "agent-spec-marketing-video-optimization-specialist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #12 (-2.5, -5.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-wechat-official-account",
+    "frontend_character_id": "agent-spec-marketing-wechat-official-account",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #22 (-6.3, -2.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-weibo-strategist",
+    "frontend_character_id": "agent-spec-marketing-weibo-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #20 (-10.1, -2.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-x-twitter-intelligence-analyst",
+    "frontend_character_id": "agent-spec-marketing-x-twitter-intelligence-analyst",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #25 (-12.0, -1.1)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-xiaohongshu-specialist",
+    "frontend_character_id": "agent-spec-marketing-xiaohongshu-specialist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #34 (-6.3, 0.2)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-marketing-zhihu-strategist",
+    "frontend_character_id": "agent-spec-marketing-zhihu-strategist",
+    "floor": 3,
+    "division": "marketing",
+    "workstation": "Desk #3 (-8.2, -6.5)",
+    "room": "marketing_studio"
+  },
+  {
+    "backend_agent_id": "agent-spec-paid-media-auditor",
+    "frontend_character_id": "agent-spec-paid-media-auditor",
+    "floor": 3,
+    "division": "paid-media",
+    "workstation": "Desk #3 (-7.6, 4.0)",
+    "room": "media_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-paid-media-creative-strategist",
+    "frontend_character_id": "agent-spec-paid-media-creative-strategist",
+    "floor": 3,
+    "division": "paid-media",
+    "workstation": "Desk #6 (-9.8, 5.8)",
+    "room": "media_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-paid-media-paid-social-strategist",
+    "frontend_character_id": "agent-spec-paid-media-paid-social-strategist",
+    "floor": 3,
+    "division": "paid-media",
+    "workstation": "Desk #5 (-12.0, 5.8)",
+    "room": "media_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-paid-media-ppc-strategist",
+    "frontend_character_id": "agent-spec-paid-media-ppc-strategist",
+    "floor": 3,
+    "division": "paid-media",
+    "workstation": "Desk #2 (-9.8, 4.0)",
+    "room": "media_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-paid-media-programmatic-buyer",
+    "frontend_character_id": "agent-spec-paid-media-programmatic-buyer",
+    "floor": 3,
+    "division": "paid-media",
+    "workstation": "Desk #1 (-12.0, 4.0)",
+    "room": "media_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-paid-media-search-query-analyst",
+    "frontend_character_id": "agent-spec-paid-media-search-query-analyst",
+    "floor": 3,
+    "division": "paid-media",
+    "workstation": "Desk #4 (-5.4, 4.0)",
+    "room": "media_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-paid-media-tracking-specialist",
+    "frontend_character_id": "agent-spec-paid-media-tracking-specialist",
+    "floor": 3,
+    "division": "paid-media",
+    "workstation": "Desk #7 (-7.6, 5.8)",
+    "room": "media_pod"
+  },
+  {
+    "backend_agent_id": "agent-ops-recruiter",
+    "frontend_character_id": "agent-ops-recruiter",
+    "floor": 1,
+    "division": "operations",
+    "workstation": "Desk #1 (-8.0, -4.5)",
+    "room": "operations_hub"
+  },
+  {
+    "backend_agent_id": "agent-spec-project-management-experiment-tracker",
+    "frontend_character_id": "agent-spec-project-management-experiment-tracker",
+    "floor": 4,
+    "division": "project-management",
+    "workstation": "Desk #7 (-3.5, 7.1)",
+    "room": "pm_command"
+  },
+  {
+    "backend_agent_id": "agent-spec-project-management-jira-workflow-steward",
+    "frontend_character_id": "agent-spec-project-management-jira-workflow-steward",
+    "floor": 4,
+    "division": "project-management",
+    "workstation": "Desk #4 (-3.5, 5.3)",
+    "room": "pm_command"
+  },
+  {
+    "backend_agent_id": "agent-spec-project-management-meeting-notes-specialist",
+    "frontend_character_id": "agent-spec-project-management-meeting-notes-specialist",
+    "floor": 4,
+    "division": "project-management",
+    "workstation": "Desk #3 (0.9, 3.5)",
+    "room": "pm_command"
+  },
+  {
+    "backend_agent_id": "agent-spec-project-management-project-shepherd",
+    "frontend_character_id": "agent-spec-project-management-project-shepherd",
+    "floor": 4,
+    "division": "project-management",
+    "workstation": "Desk #2 (-1.3, 3.5)",
+    "room": "pm_command"
+  },
+  {
+    "backend_agent_id": "agent-spec-project-management-studio-operations",
+    "frontend_character_id": "agent-spec-project-management-studio-operations",
+    "floor": 4,
+    "division": "project-management",
+    "workstation": "Desk #6 (0.9, 5.3)",
+    "room": "pm_command"
+  },
+  {
+    "backend_agent_id": "agent-spec-project-management-studio-producer",
+    "frontend_character_id": "agent-spec-project-management-studio-producer",
+    "floor": 4,
+    "division": "project-management",
+    "workstation": "Desk #1 (-3.5, 3.5)",
+    "room": "pm_command"
+  },
+  {
+    "backend_agent_id": "agent-spec-project-manager-senior",
+    "frontend_character_id": "agent-spec-project-manager-senior",
+    "floor": 4,
+    "division": "project-management",
+    "workstation": "Desk #5 (-1.3, 5.3)",
+    "room": "pm_command"
+  },
+  {
+    "backend_agent_id": "agent-spec-product-behavioral-nudge-engine",
+    "frontend_character_id": "agent-spec-product-behavioral-nudge-engine",
+    "floor": 4,
+    "division": "product",
+    "workstation": "Desk #6 (-7.1, 5.3)",
+    "room": "product_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-product-dx-engineer",
+    "frontend_character_id": "agent-spec-product-dx-engineer",
+    "floor": 4,
+    "division": "product",
+    "workstation": "Desk #2 (-9.3, 3.5)",
+    "room": "product_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-product-feedback-synthesizer",
+    "frontend_character_id": "agent-spec-product-feedback-synthesizer",
+    "floor": 4,
+    "division": "product",
+    "workstation": "Desk #1 (-11.5, 3.5)",
+    "room": "product_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-product-manager",
+    "frontend_character_id": "agent-spec-product-manager",
+    "floor": 4,
+    "division": "product",
+    "workstation": "Desk #3 (-7.1, 3.5)",
+    "room": "product_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-product-sprint-prioritizer",
+    "frontend_character_id": "agent-spec-product-sprint-prioritizer",
+    "floor": 4,
+    "division": "product",
+    "workstation": "Desk #5 (-9.3, 5.3)",
+    "room": "product_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-product-trend-researcher",
+    "frontend_character_id": "agent-spec-product-trend-researcher",
+    "floor": 4,
+    "division": "product",
+    "workstation": "Desk #4 (-11.5, 5.3)",
+    "room": "product_pod"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-accessibility-auditor",
+    "frontend_character_id": "agent-spec-testing-accessibility-auditor",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #9 (5.5, 3.0)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-api-tester",
+    "frontend_character_id": "agent-spec-testing-api-tester",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #2 (3.5, 0.0)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-evidence-collector",
+    "frontend_character_id": "agent-spec-testing-evidence-collector",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #7 (1.5, 3.0)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-performance-benchmarker",
+    "frontend_character_id": "agent-spec-testing-performance-benchmarker",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #5 (3.5, 1.5)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-reality-checker",
+    "frontend_character_id": "agent-spec-testing-reality-checker",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #4 (1.5, 1.5)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-test-automation-engineer",
+    "frontend_character_id": "agent-spec-testing-test-automation-engineer",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #1 (1.5, 0.0)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-test-results-analyzer",
+    "frontend_character_id": "agent-spec-testing-test-results-analyzer",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #6 (5.5, 1.5)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-tool-evaluator",
+    "frontend_character_id": "agent-spec-testing-tool-evaluator",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #8 (3.5, 3.0)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-testing-workflow-optimizer",
+    "frontend_character_id": "agent-spec-testing-workflow-optimizer",
+    "floor": 5,
+    "division": "testing",
+    "workstation": "Desk #3 (5.5, 0.0)",
+    "room": "qa_lab"
+  },
+  {
+    "backend_agent_id": "agent-research-ai",
+    "frontend_character_id": "agent-research-ai",
+    "floor": 6,
+    "division": "research",
+    "workstation": "Desk #1 (2.5, -5.0)",
+    "room": "research_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-research-synthesist",
+    "frontend_character_id": "agent-spec-research-synthesist",
+    "floor": 6,
+    "division": "research",
+    "workstation": "Desk #2 (4.7, -5.0)",
+    "room": "research_lab"
+  },
+  {
+    "backend_agent_id": "agent-sales-director",
+    "frontend_character_id": "agent-sales-director",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #1 (2.0, -5.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-account-strategist",
+    "frontend_character_id": "agent-spec-sales-account-strategist",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #5 (4.2, -3.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-coach",
+    "frontend_character_id": "agent-spec-sales-coach",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #3 (6.4, -5.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-deal-strategist",
+    "frontend_character_id": "agent-spec-sales-deal-strategist",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #6 (6.4, -3.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-discovery-coach",
+    "frontend_character_id": "agent-spec-sales-discovery-coach",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #2 (4.2, -5.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-engineer",
+    "frontend_character_id": "agent-spec-sales-engineer",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #10 (2.0, 1.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-offer-lead-gen-strategist",
+    "frontend_character_id": "agent-spec-sales-offer-lead-gen-strategist",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #8 (4.2, -1.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-outbound-strategist",
+    "frontend_character_id": "agent-spec-sales-outbound-strategist",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #7 (2.0, -1.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-pipeline-analyst",
+    "frontend_character_id": "agent-spec-sales-pipeline-analyst",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #9 (6.4, -1.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-proposal-strategist",
+    "frontend_character_id": "agent-spec-sales-proposal-strategist",
+    "floor": 3,
+    "division": "sales",
+    "workstation": "Desk #4 (2.0, -3.0)",
+    "room": "sales_wing"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-ai-generated-code-auditor",
+    "frontend_character_id": "agent-spec-security-ai-generated-code-auditor",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #10 (1.5, -2.0)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-appsec-engineer",
+    "frontend_character_id": "agent-spec-security-appsec-engineer",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #8 (3.5, -3.5)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-architect",
+    "frontend_character_id": "agent-spec-security-architect",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #2 (3.5, -6.5)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-blockchain-security-auditor",
+    "frontend_character_id": "agent-spec-security-blockchain-security-auditor",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #9 (5.5, -3.5)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-cloud-security-architect",
+    "frontend_character_id": "agent-spec-security-cloud-security-architect",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #5 (3.5, -5.0)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-compliance-auditor",
+    "frontend_character_id": "agent-spec-security-compliance-auditor",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #6 (5.5, -5.0)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-incident-responder",
+    "frontend_character_id": "agent-spec-security-incident-responder",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #7 (1.5, -3.5)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-penetration-tester",
+    "frontend_character_id": "agent-spec-security-penetration-tester",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #12 (5.5, -2.0)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-secrets-credential-engineer",
+    "frontend_character_id": "agent-spec-security-secrets-credential-engineer",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #1 (1.5, -6.5)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-senior-secops",
+    "frontend_character_id": "agent-spec-security-senior-secops",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #11 (3.5, -2.0)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-threat-detection-engineer",
+    "frontend_character_id": "agent-spec-security-threat-detection-engineer",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #4 (1.5, -5.0)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-security-threat-intelligence-analyst",
+    "frontend_character_id": "agent-spec-security-threat-intelligence-analyst",
+    "floor": 5,
+    "division": "security",
+    "workstation": "Desk #3 (5.5, -6.5)",
+    "room": "security_soc"
+  },
+  {
+    "backend_agent_id": "agent-spec-macos-spatial-metal-engineer",
+    "frontend_character_id": "agent-spec-macos-spatial-metal-engineer",
+    "floor": 4,
+    "division": "spatial-computing",
+    "workstation": "Desk #4 (2.0, 4.5)",
+    "room": "spatial_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-terminal-integration-specialist",
+    "frontend_character_id": "agent-spec-terminal-integration-specialist",
+    "floor": 4,
+    "division": "spatial-computing",
+    "workstation": "Desk #3 (6.4, 2.5)",
+    "room": "spatial_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-visionos-spatial-engineer",
+    "frontend_character_id": "agent-spec-visionos-spatial-engineer",
+    "floor": 4,
+    "division": "spatial-computing",
+    "workstation": "Desk #6 (6.4, 4.5)",
+    "room": "spatial_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-xr-cockpit-interaction-specialist",
+    "frontend_character_id": "agent-spec-xr-cockpit-interaction-specialist",
+    "floor": 4,
+    "division": "spatial-computing",
+    "workstation": "Desk #1 (2.0, 2.5)",
+    "room": "spatial_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-xr-immersive-developer",
+    "frontend_character_id": "agent-spec-xr-immersive-developer",
+    "floor": 4,
+    "division": "spatial-computing",
+    "workstation": "Desk #2 (4.2, 2.5)",
+    "room": "spatial_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-xr-interface-architect",
+    "frontend_character_id": "agent-spec-xr-interface-architect",
+    "floor": 4,
+    "division": "spatial-computing",
+    "workstation": "Desk #5 (4.2, 4.5)",
+    "room": "spatial_lab"
+  },
+  {
+    "backend_agent_id": "agent-spec-accounts-payable-agent",
+    "frontend_character_id": "agent-spec-accounts-payable-agent",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #7 (-0.6, -6.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-agentic-identity-trust",
+    "frontend_character_id": "agent-spec-agentic-identity-trust",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #17 (-8.2, -3.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-agents-orchestrator",
+    "frontend_character_id": "agent-spec-agents-orchestrator",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #39 (-6.3, 0.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-automation-governance-architect",
+    "frontend_character_id": "agent-spec-automation-governance-architect",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #57 (-12.0, 4.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-business-strategist",
+    "frontend_character_id": "agent-spec-business-strategist",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #52 (-8.2, 3.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-change-management-consultant",
+    "frontend_character_id": "agent-spec-change-management-consultant",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #6 (-2.5, -6.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-chief-financial-officer",
+    "frontend_character_id": "agent-spec-chief-financial-officer",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #42 (-0.6, 0.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-corporate-training-designer",
+    "frontend_character_id": "agent-spec-corporate-training-designer",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #27 (-2.5, -2.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-customer-service",
+    "frontend_character_id": "agent-spec-customer-service",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #12 (-4.4, -5.1)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-customer-success-manager",
+    "frontend_character_id": "agent-spec-customer-success-manager",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #16 (-10.1, -3.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-data-consolidation-agent",
+    "frontend_character_id": "agent-spec-data-consolidation-agent",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #51 (-10.1, 3.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-data-privacy-officer",
+    "frontend_character_id": "agent-spec-data-privacy-officer",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #13 (-2.5, -5.1)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-esg-sustainability-officer",
+    "frontend_character_id": "agent-spec-esg-sustainability-officer",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #40 (-4.4, 0.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-government-digital-presales-consultant",
+    "frontend_character_id": "agent-spec-government-digital-presales-consultant",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #18 (-6.3, -3.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-grant-writer",
+    "frontend_character_id": "agent-spec-grant-writer",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #14 (-0.6, -5.1)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-healthcare-aging-parent-care-companion",
+    "frontend_character_id": "agent-spec-healthcare-aging-parent-care-companion",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #19 (-4.4, -3.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-healthcare-customer-service",
+    "frontend_character_id": "agent-spec-healthcare-customer-service",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #9 (-10.1, -5.1)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-healthcare-marketing-compliance",
+    "frontend_character_id": "agent-spec-healthcare-marketing-compliance",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #24 (-8.2, -2.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-hospitality-guest-services",
+    "frontend_character_id": "agent-spec-hospitality-guest-services",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #3 (-8.2, -6.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-hr-onboarding",
+    "frontend_character_id": "agent-spec-hr-onboarding",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #15 (-12.0, -3.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-identity-graph-operator",
+    "frontend_character_id": "agent-spec-identity-graph-operator",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #10 (-8.2, -5.1)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-language-translator",
+    "frontend_character_id": "agent-spec-language-translator",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #59 (-8.2, 4.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-legal-billing-time-tracking",
+    "frontend_character_id": "agent-spec-legal-billing-time-tracking",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #8 (-12.0, -5.1)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-legal-client-intake",
+    "frontend_character_id": "agent-spec-legal-client-intake",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #5 (-4.4, -6.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-legal-document-review",
+    "frontend_character_id": "agent-spec-legal-document-review",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #45 (-8.2, 1.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-loan-officer-assistant",
+    "frontend_character_id": "agent-spec-loan-officer-assistant",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #56 (-0.6, 3.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-lsp-index-engineer",
+    "frontend_character_id": "agent-spec-lsp-index-engineer",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #31 (-8.2, -0.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-ma-integration-manager",
+    "frontend_character_id": "agent-spec-ma-integration-manager",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #34 (-2.5, -0.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-medical-billing-coding-specialist",
+    "frontend_character_id": "agent-spec-medical-billing-coding-specialist",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #25 (-6.3, -2.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-operations-manager",
+    "frontend_character_id": "agent-spec-operations-manager",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #37 (-10.1, 0.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-organizational-psychologist",
+    "frontend_character_id": "agent-spec-organizational-psychologist",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #32 (-6.3, -0.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-personal-growth-mentor",
+    "frontend_character_id": "agent-spec-personal-growth-mentor",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #29 (-12.0, -0.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-real-estate-buyer-seller",
+    "frontend_character_id": "agent-spec-real-estate-buyer-seller",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #54 (-4.4, 3.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-recruitment-specialist",
+    "frontend_character_id": "agent-spec-recruitment-specialist",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #4 (-6.3, -6.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-report-distribution-agent",
+    "frontend_character_id": "agent-spec-report-distribution-agent",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #55 (-2.5, 3.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-resume-tailor",
+    "frontend_character_id": "agent-spec-resume-tailor",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #47 (-4.4, 1.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-retail-customer-returns",
+    "frontend_character_id": "agent-spec-retail-customer-returns",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #23 (-10.1, -2.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-data-extraction-agent",
+    "frontend_character_id": "agent-spec-sales-data-extraction-agent",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #43 (-12.0, 1.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-sales-outreach",
+    "frontend_character_id": "agent-spec-sales-outreach",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #30 (-10.1, -0.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-chief-of-staff",
+    "frontend_character_id": "agent-spec-specialized-chief-of-staff",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #20 (-2.5, -3.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-civil-engineer",
+    "frontend_character_id": "agent-spec-specialized-civil-engineer",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #1 (-12.0, -6.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-codebase-archaeologist",
+    "frontend_character_id": "agent-spec-specialized-codebase-archaeologist",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #21 (-0.6, -3.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-cultural-intelligence-strategist",
+    "frontend_character_id": "agent-spec-specialized-cultural-intelligence-strategist",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #26 (-4.4, -2.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-developer-advocate",
+    "frontend_character_id": "agent-spec-specialized-developer-advocate",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #58 (-10.1, 4.7)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-document-generator",
+    "frontend_character_id": "agent-spec-specialized-document-generator",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #11 (-6.3, -5.1)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-fedramp-rmf-compliance",
+    "frontend_character_id": "agent-spec-specialized-fedramp-rmf-compliance",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #35 (-0.6, -0.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-focus-music-architect",
+    "frontend_character_id": "agent-spec-specialized-focus-music-architect",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #2 (-10.1, -6.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-french-consulting-market",
+    "frontend_character_id": "agent-spec-specialized-french-consulting-market",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #44 (-10.1, 1.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-korean-business-navigator",
+    "frontend_character_id": "agent-spec-specialized-korean-business-navigator",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #46 (-6.3, 1.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-master-plan-architect",
+    "frontend_character_id": "agent-spec-specialized-master-plan-architect",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #53 (-6.3, 3.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-mcp-builder",
+    "frontend_character_id": "agent-spec-specialized-mcp-builder",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #36 (-12.0, 0.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-model-qa",
+    "frontend_character_id": "agent-spec-specialized-model-qa",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #28 (-0.6, -2.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-pricing-analyst",
+    "frontend_character_id": "agent-spec-specialized-pricing-analyst",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #38 (-8.2, 0.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-salesforce-architect",
+    "frontend_character_id": "agent-spec-specialized-salesforce-architect",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #33 (-4.4, -0.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-strategy-duel-agent",
+    "frontend_character_id": "agent-spec-specialized-strategy-duel-agent",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #48 (-2.5, 1.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-specialized-workflow-architect",
+    "frontend_character_id": "agent-spec-specialized-workflow-architect",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #22 (-12.0, -2.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-study-abroad-advisor",
+    "frontend_character_id": "agent-spec-study-abroad-advisor",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #41 (-2.5, 0.5)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-supply-chain-strategist",
+    "frontend_character_id": "agent-spec-supply-chain-strategist",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #50 (-12.0, 3.3)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-zk-steward",
+    "frontend_character_id": "agent-spec-zk-steward",
+    "floor": 2,
+    "division": "specialized",
+    "workstation": "Desk #49 (-0.6, 1.9)",
+    "room": "specialized_advisory"
+  },
+  {
+    "backend_agent_id": "agent-spec-support-analytics-reporter",
+    "frontend_character_id": "agent-spec-support-analytics-reporter",
+    "floor": 1,
+    "division": "support",
+    "workstation": "Desk #3 (6.4, -4.5)",
+    "room": "support_lounge"
+  },
+  {
+    "backend_agent_id": "agent-spec-support-executive-summary-generator",
+    "frontend_character_id": "agent-spec-support-executive-summary-generator",
+    "floor": 1,
+    "division": "support",
+    "workstation": "Desk #7 (2.0, -0.5)",
+    "room": "support_lounge"
+  },
+  {
+    "backend_agent_id": "agent-spec-support-finance-tracker",
+    "frontend_character_id": "agent-spec-support-finance-tracker",
+    "floor": 1,
+    "division": "support",
+    "workstation": "Desk #6 (6.4, -2.5)",
+    "room": "support_lounge"
+  },
+  {
+    "backend_agent_id": "agent-spec-support-infrastructure-maintainer",
+    "frontend_character_id": "agent-spec-support-infrastructure-maintainer",
+    "floor": 1,
+    "division": "support",
+    "workstation": "Desk #5 (4.2, -2.5)",
+    "room": "support_lounge"
+  },
+  {
+    "backend_agent_id": "agent-spec-support-legal-compliance-checker",
+    "frontend_character_id": "agent-spec-support-legal-compliance-checker",
+    "floor": 1,
+    "division": "support",
+    "workstation": "Desk #2 (4.2, -4.5)",
+    "room": "support_lounge"
+  },
+  {
+    "backend_agent_id": "agent-spec-support-support-responder",
+    "frontend_character_id": "agent-spec-support-support-responder",
+    "floor": 1,
+    "division": "support",
+    "workstation": "Desk #4 (2.0, -2.5)",
+    "room": "support_lounge"
+  },
+  {
+    "backend_agent_id": "agent-support-lead",
+    "frontend_character_id": "agent-support-lead",
+    "floor": 1,
+    "division": "support",
+    "workstation": "Desk #1 (2.0, -4.5)",
+    "room": "support_lounge"
+  }
+]

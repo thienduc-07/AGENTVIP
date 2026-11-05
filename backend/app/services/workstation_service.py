@@ -10,81 +10,323 @@ from backend.app.models.agent import AgentModel
 
 logger = logging.getLogger("agency.workstation")
 
-# Department zone definitions and physical visual desk capacities
+# Department zone definitions and physical visual desk capacities across all 18 divisions + executive suite
 ZONE_CONFIGS: Dict[str, Dict[str, Any]] = {
-    "Engineering": {
-        "zone": "engineering_bay",
-        "base_x": -14.0,
-        "base_y": 1.0,
-        "base_z": -4.0,
-        "max_physical_desks": 12,
-        "desk_spacing_x": 2.2,
-        "desk_spacing_z": 2.0,
-    },
-    "AI Research": {
-        "zone": "research_lab",
-        "base_x": 14.0,
-        "base_y": 1.0,
-        "base_z": -4.0,
-        "max_physical_desks": 10,
-        "desk_spacing_x": 2.2,
-        "desk_spacing_z": 2.0,
-    },
-    "Marketing": {
-        "zone": "marketing_studio",
-        "base_x": -14.0,
-        "base_y": 1.0,
-        "base_z": 10.0,
-        "max_physical_desks": 8,
-        "desk_spacing_x": 2.2,
-        "desk_spacing_z": 2.0,
-    },
-    "Sales": {
-        "zone": "sales_wing",
-        "base_x": 14.0,
-        "base_y": 1.0,
-        "base_z": 10.0,
-        "max_physical_desks": 8,
-        "desk_spacing_x": 2.2,
-        "desk_spacing_z": 2.0,
-    },
-    "Operations": {
+    # Floor 1: Operations, Support & Healthcare
+    "operations": {
         "zone": "operations_hub",
-        "base_x": -6.0,
+        "floor": 1,
+        "base_x": -8.0,
         "base_y": 1.0,
-        "base_z": 20.0,
-        "max_physical_desks": 6,
+        "base_z": -4.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 20,
         "desk_spacing_x": 2.2,
         "desk_spacing_z": 2.0,
     },
-    "Finance": {
-        "zone": "finance_office",
-        "base_x": 6.0,
-        "base_y": 1.0,
-        "base_z": 20.0,
-        "max_physical_desks": 6,
-        "desk_spacing_x": 2.2,
-        "desk_spacing_z": 2.0,
-    },
-    "Customer Success": {
+    "support": {
         "zone": "support_lounge",
-        "base_x": 0.0,
+        "floor": 1,
+        "base_x": 2.0,
         "base_y": 1.0,
-        "base_z": 11.0,
-        "max_physical_desks": 6,
-        "desk_spacing_x": 2.0,
+        "base_z": -4.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
+    "healthcare": {
+        "zone": "healthcare_desk",
+        "floor": 1,
+        "base_x": -8.0,
+        "base_y": 1.0,
+        "base_z": 3.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 15,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
+
+    # Floor 2: Finance & Specialized Advisory
+    "finance": {
+        "zone": "finance_office",
+        "floor": 2,
+        "base_x": 2.0,
+        "base_y": 1.0,
+        "base_z": -5.0,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
+    "specialized": {
+        "zone": "specialized_advisory",
+        "floor": 2,
+        "base_x": -12.0,
+        "base_y": 1.0,
+        "base_z": -6.5,
+        "cols": 7,
+        "spacing_x": 1.9,
+        "spacing_z": 1.4,
+        "max_physical_desks": 80,
+        "desk_spacing_x": 1.9,
+        "desk_spacing_z": 1.4,
+    },
+
+    # Floor 3: Marketing, Paid Media & Sales
+    "marketing": {
+        "zone": "marketing_studio",
+        "floor": 3,
+        "base_x": -12.0,
+        "base_y": 1.0,
+        "base_z": -6.5,
+        "cols": 6,
+        "spacing_x": 1.9,
+        "spacing_z": 1.35,
+        "max_physical_desks": 50,
+        "desk_spacing_x": 1.9,
+        "desk_spacing_z": 1.35,
+    },
+    "paid-media": {
+        "zone": "media_pod",
+        "floor": 3,
+        "base_x": -12.0,
+        "base_y": 1.0,
+        "base_z": 4.0,
+        "cols": 4,
+        "spacing_x": 2.2,
+        "spacing_z": 1.8,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.2,
         "desk_spacing_z": 1.8,
     },
-    "Executive": {
-        "zone": "executive_suite",
-        "base_x": 0.0,
+    "sales": {
+        "zone": "sales_wing",
+        "floor": 3,
+        "base_x": 2.0,
         "base_y": 1.0,
-        "base_z": -12.0,
-        "max_physical_desks": 4,
+        "base_z": -5.0,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 25,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
+
+    # Floor 4: Design, Product, PM, Game Dev & Spatial
+    "design": {
+        "zone": "design_studio",
+        "floor": 4,
+        "base_x": -11.5,
+        "base_y": 1.0,
+        "base_z": -5.5,
+        "cols": 4,
+        "spacing_x": 2.2,
+        "spacing_z": 1.8,
+        "max_physical_desks": 25,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 1.8,
+    },
+    "product": {
+        "zone": "product_pod",
+        "floor": 4,
+        "base_x": -11.5,
+        "base_y": 1.0,
+        "base_z": 3.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 1.8,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 1.8,
+    },
+    "project-management": {
+        "zone": "pm_command",
+        "floor": 4,
+        "base_x": -3.5,
+        "base_y": 1.0,
+        "base_z": 3.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 1.8,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 1.8,
+    },
+    "game-development": {
+        "zone": "game_lab",
+        "floor": 4,
+        "base_x": 2.0,
+        "base_y": 1.0,
+        "base_z": -5.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
+    "spatial-computing": {
+        "zone": "spatial_lab",
+        "floor": 4,
+        "base_x": 2.0,
+        "base_y": 1.0,
+        "base_z": 2.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
+
+    # Floor 5: Engineering, Security, Testing & GIS
+    "engineering": {
+        "zone": "engineering_bay",
+        "floor": 5,
+        "base_x": -12.2,
+        "base_y": 1.0,
+        "base_z": -6.8,
+        "cols": 7,
+        "spacing_x": 1.85,
+        "spacing_z": 1.35,
+        "max_physical_desks": 90,
+        "desk_spacing_x": 1.85,
+        "desk_spacing_z": 1.35,
+    },
+    "security": {
+        "zone": "security_soc",
+        "floor": 5,
+        "base_x": 1.5,
+        "base_y": 1.0,
+        "base_z": -6.5,
+        "cols": 3,
+        "spacing_x": 2.0,
+        "spacing_z": 1.5,
+        "max_physical_desks": 25,
+        "desk_spacing_x": 2.0,
+        "desk_spacing_z": 1.5,
+    },
+    "testing": {
+        "zone": "qa_lab",
+        "floor": 5,
+        "base_x": 1.5,
+        "base_y": 1.0,
+        "base_z": 0.0,
+        "cols": 3,
+        "spacing_x": 2.0,
+        "spacing_z": 1.5,
+        "max_physical_desks": 20,
+        "desk_spacing_x": 2.0,
+        "desk_spacing_z": 1.5,
+    },
+    "gis": {
+        "zone": "gis_center",
+        "floor": 5,
+        "base_x": 1.5,
+        "base_y": 1.0,
+        "base_z": 5.0,
+        "cols": 4,
+        "spacing_x": 1.9,
+        "spacing_z": 1.2,
+        "max_physical_desks": 25,
+        "desk_spacing_x": 1.9,
+        "desk_spacing_z": 1.2,
+    },
+
+    # Floor 6: Executive, Research & Academic
+    "executive": {
+        "zone": "executive_suite",
+        "floor": 6,
+        "base_x": -4.5,
+        "base_y": 1.0,
+        "base_z": 0.0,
+        "cols": 2,
+        "spacing_x": 3.0,
+        "spacing_z": 2.5,
+        "max_physical_desks": 10,
         "desk_spacing_x": 3.0,
         "desk_spacing_z": 2.5,
     },
+    "research": {
+        "zone": "research_lab",
+        "floor": 6,
+        "base_x": 2.5,
+        "base_y": 1.0,
+        "base_z": -5.0,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 15,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
+    "academic": {
+        "zone": "academic_fellowship",
+        "floor": 6,
+        "base_x": 2.5,
+        "base_y": 1.0,
+        "base_z": 1.5,
+        "cols": 3,
+        "spacing_x": 2.2,
+        "spacing_z": 2.0,
+        "max_physical_desks": 15,
+        "desk_spacing_x": 2.2,
+        "desk_spacing_z": 2.0,
+    },
 }
+
+# Legacy alias mappings for backward compatibility
+LEGACY_DEPARTMENT_ALIASES: Dict[str, str] = {
+    "engineering": "engineering",
+    "ai research": "research",
+    "research": "research",
+    "marketing": "marketing",
+    "sales": "sales",
+    "operations": "operations",
+    "finance": "finance",
+    "customer success": "support",
+    "support": "support",
+    "executive": "executive",
+    "design": "design",
+    "product": "product",
+    "pm": "project-management",
+    "project management": "project-management",
+    "security": "security",
+    "testing": "testing",
+    "qa": "testing",
+    "gis": "gis",
+    "healthcare": "healthcare",
+    "paid media": "paid-media",
+    "game development": "game-development",
+    "spatial computing": "spatial-computing",
+    "academic": "academic",
+    "specialized": "specialized",
+}
+
+def resolve_zone_config(department: str) -> Tuple[str, Dict[str, Any]]:
+    """Resolves division/department string to standard normalized key and zone config."""
+    norm = department.lower().strip()
+    key = LEGACY_DEPARTMENT_ALIASES.get(norm, norm)
+    if key in ZONE_CONFIGS:
+        return key, ZONE_CONFIGS[key]
+    return "operations", ZONE_CONFIGS["operations"]
+
+def get_floor_for_division(division: str) -> int:
+    """Returns the building floor (1-6) assigned to a given division."""
+    norm = division.lower().strip()
+    key = LEGACY_DEPARTMENT_ALIASES.get(norm, norm)
+    cfg = ZONE_CONFIGS.get(key)
+    return cfg.get("floor", 1) if cfg else 1
 
 class WorkstationService:
     """
@@ -109,6 +351,8 @@ class WorkstationService:
         """
         Allocates or re-uses a workstation for an agent.
         """
+        dept_key, dept_config = resolve_zone_config(department)
+
         # 1. Check if agent already has an allocation
         existing = (
             db.query(WorkstationAllocationModel)
@@ -121,16 +365,18 @@ class WorkstationService:
         if (
             existing
             and existing.allocation_status == "ASSIGNED"
-            and existing.department == department
+            and existing.department in (department, dept_key)
             and not force_virtual
             and (preferred_desk_number is None or existing.desk_number == preferred_desk_number)
         ):
             return existing
 
-        dept_config = ZONE_CONFIGS.get(department, ZONE_CONFIGS["Operations"])
         zone_name = dept_config["zone"]
-        dept_slug = department.lower().replace(" ", "_")
+        dept_slug = dept_key.replace(" ", "_").replace("-", "_")
         max_phys = dept_config["max_physical_desks"]
+        cols = dept_config.get("cols", 4)
+        spacing_x = dept_config.get("spacing_x", dept_config.get("desk_spacing_x", 2.2))
+        spacing_z = dept_config.get("spacing_z", dept_config.get("desk_spacing_z", 2.0))
 
         allocation: Optional[WorkstationAllocationModel] = None
         max_attempts = 3
@@ -143,7 +389,7 @@ class WorkstationService:
                 for d in db.query(WorkstationAllocationModel.desk_number)
                 .filter(
                     WorkstationAllocationModel.organization_id == organization_id,
-                    WorkstationAllocationModel.department == department,
+                    (WorkstationAllocationModel.department == department) | (WorkstationAllocationModel.department == dept_key),
                     WorkstationAllocationModel.allocation_status == "ASSIGNED",
                     WorkstationAllocationModel.desk_number.isnot(None),
                 )
@@ -162,20 +408,11 @@ class WorkstationService:
                             desk_num = n
                             break
 
-                # If all physical desks are occupied, gracefully virtualize employee
+                # If all initial physical desks are occupied, dynamically expand physical capacity
                 if desk_num is None:
-                    is_virtual = True
-                    virtual_count = (
-                        db.query(func.count(WorkstationAllocationModel.id))
-                        .filter(
-                            WorkstationAllocationModel.organization_id == organization_id,
-                            WorkstationAllocationModel.department == department,
-                            WorkstationAllocationModel.is_virtual.is_(True),
-                        )
-                        .scalar()
-                        or 0
-                    )
-                    desk_num = max_phys + virtual_count + 1
+                    max_occupied = max(occupied_desks) if occupied_desks else max_phys
+                    desk_num = max(max_occupied + 1, max_phys + 1)
+                    is_virtual = False
 
             # 3. Compute coordinates
             if is_virtual:
@@ -185,18 +422,18 @@ class WorkstationService:
                 logical_id = f"vws-{dept_slug}-{desk_num}"
                 status = "VIRTUAL"
             else:
-                col = (desk_num - 1) % 2
-                row = (desk_num - 1) // 2
-                pos_x = round(dept_config["base_x"] + col * dept_config["desk_spacing_x"], 2)
+                col = (desk_num - 1) % cols
+                row = (desk_num - 1) // cols
+                pos_x = round(dept_config["base_x"] + col * spacing_x, 2)
                 pos_y = dept_config["base_y"]
-                pos_z = round(dept_config["base_z"] + row * dept_config["desk_spacing_z"], 2)
+                pos_z = round(dept_config["base_z"] + row * spacing_z, 2)
                 logical_id = f"ws-{dept_slug}-{desk_num:02d}"
                 status = "ASSIGNED"
 
             try:
                 sp = db.begin_nested()
                 if existing:
-                    existing.department = department
+                    existing.department = dept_key
                     existing.logical_workstation_id = logical_id
                     existing.office_zone = zone_name
                     existing.desk_number = desk_num
@@ -212,7 +449,7 @@ class WorkstationService:
                     allocation = WorkstationAllocationModel(
                         organization_id=organization_id,
                         agent_id=agent_id,
-                        department=department,
+                        department=dept_key,
                         logical_workstation_id=logical_id,
                         office_zone=zone_name,
                         desk_number=desk_num,

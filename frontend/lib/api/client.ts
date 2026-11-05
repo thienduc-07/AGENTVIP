@@ -1,6 +1,9 @@
 import { ApiErrorResponse } from "@/types/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" ? "" : "http://127.0.0.1:8000");
 
 let globalAuthToken: string | null = null;
 let globalTenantOrg: string | null = null;
@@ -123,12 +126,13 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
   }
 
   let effectiveToken = token !== undefined ? token : getAuthToken();
-  const effectiveOrg = organizationId !== undefined ? organizationId : getTenantOrganization();
 
   // If in browser and unauthenticated, automatically bootstrap session
   if (!effectiveToken && typeof window !== "undefined" && !endpoint.includes("/auth/login")) {
     effectiveToken = await ensureAuthenticatedSession();
   }
+
+  const effectiveOrg = organizationId !== undefined ? organizationId : (getTenantOrganization() || "org_default_company");
 
   const authHeaders: Record<string, string> = {};
   if (effectiveToken) {

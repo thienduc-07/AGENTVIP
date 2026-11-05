@@ -1,3 +1,5 @@
+import { apiClient, ApiClientError } from '@/lib/api/client';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 export interface SpecialistSummary {
@@ -99,58 +101,43 @@ export async function fetchSpecialists(params?: {
   skip?: number;
   limit?: number;
 }): Promise<{ total: number; items: SpecialistSummary[] }> {
-  const query = new URLSearchParams();
-  if (params?.division && params.division !== 'all') query.set('division', params.division);
-  if (params?.department && params.department !== 'all') query.set('department', params.department);
-  if (params?.search) query.set('search', params.search);
-  if (params?.lifecycle_state) query.set('lifecycle_state', params.lifecycle_state);
-  if (params?.skip !== undefined) query.set('skip', params.skip.toString());
-  if (params?.limit !== undefined) query.set('limit', params.limit.toString());
+  const queryParams: Record<string, string | number | undefined> = {};
+  if (params?.division && params.division !== 'all') queryParams.division = params.division;
+  if (params?.department && params.department !== 'all') queryParams.department = params.department;
+  if (params?.search) queryParams.search = params.search;
+  if (params?.lifecycle_state) queryParams.lifecycle_state = params.lifecycle_state;
+  if (params?.skip !== undefined) queryParams.skip = params.skip;
+  if (params?.limit !== undefined) queryParams.limit = params.limit;
 
-  const res = await fetch(`${API_BASE}/api/v1/specialists?${query.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch specialist catalog');
-  return res.json();
+  return apiClient<{ total: number; items: SpecialistSummary[] }>('/api/v1/specialists', {
+    params: queryParams,
+  });
 }
 
 export async function fetchSpecialistDetail(id: string): Promise<SpecialistDetail> {
-  const res = await fetch(`${API_BASE}/api/v1/specialists/${encodeURIComponent(id)}`);
-  if (!res.ok) throw new Error(`Failed to fetch specialist ${id}`);
-  return res.json();
+  return apiClient<SpecialistDetail>(`/api/v1/specialists/${encodeURIComponent(id)}`);
 }
 
 export async function fetchDivisions(): Promise<DivisionSummary[]> {
-  const res = await fetch(`${API_BASE}/api/v1/specialists/divisions`);
-  if (!res.ok) throw new Error('Failed to fetch divisions');
-  return res.json();
+  return apiClient<DivisionSummary[]>('/api/v1/specialists/divisions');
 }
 
 export async function recruitSpecialist(payload: RecruitPayload): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/v1/recruitment/recruit`, {
+  return apiClient<any>('/api/v1/recruitment/recruit', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || 'Recruitment failed');
-  }
-  return res.json();
 }
 
 export async function fetchCorporateHierarchy(): Promise<CorporateHierarchy> {
-  const res = await fetch(`${API_BASE}/api/v1/recruitment/hierarchy`);
-  if (!res.ok) throw new Error('Failed to fetch corporate hierarchy');
-  return res.json();
+  return apiClient<CorporateHierarchy>('/api/v1/recruitment/hierarchy');
 }
 
 export async function compareCandidates(specialistIds: string[]): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/api/v1/recruitment/compare`, {
+  return apiClient<any[]>('/api/v1/recruitment/compare', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ specialist_ids: specialistIds }),
   });
-  if (!res.ok) throw new Error('Failed to compare candidates');
-  return res.json();
 }
 
 export async function transitionAgentLifecycle(
@@ -158,14 +145,15 @@ export async function transitionAgentLifecycle(
   action: 'activate' | 'suspend' | 'retire',
   reason?: string
 ): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/v1/recruitment/${encodeURIComponent(agentId)}/${action}`, {
+  return apiClient<any>(`/api/v1/recruitment/${encodeURIComponent(agentId)}/${action}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Action ${action} failed`);
-  }
-  return res.json();
+}
+
+export async function provisionWorkforceApi(organizationId: string = 'org_default_company'): Promise<any> {
+  return apiClient<any>('/api/v1/recruitment/provision-workforce', {
+    method: 'POST',
+    params: { organization_id: organizationId },
+  });
 }

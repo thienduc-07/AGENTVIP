@@ -296,42 +296,42 @@ export const FLOOR_DEFINITIONS: Record<number, FloorDefinition> = {
     },
   },
 
-  // F5: Finance, HR & Operations
+  // F5: Engineering, Security, Testing & GIS
   [5]: {
     id: "floor_5",
     floorNumber: 5,
     code: "F5",
-    name: "Finance, HR & Operations",
-    subtitle: "Tài Chính, Kế Toán, Nhân Sự & Pháp Lý Doanh Nghiệp",
-    themeColor: "#38bdf8",
+    name: "Engineering & Cybersecurity Bay",
+    subtitle: "Kỹ Thuật Hệ Thống, Bảo Mật SOC, Kiểm Thử QA & GIS",
+    themeColor: "#0284c7",
     baseElevation: 24.0,
     cameraPreset: {
       isometricPos: [18.0, 38.5, 22.0],
       lookAt: [0, 25.0, 0],
       fov: 38,
     },
-    departments: ["Finance", "Accounting", "HR", "Legal", "Operations"],
+    departments: ["Engineering", "Security", "Testing", "GIS"],
     rooms: [
       {
-        id: "finance_suite",
-        name: "Phòng Tài Chính & Kế Toán",
+        id: "eng_core_bay",
+        name: "Phân Khu Kỹ Sư Hệ Thống & Microservices",
         type: "open_workspace",
         bounds: { minX: -14.0, maxX: -2.0, minZ: -9.0, maxZ: 1.0 },
-        accentColor: "#0284c7",
+        accentColor: "#38bdf8",
       },
       {
-        id: "hr_legal_hub",
-        name: "Ban Nhân Sự, Tuyển Dụng & Pháp Lý",
-        type: "open_workspace",
+        id: "cyber_soc_room",
+        name: "Trung Tâm Tác Chiến An Ninh Mạng SOC",
+        type: "server",
         bounds: { minX: 2.0, maxX: 14.0, minZ: -9.0, maxZ: 1.0 },
-        accentColor: "#0ea5e9",
+        accentColor: "#ef4444",
       },
       {
-        id: "archive_records",
-        name: "Kho Lưu Trữ Hồ Sơ & Tài Liệu",
+        id: "qa_bench_area",
+        name: "Phòng Kiểm Thử Phần Mềm & Benchmarking",
         type: "office",
         bounds: { minX: 4.0, maxX: 14.0, minZ: 2.0, maxZ: 9.0 },
-        accentColor: "#64748b",
+        accentColor: "#f59e0b",
       },
     ],
     spawnPoint: [-2.0, 24.5, 4.0],
@@ -341,6 +341,55 @@ export const FLOOR_DEFINITIONS: Record<number, FloorDefinition> = {
       ambientIntensity: 0.85,
       accentLightColor: "#38bdf8",
       accentLightPos: [0, 27.5, 0],
+    },
+  },
+
+  // F6: Executive, Research & Academic
+  [6]: {
+    id: "floor_6",
+    floorNumber: 6,
+    code: "F6",
+    name: "Executive Suite & AI Neural Lab",
+    subtitle: "Văn Phòng Tổng Giám Đốc, Nghiên Cứu AI & Hội Đồng Cố Vấn",
+    themeColor: "#fbbf24",
+    baseElevation: 30.0,
+    cameraPreset: {
+      isometricPos: [18.0, 44.5, 22.0],
+      lookAt: [0, 31.0, 0],
+      fov: 38,
+    },
+    departments: ["Executive", "Research", "Academic"],
+    rooms: [
+      {
+        id: "ceo_penthouse",
+        name: "Văn Phòng Tổng Giám Đốc (CEO Penthouse)",
+        type: "office",
+        bounds: { minX: -14.0, maxX: -2.0, minZ: -9.0, maxZ: 1.0 },
+        accentColor: "#fbbf24",
+      },
+      {
+        id: "ai_neural_lab",
+        name: "Viện Nghiên Cứu Mô Hình AI & RAG",
+        type: "open_workspace",
+        bounds: { minX: 2.0, maxX: 14.0, minZ: -9.0, maxZ: 1.0 },
+        accentColor: "#8b5cf6",
+      },
+      {
+        id: "boardroom_hall",
+        name: "Phòng Họp Hội Đồng Quản Trị & Cố Vấn VIP",
+        type: "meeting",
+        bounds: { minX: -5.0, maxX: 5.0, minZ: 2.0, maxZ: 9.0 },
+        hasGlassPartitions: true,
+        accentColor: "#f59e0b",
+      },
+    ],
+    spawnPoint: [-2.0, 30.5, 4.0],
+    elevatorDoorPos: [-10.5, 30.0, 7.5],
+    lighting: {
+      ambientColor: "#fef3c7",
+      ambientIntensity: 0.9,
+      accentLightColor: "#f59e0b",
+      accentLightPos: [0, 33.5, 0],
     },
   },
 };
@@ -353,12 +402,12 @@ export const OVERVIEW_CAMERA_PRESET = {
 export function resolveFloorByDepartment(deptName: string): number {
   if (!deptName) return 1;
   const d = deptName.toLowerCase();
-  if (d.includes("server") || d.includes("infra") || d.includes("devops") || d.includes("soc")) return -1;
-  if (d.includes("exec") || d.includes("ceo") || d.includes("board")) return 1;
-  if (d.includes("eng") || d.includes("dev") || d.includes("qa") || d.includes("software") || d.includes("front") || d.includes("back")) return 2;
-  if (d.includes("ai") || d.includes("data") || d.includes("research") || d.includes("ml")) return 3;
-  if (d.includes("market") || d.includes("creative") || d.includes("growth") || d.includes("design") || d.includes("sales") || d.includes("studio")) return 4;
-  if (d.includes("fin") || d.includes("hr") || d.includes("ops") || d.includes("legal") || d.includes("account") || d.includes("treasury") || d.includes("people")) return 5;
+  if (d.includes("exec") || d.includes("ceo") || d.includes("board") || d.includes("research") || d.includes("academic") || d.includes("penthouse")) return 6;
+  if (d.includes("eng") || d.includes("dev") || d.includes("qa") || d.includes("test") || d.includes("sec") || d.includes("gis") || d.includes("backend") || d.includes("system")) return 5;
+  if (d.includes("design") || d.includes("product") || d.includes("game") || d.includes("spatial") || d.includes("ui") || d.includes("ux") || d.includes("art")) return 4;
+  if (d.includes("market") || d.includes("media") || d.includes("sales") || d.includes("growth") || d.includes("ad") || d.includes("revenue")) return 3;
+  if (d.includes("fin") || d.includes("account") || d.includes("budget") || d.includes("audit") || d.includes("special") || d.includes("tax")) return 2;
+  if (d.includes("ops") || d.includes("support") || d.includes("health") || d.includes("service") || d.includes("help") || d.includes("reception")) return 1;
   return 1;
 }
 

@@ -1,8 +1,13 @@
 import { apiClient, RequestOptions } from "./client";
 import { ApiAgent, ApiTask, ApiAgentInspection } from "@/types/api";
 
-export async function getAgents(): Promise<ApiAgent[]> {
-  return apiClient<ApiAgent[]>("/api/v1/agents");
+export async function getAgents(params?: { limit?: number; offset?: number }): Promise<ApiAgent[]> {
+  return apiClient<ApiAgent[]>("/api/v1/agents", {
+    params: {
+      limit: params?.limit !== undefined ? params.limit : 350,
+      offset: params?.offset !== undefined ? params.offset : 0,
+    },
+  });
 }
 
 export async function getAgentById(agentId: string): Promise<ApiAgent> {

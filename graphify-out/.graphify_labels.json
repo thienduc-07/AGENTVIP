@@ -1,5 +1,4 @@
 {
-  "14": "apiClient",
   "31": "agent-skills/skills/slack-gif-creator/core/easing.py",
   "32": "agent_runtime/skills/slack-gif-creator/core/easing.py",
   "33": "external_skills/skills/slack-gif-creator/core/easing.py",
@@ -10,7 +9,6 @@
   "61": "agent-skills/skills/algorithmic-art/templates/generator_template.js",
   "63": "agent_runtime/skills/algorithmic-art/templates/generator_template.js",
   "65": "external_skills/skills/algorithmic-art/templates/generator_template.js",
-  "67": "GIFBuilder",
   "71": "GIFBuilder",
   "74": "GIFBuilder",
   "77": "compilerOptions",
@@ -23,7 +21,6 @@
   "186": ".call_tool",
   "189": ".call_tool",
   "192": ".call_tool",
-  "194": "CrewNavigation.ts",
   "195": ".__aenter__",
   "196": ".__aenter__",
   "198": ".__aenter__",
