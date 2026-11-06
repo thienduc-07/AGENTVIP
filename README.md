@@ -92,3 +92,4 @@ npm run build
 
 Any high-risk tool request (such as production code execution, shell commands, or financial transactions exceeding budget limits) automatically halts the task into `waiting_approval`.
 An **Executive Board Authorization Modal** is presented to the user with full code payload inspection. The user can **AUTHORIZE & EXECUTE IN SANDBOX** or **VETO & CANCEL**. All decisions are audited in the database with conflict prevention (`409 Conflict` on duplicates).
+# AGENTVIP
