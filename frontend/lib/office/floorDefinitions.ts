@@ -403,7 +403,7 @@ export function resolveFloorByDepartment(deptName: string): number {
   if (!deptName) return 1;
   const d = deptName.toLowerCase();
   if (d.includes("exec") || d.includes("ceo") || d.includes("board") || d.includes("research") || d.includes("academic") || d.includes("penthouse")) return 6;
-  if (d.includes("eng") || d.includes("dev") || d.includes("qa") || d.includes("test") || d.includes("sec") || d.includes("gis") || d.includes("backend") || d.includes("system")) return 5;
+  if (d.includes("eng") || d.includes("dev") || d.includes("qa") || d.includes("test") || d.includes("sec") || d.includes("gis") || d.includes("backend") || d.includes("system") || d.includes("server") || d.includes("infra")) return 5;
   if (d.includes("design") || d.includes("product") || d.includes("game") || d.includes("spatial") || d.includes("ui") || d.includes("ux") || d.includes("art")) return 4;
   if (d.includes("market") || d.includes("media") || d.includes("sales") || d.includes("growth") || d.includes("ad") || d.includes("revenue")) return 3;
   if (d.includes("fin") || d.includes("account") || d.includes("budget") || d.includes("audit") || d.includes("special") || d.includes("tax")) return 2;

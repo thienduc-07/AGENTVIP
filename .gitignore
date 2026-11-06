@@ -45,3 +45,28 @@ next-env.d.ts
 
 # Sandbox
 workspace_sandbox/
+
+# Sensitive application data
+backend/data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.bak
+*.bak-*
+*.backup
+*.backup_*
+backups_*/
+*agency.db*
+
+# Generated analysis and products
+graphify-out/
+generated_products/
+
+# Local screenshots and captures
+current_live_screenshot.png
+
+# Local build artifacts
+frontend/.next/
+backend/venv/

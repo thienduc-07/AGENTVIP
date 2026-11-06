@@ -158,7 +158,7 @@ export const VERTICAL_CORE = {
     cz: -6.0,
     width: 4.8,
     depth: 7.2,
-    bounds: { minX: 20.5, maxX: 25.5, minZ: -9.8, maxZ: -2.2 },
+    bounds: { minX: 21.5, maxX: 25.5, minZ: -8.5, maxZ: -3.5 }, // Encloses active stair flight; landings at -9.2 and -2.6 remain clear!
     landings: [
       { x: 23.0, z: -9.2 }, // Upper landing
       { x: 23.0, z: -2.6 }, // Lower arrival landing
@@ -272,7 +272,7 @@ export function getOfficeRoomsForFloor(floorId: number): ArchitecturalRoom[] {
       type: "pantry_lounge",
       title: "Khu Lounge Tiếp Khách & Trao Đổi Trung Tâm",
       bounds: { minX: -7.0, maxX: 7.0, minZ: -3.5, maxZ: 4.5 },
-      door: { x: 0.0, z: 1.0, width: 4.0, orientation: "south" },
+      door: { x: -3.5, z: 0.5, width: 2.5, orientation: "west" },
       accentColor: 0xf59e0b,
     },
     // 7. Elevator Core & Fluted Reception Desk (East)
@@ -282,7 +282,7 @@ export function getOfficeRoomsForFloor(floorId: number): ArchitecturalRoom[] {
       type: "reception_lobby",
       title: "Sảnh Thang Máy & Quầy Tiếp Tân Tầng",
       bounds: { minX: 17.5, maxX: 24.5, minZ: 1.0, maxZ: 7.0 },
-      door: { x: 18.0, z: 4.0, width: 2.5, orientation: "west" },
+      door: { x: 15.0, z: 4.0, width: 2.5, orientation: "west" },
       accentColor: 0x38bdf8,
     },
   ];
@@ -408,7 +408,7 @@ export const MASTER_CORRIDOR_NAV_NODES: MasterNavNode[] = [
 
   // 3. East Corridor (Elevator Core, Reception, Restroom, and East Pods at X = 14.0)
   { id: "node_e_n",     x: 14.0,  z: -13.0, neighbors: ["node_c_n", "node_e_m", "lobby_elev", "pantry_beanbag"] },
-  { id: "node_e_m",     x: 14.0,  z: 0.0,   neighbors: ["node_e_n", "node_c_m", "node_e_s1", "door_reception"] },
+  { id: "node_e_m",     x: 14.0,  z: 0.0,   neighbors: ["node_e_n", "node_c_m", "node_e_s1", "door_reception", "stair_lower"] },
   { id: "node_e_s1",    x: 14.0,  z: 9.0,   neighbors: ["node_e_m", "node_e_s2", "node_c_s1", "door_reception"] },
   { id: "node_e_s2",    x: 14.0,  z: 14.5,  neighbors: ["node_e_s1", "node_c_s2", "vestibule_wc"] },
 
@@ -419,8 +419,8 @@ export const MASTER_CORRIDOR_NAV_NODES: MasterNavNode[] = [
   { id: "door_pantry",  x: -2.0,  z: -15.5, neighbors: ["node_c_n"], isDoorPortal: true },
   { id: "pantry_bar",   x: -4.5,  z: -13.0, neighbors: ["node_c_n"] },
   { id: "pantry_beanbag", x: 10.5, z: -12.0, neighbors: ["node_e_n"] },
-  { id: "lounge_spot",  x: 0.0,   z: 1.0,   neighbors: ["node_c_m"] },
-  { id: "door_reception", x: 18.0, z: 4.0,  neighbors: ["node_e_m", "node_e_s1"], isDoorPortal: true },
+  { id: "lounge_spot",  x: 0.0,   z: -0.1,  neighbors: ["node_c_m"] },
+  { id: "door_reception", x: 14.8, z: 4.0,   neighbors: ["node_e_m", "node_e_s1"], isDoorPortal: true },
 
   // 5. Vertical Circulation Nodes (Elevator & Staircase)
   { id: "lobby_elev",   x: 22.5,  z: -11.5, neighbors: ["node_e_n", "stair_upper"], isDoorPortal: true },

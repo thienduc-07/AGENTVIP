@@ -28,15 +28,15 @@ describe("Phase 5.0: Simulation Game Architecture & Intelligence", () => {
     });
 
     it("should accurately resolve floor indices from department names", () => {
-      expect(resolveFloorByDepartment("DevOps Infrastructure")).toBe(-1); // B1
-      expect(resolveFloorByDepartment("Server Room")).toBe(-1); // B1
-      expect(resolveFloorByDepartment("CEO Executive Suite")).toBe(1); // F1
-      expect(resolveFloorByDepartment("Software Engineering")).toBe(2); // F2
-      expect(resolveFloorByDepartment("Frontend Development")).toBe(2); // F2
-      expect(resolveFloorByDepartment("AI Research & Data Science")).toBe(3); // F3
-      expect(resolveFloorByDepartment("Marketing & Creative Studio")).toBe(4); // F4
-      expect(resolveFloorByDepartment("Finance & Treasury")).toBe(5); // F5
-      expect(resolveFloorByDepartment("People Operations HR")).toBe(5); // F5
+      expect(resolveFloorByDepartment("DevOps Infrastructure")).toBe(5); // 5F Core Engineering
+      expect(resolveFloorByDepartment("Server Room")).toBe(5); // 5F SOC & Systems
+      expect(resolveFloorByDepartment("CEO Executive Suite")).toBe(6); // 6F Executive Suite
+      expect(resolveFloorByDepartment("Software Engineering")).toBe(5); // 5F Engineering
+      expect(resolveFloorByDepartment("Frontend Development")).toBe(5); // 5F Engineering
+      expect(resolveFloorByDepartment("AI Research & Data Science")).toBe(6); // 6F AI Research
+      expect(resolveFloorByDepartment("Marketing & Creative Studio")).toBe(3); // 3F Marketing
+      expect(resolveFloorByDepartment("Finance & Treasury")).toBe(2); // 2F Finance
+      expect(resolveFloorByDepartment("People Operations HR")).toBe(1); // 1F Operations
     });
   });
 

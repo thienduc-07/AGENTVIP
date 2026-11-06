@@ -120,13 +120,4 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.app.main:app", host="0.0.0.0", port=8000, reload=True)
 
-# --- AUTO-MOUNTED PROVIPAGENT AUTONOMOUS COMPANY (MODULES 1-7) ---
-try:
-    from app.autonomous_company.router import router as autonomous_company_router
-    app.include_router(autonomous_company_router)
-except Exception as _e:
-    try:
-        from backend.app.autonomous_company.router import router as autonomous_company_router
-        app.include_router(autonomous_company_router)
-    except Exception:
-        pass
+

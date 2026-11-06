@@ -18,7 +18,10 @@ from backend.app.api.v1.endpoints import (
     meetings,
     executions,
     conversations,
+    monetization,
+    income_engine,
 )
+from backend.app.autonomous_company.router import router as autonomous_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -41,5 +44,8 @@ api_v1_router.include_router(executions.router)
 api_v1_router.include_router(conversations.router)
 api_v1_router.include_router(world.router)
 api_v1_router.include_router(meetings.router)
+api_v1_router.include_router(monetization.router)
+api_v1_router.include_router(income_engine.router)
+api_v1_router.include_router(autonomous_router)
 
 

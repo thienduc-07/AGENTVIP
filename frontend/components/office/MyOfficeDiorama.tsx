@@ -42,11 +42,15 @@ import {
   History,
   Check,
   X,
+  CreditCard,
 } from "lucide-react";
 import { ensureAuthenticatedSession, getAuthToken } from "@/lib/api/client";
 import { useWorldStore } from "@/store/worldStore";
-import { DIVISION_FLOOR_MAPPING, DIVISION_POD_CENTERS, getFloorForDivision, getDivisionWorkstation, resolveDivisionKey } from "@/lib/office/departmentFloorMapping";
+import { DIVISION_FLOOR_MAPPING, DIVISION_POD_CENTERS, POD_SEAT_OFFSETS, getFloorForDivision, getDivisionWorkstation, resolveDivisionKey } from "@/lib/office/departmentFloorMapping";
 import { getAgents } from "@/lib/api/agents";
+import { FormattedChatMessage } from "../chat/FormattedChatMessage";
+import { stripMarkdownForSpeechBubble } from "@/lib/formatters/cleanChatText";
+import { ExecutiveTreasuryModal } from "../monetization/ExecutiveTreasuryModal";
 import {
   BUILDING_DIMENSIONS,
   CENTRAL_BUILDING_FLOORS,
@@ -563,7 +567,61 @@ export default function MyOfficeDiorama({
   // Claude Code "My Office" UI State (Matching Reference Design)
   const [isLeftSessionsOpen, setIsLeftSessionsOpen] = useState<boolean>(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState<boolean>(false);
-  const [rightPanelTab, setRightPanelTab] = useState<"timeline" | "chat">("timeline");
+  const [rightPanelTab, setRightPanelTab] = useState<"timeline" | "chat" | "collab">("chat");
+  const [isTreasuryOpen, setIsTreasuryOpen] = useState<boolean>(false);
+  const [collabMessages, setCollabMessages] = useState<Array<{
+    id: string;
+    sender: string;
+    senderRole: string;
+    recipient: string;
+    recipientRole: string;
+    topic: string;
+    dialogueA: string;
+    dialogueB: string;
+    time: string;
+    floorCode: string;
+    deliverableStatus: string;
+  }>>([
+    {
+      id: "collab-1",
+      sender: "David Chen",
+      senderRole: "Principal Systems Architect",
+      recipient: "Sophia Martinez",
+      recipientRole: "Cloud Security Engineer",
+      topic: "Tối ưu hóa Microservices & Zero-Trust",
+      dialogueA: "Đã tối ưu hóa API Gateway và nén payload, độ trễ hiện tại chỉ 24ms.",
+      dialogueB: "Tuyệt vời, tôi đã kiểm tra chính sách bảo mật Zero-Trust và xác thực JWT hợp lệ.",
+      time: "10:42",
+      floorCode: "5F",
+      deliverableStatus: "✓ Đã thông qua kiểm thử bảo mật & tải cao"
+    },
+    {
+      id: "collab-2",
+      sender: "Elena Rostova",
+      senderRole: "Chief AI Scientist",
+      recipient: "Marcus Vance",
+      recipientRole: "Database & Storage Architect",
+      topic: "Bộ Nhớ Ngữ Cảnh & SQLite WAL Mode",
+      dialogueA: "Cơ chế hybrid cache hoạt động rất mượt mà trên bộ dữ liệu kiểm thử.",
+      dialogueB: "SQLite WAL mode đang duy trì độ trễ đọc 1.2ms, không phát hiện xung đột khóa ghi.",
+      time: "10:45",
+      floorCode: "4F",
+      deliverableStatus: "✓ Hiệu năng lưu trữ đạt chuẩn SLA"
+    },
+    {
+      id: "collab-3",
+      sender: "Liam Nguyen",
+      senderRole: "Lead UI/UX Designer",
+      recipient: "Chloe Kim",
+      recipientRole: "Product Strategy Lead",
+      topic: "Thiết Kế Obsidian & Vàng Champagne",
+      dialogueA: "Bản mock-up Obsidian Glass kết hợp vàng Champagne đã sẵn sàng cho bản phát hành.",
+      dialogueB: "Phong cách này rất sang trọng và đúng định vị cao cấp, hãy hoàn tất tài liệu bàn giao.",
+      time: "10:48",
+      floorCode: "3F",
+      deliverableStatus: "✓ Thiết kế UI đã được phê duyệt"
+    }
+  ]);
   const [sessionFilter, setSessionFilter] = useState<"all" | "working" | "pending" | "resting">("all");
   const [activityFilter, setActivityFilter] = useState<"all" | "attention" | "command" | "edit" | "read" | "web">("all");
   const [searchSessionQuery, setSearchSessionQuery] = useState<string>("");
@@ -668,7 +726,7 @@ export default function MyOfficeDiorama({
     {
       id: "welcome",
       role: "assistant",
-      text: "Xin chào! Đây là không gian làm việc AI 3D Diorama PROVIPAGENT Corporation với 6 tầng nghiệp vụ (18 phân ban doanh nghiệp & 268 chuyên gia).\n\n• **Bố Cục Đảo Bàn 4 Người (4-Person Pods)**: Bàn làm việc phân cụm ngăn nắp, vách ngăn chống ồn và bồn cây xanh.\n• **Khu Giải Trí & Thư Giãn (Chill Zone)**: Bàn bida, máy chơi game arcade, quầy pha cà phê espresso, quầy ăn mì ramen và bình nước.\n• **Theo Dõi Nhân Vật (Click to Track)**: Bấm vào bất kỳ chuyên gia nào để phóng to camera và theo dõi hoạt động thời gian thực!\n• **Hỏi Đáp AI Trực Tiếp**: Nhập câu hỏi để nhận ngay lời giải đáp chuyên môn chính xác.",
+      text: "Xin chào! Đây là không gian làm việc AI 3D Diorama PROVIPAGENT Corporation với 6 tầng nghiệp vụ (18 phân ban doanh nghiệp và 268 chuyên gia).\n\n• Bố Cục Đảo Bàn 4 Người (4-Person Pods): Bàn làm việc phân cụm ngăn nắp, vách ngăn chống ồn và bồn cây xanh.\n• Khu Thư Giãn (Chill Zone): Bàn bida, quầy pha cà phê espresso, quầy ăn nhẹ và bình nước.\n• Theo Dõi Nhân Vật: Bấm vào bất kỳ chuyên gia nào để phóng to camera và theo dõi hoạt động thời gian thực.\n• Trò Chuyện & Điều Phối: Nhập câu hỏi để nhận ngay lời giải đáp chuyên môn chính xác.",
       timestamp: "Hệ thống sẵn sàng"
     }
   ]);
@@ -712,21 +770,21 @@ export default function MyOfficeDiorama({
   const envRegistryRef = useRef<FloorEnvironmentRegistry>(new FloorEnvironmentRegistry());
   const collisionRegistryRef = useRef<AABBCollisionSystem>(new AABBCollisionSystem());
 
-  // Zero-Lag Direct 1:1 Camera State (Optimized for ROOM_W = 54, ROOM_D = 38)
+  // Zero-Lag Direct 1:1 Camera State (Framed identically to Scandinavian Reference Image 2)
   const camStateRef = useRef({
     theta: Math.PI / 4,
-    phi: Math.PI / 3.1,
-    radius: 46,
+    phi: Math.PI / 3.25,
+    radius: 52,
     targetX: 0,
     targetY: 5 * FLOOR_HEIGHT + 2.5,
-    targetZ: 0,
+    targetZ: 0.5,
     goalFloorY: 5 * FLOOR_HEIGHT + 2.5,
     destX: 0,
     destY: 5 * FLOOR_HEIGHT + 2.5,
-    destZ: 0,
-    destRadius: 46,
+    destZ: 0.5,
+    destRadius: 52,
     destTheta: Math.PI / 4,
-    destPhi: Math.PI / 3.1,
+    destPhi: Math.PI / 3.25,
     isCinematicMoving: false,
     isDraggingLeft: false,
     isDraggingRight: false,
@@ -762,10 +820,10 @@ export default function MyOfficeDiorama({
     camStateRef.current.trackingAgentId = null;
     setTrackingActionLabel("");
     const s = camStateRef.current;
-    s.radius = 46;
+    s.radius = 52;
     s.targetX = 0;
-    s.targetZ = 0;
-    s.phi = Math.PI / 3.1;
+    s.targetZ = 0.5;
+    s.phi = Math.PI / 3.25;
     syncCameraPositionImmediate();
   }, [syncCameraPositionImmediate]);
 
@@ -958,8 +1016,8 @@ export default function MyOfficeDiorama({
     if (!container) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xeef2f6); // Clean Scandinavian architectural studio neutral (matching reference render)
-    scene.fog = new THREE.FogExp2(0xeef2f6, 0.0015);
+    scene.background = new THREE.Color(0xf1f3f5); // Clean light neutral Scandinavian studio backdrop (matching Image 2)
+    scene.fog = new THREE.FogExp2(0xf1f3f5, 0.0012);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(34, container.clientWidth / container.clientHeight, 0.5, 300);
@@ -1056,6 +1114,184 @@ export default function MyOfficeDiorama({
       beanbagOlive: new THREE.MeshStandardMaterial({ color: 0x84cc16, roughness: 0.85 })
     };
     matRef.current = MAT;
+
+    // Procedural Botanical Plant Generator (Matching Scandinavian Image 2 Foliage)
+    const buildArchitecturalPlant = (
+      floorId: number,
+      group: THREE.Group,
+      type: "fiddle_leaf" | "snake_plant" | "monstera" | "palm",
+      potStyle: "white_cyl" | "terracotta" | "wood_box",
+      x: number,
+      y: number,
+      z: number,
+      scale = 1.0
+    ) => {
+      const pGroup = new THREE.Group();
+      pGroup.position.set(x, y, z);
+      pGroup.scale.set(scale, scale, scale);
+
+      // 1. Ceramic / Terracotta / Oak Planter Pot
+      const potMat = potStyle === "terracotta" ? MAT.potTerracotta : potStyle === "wood_box" ? MAT.oakBlonde : MAT.potWhite;
+      if (potStyle === "wood_box") {
+        pGroup.add(createMesh(floorId, GEO.box, potMat, 0.65, 0.45, 0.65, 0, 0.22, 0, true, true));
+      } else {
+        const pot = createMesh(floorId, GEO.cyl, potMat, 0.38, 0.68, 0.32, 0, 0.34, 0, true, true);
+        pGroup.add(pot);
+      }
+      // Rich dark potting soil surface
+      const soilMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.9 }));
+      pGroup.add(createMesh(floorId, GEO.cyl, soilMat, 0.35, 0.04, 0.35, 0, 0.68, 0, false, false));
+
+      const darkGreen = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.6 }));
+      const medGreen = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.55 }));
+      const brightGreen = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.6 }));
+      const trunkMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.8 }));
+
+      if (type === "fiddle_leaf") {
+        // Natural woody trunk
+        const trunk = createMesh(floorId, GEO.cyl, trunkMat, 0.05, 1.3, 0.06, 0, 1.35, 0, true, false);
+        trunk.rotation.z = 0.04;
+        pGroup.add(trunk);
+
+        // 12 Layered broad fiddle leaves spiraling upwards
+        for (let i = 0; i < 12; i++) {
+          const angle = i * 1.8;
+          const leafY = 1.0 + i * 0.11;
+          const dist = 0.32 + (i % 3) * 0.08;
+          const lx = Math.cos(angle) * dist;
+          const lz = Math.sin(angle) * dist;
+
+          const leafMesh = createMesh(floorId, GEO.box, i % 2 === 0 ? darkGreen : medGreen, 0.38, 0.02, 0.26, lx, leafY, lz, true, false);
+          leafMesh.rotation.y = angle;
+          leafMesh.rotation.x = 0.25;
+          leafMesh.rotation.z = Math.sin(angle) * 0.2;
+          pGroup.add(leafMesh);
+        }
+      } else if (type === "snake_plant") {
+        // 12 Upright sword leaves in tight rosette with sharp tips
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2;
+          const radius = 0.05 + (i % 3) * 0.05;
+          const lx = Math.cos(angle) * radius;
+          const lz = Math.sin(angle) * radius;
+          const leafH = 0.65 + (i % 4) * 0.16;
+
+          const blade = createMesh(floorId, GEO.box, i % 3 === 0 ? brightGreen : darkGreen, 0.08, leafH, 0.016, lx, 0.70 + leafH / 2, lz, true, false);
+          blade.rotation.y = angle;
+          blade.rotation.x = (Math.sin(angle) * 0.1);
+          blade.rotation.z = (Math.cos(angle) * 0.1);
+          pGroup.add(blade);
+        }
+      } else if (type === "monstera") {
+        // Arching stems with broad split leaves
+        for (let i = 0; i < 7; i++) {
+          const angle = (i / 7) * Math.PI * 2;
+          const dist = 0.42;
+          const lx = Math.cos(angle) * dist;
+          const lz = Math.sin(angle) * dist;
+          const stem = createMesh(floorId, GEO.cyl, trunkMat, 0.025, 0.75, 0.025, lx * 0.5, 1.05, lz * 0.5, false, false);
+          stem.rotation.y = angle;
+          stem.rotation.z = 0.45;
+          pGroup.add(stem);
+
+          const leaf = createMesh(floorId, GEO.box, medGreen, 0.44, 0.015, 0.38, lx, 1.30, lz, true, false);
+          leaf.rotation.y = angle;
+          leaf.rotation.x = 0.35;
+          pGroup.add(leaf);
+        }
+      } else {
+        // Cascading Areca Palm fronds
+        for (let i = 0; i < 9; i++) {
+          const angle = (i / 9) * Math.PI * 2;
+          const dist = 0.48;
+          const lx = Math.cos(angle) * dist;
+          const lz = Math.sin(angle) * dist;
+          const frond = createMesh(floorId, GEO.box, brightGreen, 0.16, 0.015, 0.58, lx, 1.10, lz, true, false);
+          frond.rotation.y = angle;
+          frond.rotation.x = 0.4;
+          pGroup.add(frond);
+        }
+      }
+
+      group.add(pGroup);
+      return pGroup;
+    };
+
+    // Dedicated Unique Physical Slot Allocator for Office Floors (Zero Overlapping Avatars!)
+    const getFloorSlotLocations = (floorId: number) => {
+      // 1. Workstation Pods (5 pods x 4 seats = 20 desk seats)
+      const deskSlots: Array<{ deskPos: { x: number; z: number }; chairPos: { x: number; z: number; rotY: number }; roleType: string }> = [];
+      const standardPods = [
+        { x: -8.5, z: 11.5 },
+        { x: 0.0, z: 11.5 },
+        { x: 8.5, z: 11.5 },
+        { x: 12.5, z: -1.5 },
+        { x: 12.5, z: -8.0 },
+      ];
+      standardPods.forEach((p) => {
+        POD_SEAT_OFFSETS.forEach((s) => {
+          deskSlots.push({
+            deskPos: { x: p.x + s.dx, z: p.z + s.dz },
+            chairPos: { x: p.x + s.dx, z: p.z + s.chairDz, rotY: s.rotY },
+            roleType: "workstation"
+          });
+        });
+      });
+
+      // 2. Grand Boardroom Conference Seats (West Room 1: cx = -20.0, cz = 8.5)
+      const boardroomSlots = [
+        { chairPos: { x: -22.0, z: 7.05, rotY: 0 }, deskPos: { x: -22.0, z: 8.5 }, roleType: "boardroom" },
+        { chairPos: { x: -20.7, z: 7.05, rotY: 0 }, deskPos: { x: -20.7, z: 8.5 }, roleType: "boardroom" },
+        { chairPos: { x: -19.3, z: 7.05, rotY: 0 }, deskPos: { x: -19.3, z: 8.5 }, roleType: "boardroom" },
+        { chairPos: { x: -18.0, z: 7.05, rotY: 0 }, deskPos: { x: -18.0, z: 8.5 }, roleType: "boardroom" },
+        { chairPos: { x: -22.0, z: 9.95, rotY: Math.PI }, deskPos: { x: -22.0, z: 8.5 }, roleType: "boardroom" },
+        { chairPos: { x: -20.7, z: 9.95, rotY: Math.PI }, deskPos: { x: -20.7, z: 8.5 }, roleType: "boardroom" },
+        { chairPos: { x: -19.3, z: 9.95, rotY: Math.PI }, deskPos: { x: -19.3, z: 8.5 }, roleType: "boardroom" },
+        { chairPos: { x: -18.0, z: 9.95, rotY: Math.PI }, deskPos: { x: -18.0, z: 8.5 }, roleType: "boardroom" },
+      ];
+
+      // 3. Focus / Meeting Room Seats (West Room 2: cx = -20.0, cz = -3.0)
+      const focusSlots = [
+        { chairPos: { x: -21.2, z: -4.25, rotY: 0 }, deskPos: { x: -21.2, z: -3.0 }, roleType: "focus" },
+        { chairPos: { x: -18.8, z: -4.25, rotY: 0 }, deskPos: { x: -18.8, z: -3.0 }, roleType: "focus" },
+        { chairPos: { x: -21.2, z: -1.75, rotY: Math.PI }, deskPos: { x: -21.2, z: -3.0 }, roleType: "focus" },
+        { chairPos: { x: -18.8, z: -1.75, rotY: Math.PI }, deskPos: { x: -18.8, z: -3.0 }, roleType: "focus" },
+      ];
+
+      // 4. Central Lounge Sofas (lx = 0.0, lz = 0.3)
+      const loungeSlots = [
+        { chairPos: { x: -1.2, z: -1.1, rotY: 0 }, deskPos: { x: -1.2, z: 0.3 }, roleType: "lounge" },
+        { chairPos: { x: 1.2, z: -1.1, rotY: 0 }, deskPos: { x: 1.2, z: 0.3 }, roleType: "lounge" },
+        { chairPos: { x: -0.8, z: 1.9, rotY: Math.PI }, deskPos: { x: -0.8, z: 0.3 }, roleType: "lounge" },
+        { chairPos: { x: 0.8, z: 1.9, rotY: Math.PI }, deskPos: { x: 0.8, z: 0.3 }, roleType: "lounge" },
+      ];
+
+      // 5. Pantry High Bar Window Stools (barX = 3.0, barZ = -17.0)
+      const barSlots = [
+        { chairPos: { x: 0.75, z: -16.2, rotY: Math.PI }, deskPos: { x: 0.75, z: -17.0 }, roleType: "bar" },
+        { chairPos: { x: 2.25, z: -16.2, rotY: Math.PI }, deskPos: { x: 2.25, z: -17.0 }, roleType: "bar" },
+        { chairPos: { x: 3.75, z: -16.2, rotY: Math.PI }, deskPos: { x: 3.75, z: -17.0 }, roleType: "bar" },
+        { chairPos: { x: 5.25, z: -16.2, rotY: Math.PI }, deskPos: { x: 5.25, z: -17.0 }, roleType: "bar" },
+      ];
+
+      // 6. Floor Reception Desk (rx = 21.6, rz = 9.0, facing West into entrance corridor)
+      const receptionSlot = [
+        { chairPos: { x: 22.4, z: 9.0, rotY: -Math.PI * 0.5 }, deskPos: { x: 21.6, z: 9.0 }, roleType: "reception" },
+      ];
+
+      // 7. Standing Discussion Colleague (Matching Image 2 standing person at Pod 1)
+      const standingSlot = [
+        { chairPos: { x: -6.6, z: 10.2, rotY: -Math.PI * 0.25 }, deskPos: { x: -7.45, z: 10.15 }, roleType: "standing_discuss" },
+      ];
+
+      // 8. Circulation Corridor Patrol Spots
+      const walkSlots = [
+        { chairPos: { x: -9.0, z: 5.0, rotY: 0 }, deskPos: { x: -9.0, z: 5.0 }, roleType: "corridor_patrol" },
+        { chairPos: { x: 5.0, z: 5.0, rotY: Math.PI * 0.5 }, deskPos: { x: 5.0, z: 5.0 }, roleType: "corridor_patrol" },
+      ];
+
+      return [...deskSlots, ...boardroomSlots, ...focusSlots, ...loungeSlots, ...barSlots, ...receptionSlot, ...standingSlot, ...walkSlots];
+    };
 
     // Helper functions for building diorama
     const buildFloorSign = (floorId: number, cfg: FloorConfig) => {
@@ -1186,20 +1422,32 @@ export default function MyOfficeDiorama({
     };
 
     const buildElevatorAndStairs = (floorId: number, group: THREE.Group) => {
-      const shaftX = VERTICAL_CORE.elevator.cx; // 22.5
-      const shaftZ = VERTICAL_CORE.elevator.cz; // -15.2
-      const shaftW = VERTICAL_CORE.elevator.width; // 4.8
-      const shaftD = VERTICAL_CORE.elevator.depth; // 3.8
+      // Modern South-East Corporate Elevator Pavilion (Matching Image 2 Entrance at X = 17.5, Z = 9.2)
+      const shaftX = 17.5;
+      const shaftZ = 9.2;
+      const shaftW = 3.6;
+      const shaftD = 3.4;
+      const shaftH = 5.4;
 
-      // Elevator Shaft Housing
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, shaftW, 6.2, shaftD, shaftX, 3.1, shaftZ, true, true));
+      // Elevator Shaft Housing (Matte white architectural gypsum with crisp black frame)
+      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, shaftW, shaftH, shaftD, shaftX, shaftH / 2, shaftZ, true, true));
+      // Black steel corner frame posts
+      [-shaftW / 2, shaftW / 2].forEach(fx => {
+        [-shaftD / 2, shaftD / 2].forEach(fz => {
+          group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.12, shaftH, 0.12, shaftX + fx, shaftH / 2, shaftZ + fz, false, false));
+        });
+      });
+      // Top roof trim cap
+      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, shaftW + 0.1, 0.18, shaftD + 0.1, shaftX, shaftH + 0.09, shaftZ, false, false));
 
+      // Warm lit interior cabin panel
       const cabinMat = new THREE.MeshBasicMaterial({ color: 0xfef3c7 });
-      group.add(createMesh(floorId, GEO.plane, cabinMat, 2.9, 4.8, 1, shaftX, 2.4, shaftZ + shaftD / 2 - 0.02, false, false));
+      group.add(createMesh(floorId, GEO.plane, cabinMat, 2.5, 4.4, 1, shaftX, 2.2, shaftZ + 0.4, false, false));
 
-      const doorZ = VERTICAL_CORE.elevator.doorZ; // -13.2
-      const doorL = createMesh(floorId, GEO.box, MAT.chrome, 1.42, 4.8, 0.14, shaftX - 0.72, 2.4, doorZ, true, true);
-      const doorR = createMesh(floorId, GEO.box, MAT.chrome, 1.42, 4.8, 0.14, shaftX + 0.72, 2.4, doorZ, true, true);
+      // Stainless Steel Double Sliding Elevator Doors (Facing North towards corridor at doorZ)
+      const doorZ = shaftZ - shaftD / 2 + 0.08;
+      const doorL = createMesh(floorId, GEO.box, MAT.chrome, 1.25, 4.4, 0.10, shaftX - 0.65, 2.2, doorZ, true, true);
+      const doorR = createMesh(floorId, GEO.box, MAT.chrome, 1.25, 4.4, 0.10, shaftX + 0.65, 2.2, doorZ, true, true);
       doorL.userData = { type: "elevator", floor: floorId };
       doorR.userData = { type: "elevator", floor: floorId };
       clickableMeshesRef.current.push(doorL, doorR);
@@ -1208,52 +1456,52 @@ export default function MyOfficeDiorama({
       elevatorDoorsRef.current[floorId] = {
         left: doorL,
         right: doorR,
-        closedLeftX: shaftX - 0.72,
-        closedRightX: shaftX + 0.72,
-        openOffset: 1.1,
+        closedLeftX: shaftX - 0.65,
+        closedRightX: shaftX + 0.65,
+        openOffset: 1.0,
         isOpen: floorId === 5
       };
       if (floorId === 5) {
-        doorL.position.x -= 1.1;
-        doorR.position.x += 1.1;
+        doorL.position.x -= 1.0;
+        doorR.position.x += 1.0;
       }
 
-      // Overhead Elevator LED Header
+      // Overhead Elevator LED Header Panel
       const headerCanvas = document.createElement("canvas");
-      headerCanvas.width = 280;
+      headerCanvas.width = 300;
       headerCanvas.height = 90;
       const hCtx = headerCanvas.getContext("2d")!;
       hCtx.fillStyle = "#050811";
-      hCtx.fillRect(0, 0, 280, 90);
+      hCtx.fillRect(0, 0, 300, 90);
       hCtx.strokeStyle = "#475569";
-      hCtx.lineWidth = 6;
-      hCtx.strokeRect(3, 3, 274, 84);
+      hCtx.lineWidth = 4;
+      hCtx.strokeRect(2, 2, 296, 86);
       hCtx.fillStyle = "#f59e0b";
-      hCtx.font = "800 48px 'JetBrains Mono', monospace";
-      hCtx.fillText("🛗 " + (FLOORS[floorId]?.code || floorId), 52, 62);
+      hCtx.font = "800 44px 'JetBrains Mono', monospace";
+      hCtx.fillText("🛗 " + (FLOORS[floorId]?.code || floorId), 55, 60);
       const hTex = new THREE.CanvasTexture(headerCanvas);
       const hMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ map: hTex, depthTest: true, depthWrite: true }));
       const hPlane = new THREE.Mesh(GEO.plane, hMat);
-      hPlane.scale.set(2.1, 0.65, 1);
-      hPlane.position.set(shaftX, 5.35, doorZ + 0.04);
+      hPlane.scale.set(2.0, 0.60, 1);
+      hPlane.position.set(shaftX, 4.8, doorZ - 0.04);
       hPlane.userData = { type: "elevator", floor: floorId };
       clickableMeshesRef.current.push(hPlane);
       group.add(hPlane);
 
-      // Call button
-      const callBtn = createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: 0xf59e0b }), 0.25, 0.52, 0.12, shaftX + 1.85, 2.3, doorZ + 0.02, false, false);
+      // Amber LED Call Button Panel
+      const callBtn = createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: 0xf59e0b }), 0.22, 0.45, 0.10, shaftX + 1.55, 2.2, doorZ - 0.02, false, false);
       callBtn.userData = { type: "elevator", floor: floorId };
       clickableMeshesRef.current.push(callBtn);
       group.add(callBtn);
 
-      // Register Elevator Shaft Collision Bounding Box (VERTICAL_CORE.elevator.bounds)
+      // Register Elevator Shaft Collision Bounding Box
       collisionRegistryRef.current.registerObstacle({
         id: `elevator-shaft-${floorId}`,
         floor: floorId,
-        minX: VERTICAL_CORE.elevator.bounds.minX,
-        maxX: VERTICAL_CORE.elevator.bounds.maxX,
-        minZ: VERTICAL_CORE.elevator.bounds.minZ,
-        maxZ: VERTICAL_CORE.elevator.bounds.maxZ,
+        minX: shaftX - shaftW / 2 - 0.2,
+        maxX: shaftX + shaftW / 2 + 0.2,
+        minZ: shaftZ - shaftD / 2 - 0.2,
+        maxZ: shaftZ + shaftD / 2 + 0.2,
         label: "Elevator Shaft Core"
       });
 
@@ -1479,9 +1727,8 @@ export default function MyOfficeDiorama({
       group.add(createMesh(floorId, GEO.box, credMat, 0.65, 0.95, 2.4, credenzaX, 0.48, cz, true, true));
       group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 0.70, 0.06, 2.45, credenzaX, 0.98, cz, true, true));
       group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.02, 0.80, 2.3, credenzaX + 0.34, 0.48, cz, false, false));
-      // Potted snake plant on credenza
-      group.add(createMesh(floorId, GEO.cyl, MAT.potTerracotta, 0.22, 0.30, 0.22, credenzaX, 1.15, cz - 0.65, true, true));
-      group.add(createMesh(floorId, GEO.cyl, MAT.plantGreen, 0.18, 0.55, 0.18, credenzaX, 1.45, cz - 0.65, true, false));
+      // Architectural potted snake plant on credenza
+      buildArchitecturalPlant(floorId, group, "snake_plant", "terracotta", credenzaX, 0.98, cz - 0.65, 0.55);
       // Books & folders on credenza
       group.add(createMesh(floorId, GEO.box, new THREE.MeshStandardMaterial({ color: 0x38bdf8 }), 0.28, 0.14, 0.38, credenzaX, 1.07, cz + 0.55, false, false));
       group.add(createMesh(floorId, GEO.box, new THREE.MeshStandardMaterial({ color: 0xf472b6 }), 0.26, 0.12, 0.36, credenzaX, 1.20, cz + 0.55, false, false));
@@ -1686,6 +1933,21 @@ export default function MyOfficeDiorama({
         group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, wallH, 0.12, frontX, wallH / 2, suite.cz + doorOpeningD / 2, false, false));
         group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.12, 0.14, suite.d, frontX, wallH, suite.cz, false, false));
 
+        // Crittall Black Steel Vertical Mullions dividing East facade into balanced glass panels (Matching Image 2)
+        [-sidePanelD / 4, sidePanelD / 4].forEach(off => {
+          group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.06, wallH, 0.06, frontX, wallH / 2, suite.cz - halfD + sidePanelD / 2 + off, false, false));
+          group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.06, wallH, 0.06, frontX, wallH / 2, suite.cz + halfD - sidePanelD / 2 + off, false, false));
+        });
+
+        // Clean White Architectural Ceiling Soffit & Recessed Downlights (Matching Image 2 Room Roofs)
+        group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, suite.w, 0.22, suite.d, suite.cx, wallH + 0.11, suite.cz, false, true));
+        const downlightMat = registerFloorMaterial(floorId, new THREE.MeshBasicMaterial({ color: 0xfef9c3 }));
+        [-suite.w * 0.25, suite.w * 0.25].forEach(dx => {
+          [-suite.d * 0.25, suite.d * 0.25].forEach(dz => {
+            group.add(createMesh(floorId, GEO.cyl, downlightMat, 0.22, 0.04, 0.22, suite.cx + dx, wallH - 0.02, suite.cz + dz, false, false));
+          });
+        });
+
         // 2. North Dividing Glass Partition (running East-West between rooms)
         group.add(createMesh(floorId, GEO.box, glassMat, suite.w, wallH, 0.08, suite.cx, wallH / 2, suite.cz - halfD, false, false));
         group.add(createMesh(floorId, GEO.box, darkFrameMat, suite.w, 0.14, 0.12, suite.cx, wallH, suite.cz - halfD, false, false));
@@ -1817,9 +2079,23 @@ export default function MyOfficeDiorama({
             group.add(createMesh(floorId, GEO.sphere, new THREE.MeshBasicMaterial({ color: 0xffedd5 }), 0.18, 0.18, 0.18, suite.cx + lx, 3.38, suite.cz, false, false));
           });
 
+          // Warm architectural pool light over conference table
+          const boardLight = new THREE.PointLight(0xffedd5, 1.25, 12);
+          boardLight.position.set(suite.cx, 3.2, suite.cz);
+          group.add(boardLight);
+
+          // South Glass Wall facing camera with black steel frame and vertical mullions
+          const southZ = suite.cz + halfD;
+          group.add(createMesh(floorId, GEO.box, glassMat, suite.w, wallH, 0.08, suite.cx, wallH / 2, southZ, false, false));
+          group.add(createMesh(floorId, GEO.box, darkFrameMat, suite.w, 0.14, 0.12, suite.cx, wallH, southZ, false, false));
+          group.add(createMesh(floorId, GEO.box, darkFrameMat, suite.w, 0.14, 0.12, suite.cx, 0.07, southZ, false, false));
+          for (let m = -halfW + 2.0; m < halfW; m += 2.0) {
+            group.add(createMesh(floorId, GEO.box, darkFrameMat, 0.08, wallH, 0.08, suite.cx + m, wallH / 2, southZ, false, false));
+          }
+          group.add(createMesh(floorId, GEO.box, darkFrameMat, suite.w, 0.08, 0.08, suite.cx, 2.2, southZ, false, false));
+
           // Potted Ficus Tree in Corner
-          group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.45, 0.75, 0.45, suite.cx - halfW + 1.2, 0.38, suite.cz - halfD + 1.2, true, true));
-          group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.9, 1.5, 0.9, suite.cx - halfW + 1.2, 1.6, suite.cz - halfD + 1.2, true, false));
+          buildArchitecturalPlant(floorId, group, "fiddle_leaf", "white_cyl", suite.cx - halfW + 1.2, 0, suite.cz - halfD + 1.2, 1.25);
         } else if (suite.isFocusRoom) {
           // --- FOCUS / MEETING ROOM (Matching Image 2 Room 2) ---
           // 1. 6-Seat Blonde Oak Meeting Table (4.2m x 1.8m)
@@ -1838,12 +2114,15 @@ export default function MyOfficeDiorama({
             group.add(createMesh(floorId, GEO.box, mChairMat, 0.72, 0.85, 0.1, suite.cx + cxOffset, 1.30, suite.cz + 1.65, true, true));
           });
 
-          // 2 Modern Ceiling Drop Pendant Lights
+          // 2 Modern Ceiling Drop Pendant Lights with warm pool light
           [-1.0, 1.0].forEach(lx => {
             group.add(createMesh(floorId, GEO.cyl, MAT.darkMetal, 0.025, 2.0, 0.025, suite.cx + lx, 4.4, suite.cz, false, false));
             group.add(createMesh(floorId, GEO.cyl, MAT.darkMetal, 0.45, 0.25, 0.45, suite.cx + lx, 3.4, suite.cz, false, false));
             group.add(createMesh(floorId, GEO.sphere, new THREE.MeshBasicMaterial({ color: 0xfef08a }), 0.20, 0.20, 0.20, suite.cx + lx, 3.25, suite.cz, false, false));
           });
+          const focusLight = new THREE.PointLight(0xffedd5, 0.95, 9);
+          focusLight.position.set(suite.cx, 3.2, suite.cz);
+          group.add(focusLight);
 
           // Whiteboard on North Wall
           group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.4, 2.0, 0.04, suite.cx, 3.2, suite.cz - halfD + 0.14, false, false));
@@ -1902,9 +2181,8 @@ export default function MyOfficeDiorama({
           group.add(createMesh(floorId, GEO.box, execDeskMat, 3.2, 0.95, 0.6, suite.cx, 0.48, credZ, true, true));
           group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.3, 0.06, 0.65, suite.cx, 0.98, credZ, true, true));
 
-          // Potted Ficus Plant
-          group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.38, 0.65, 0.38, suite.cx + halfW - 1.1, 0.33, suite.cz + halfD - 1.1, true, true));
-          group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.65, 1.35, 0.65, suite.cx + halfW - 1.1, 1.45, suite.cz + halfD - 1.1, true, false));
+          // Potted Monstera Plant
+          buildArchitecturalPlant(floorId, group, "monstera", "white_cyl", suite.cx + halfW - 1.1, 0, suite.cz + halfD - 1.1, 1.1);
 
           // Ceiling Drop Pendant Light
           group.add(createMesh(floorId, GEO.cyl, MAT.darkMetal, 0.025, 2.0, 0.025, suite.cx, 4.4, deskZ, false, false));
@@ -1971,9 +2249,8 @@ export default function MyOfficeDiorama({
       group.add(createMesh(floorId, GEO.sphere, beanbagMatNavy, 0.85, 0.55, 0.85, 10.5, 0.35, -11.0, true, true));
       // Low round wooden coffee table
       group.add(createMesh(floorId, GEO.cyl, MAT.woodLight, 0.8, 0.35, 0.8, 10.5, 0.2, -13.0, true, true));
-      // Potted snake plant in beanbag corner
-      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.35, 0.55, 0.35, 14.0, 0.28, -15.0, true, true));
-      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.6, 1.1, 0.6, 14.0, 0.95, -15.0, true, false));
+      // Potted palm plant in beanbag corner
+      buildArchitecturalPlant(floorId, group, "palm", "terracotta", 14.0, 0, -15.0, 1.15);
 
       // Register Pantry Interactions & Collisions
       envRegistryRef.current.registerInteraction({
@@ -2061,22 +2338,18 @@ export default function MyOfficeDiorama({
       group.add(createMesh(floorId, GEO.box, credMat, 0.65, 0.95, 3.6, lx + 5.2, 0.48, lz, true, true));
       group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 0.70, 0.06, 3.65, lx + 5.2, 0.98, lz, true, true));
 
-      // Potted Monstera and Snake Plants on Credenzas
-      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.25, 0.35, 0.25, lx - 5.2, 1.18, lz - 0.9, true, true));
-      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx - 5.2, 1.65, lz - 0.9, true, false));
-      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.25, 0.35, 0.25, lx + 5.2, 1.18, lz + 0.9, true, true));
-      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx + 5.2, 1.65, lz + 0.9, true, false));
+      // Potted Architectural Plants on Credenzas
+      buildArchitecturalPlant(floorId, group, "snake_plant", "white_cyl", lx - 5.2, 0.98, lz - 0.9, 0.6);
+      buildArchitecturalPlant(floorId, group, "snake_plant", "white_cyl", lx + 5.2, 0.98, lz + 0.9, 0.6);
 
       // South Credenzas Framing Lounge from Workstation Pods (Matching Image 2)
       group.add(createMesh(floorId, GEO.box, credMat, 3.6, 0.95, 0.65, lx - 2.4, 0.48, 4.8, true, true));
       group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.65, 0.06, 0.70, lx - 2.4, 0.98, 4.8, true, true));
-      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.25, 0.35, 0.25, lx - 2.4, 1.18, 4.8, true, true));
-      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx - 2.4, 1.65, 4.8, true, false));
+      buildArchitecturalPlant(floorId, group, "snake_plant", "white_cyl", lx - 2.4, 0.98, 4.8, 0.6);
 
       group.add(createMesh(floorId, GEO.box, credMat, 3.6, 0.95, 0.65, lx + 2.4, 0.48, 4.8, true, true));
       group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.65, 0.06, 0.70, lx + 2.4, 0.98, 4.8, true, true));
-      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.25, 0.35, 0.25, lx + 2.4, 1.18, 4.8, true, true));
-      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.45, 0.65, 0.45, lx + 2.4, 1.65, 4.8, true, false));
+      buildArchitecturalPlant(floorId, group, "snake_plant", "white_cyl", lx + 2.4, 0.98, 4.8, 0.6);
 
       // Register Central Lounge Collision & Interaction
       collisionRegistryRef.current.registerObstacle({
@@ -2100,16 +2373,16 @@ export default function MyOfficeDiorama({
       });
     };
 
-    // Modern Floor Reception Counter & Slat Acoustic Screen (Matching Image 2 Entrance)
-    // Located at X = 18.5, Z = 4.0 (near elevator vestibule)
+    // Modern Floor Reception Counter & Slat Acoustic Screen (Matching Image 2 Entrance beside Elevator)
+    // Located at X = 21.6, Z = 9.0
     const buildFloorReceptionDesk = (floorId: number, group: THREE.Group) => {
-      const rx = 18.5, rz = 4.0;
+      const rx = 21.6, rz = 9.0;
 
       // 1. Fluted Blonde Oak Desk with White Marble Countertop
-      group.add(createMesh(floorId, GEO.box, MAT.oakFluted, 4.2, 1.15, 1.2, rx, 0.58, rz, true, true));
-      group.add(createMesh(floorId, GEO.box, MAT.marbleWhite, 4.4, 0.12, 1.35, rx, 1.18, rz, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.oakFluted, 1.2, 1.15, 3.8, rx, 0.58, rz, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.marbleWhite, 1.35, 0.12, 4.0, rx, 1.18, rz, true, true));
 
-      // 2. Company Brand Plaque on Reception Front
+      // 2. Company Brand Plaque on Reception Front (Facing West into the corridor)
       const logoCanvas = document.createElement("canvas");
       logoCanvas.width = 420;
       logoCanvas.height = 100;
@@ -2130,24 +2403,23 @@ export default function MyOfficeDiorama({
       group.add(logoMesh);
 
       // 3. Receptionist Workstation (Apple iMac 24", Magic Keyboard, Magic Mouse)
-      group.add(createMesh(floorId, GEO.box, MAT.chrome, 0.36, 0.015, 0.26, rx, 1.25, rz, false, false));
-      const imacBody = createMesh(floorId, GEO.box, MAT.chrome, 1.25, 0.74, 0.028, rx, 1.76, rz, true, false);
-      imacBody.rotation.x = -0.08;
+      group.add(createMesh(floorId, GEO.box, MAT.chrome, 0.36, 0.015, 0.26, rx - 0.1, 1.25, rz, false, false));
+      const imacBody = createMesh(floorId, GEO.box, MAT.chrome, 0.028, 0.74, 1.25, rx - 0.1, 1.76, rz, true, false);
+      imacBody.rotation.z = 0.08;
       group.add(imacBody);
-      const recScreen = createMesh(floorId, GEO.plane, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 1.18, 0.54, 1, rx, 1.83, rz - 0.02, false, false);
-      recScreen.rotation.y = Math.PI;
+      const recScreen = createMesh(floorId, GEO.plane, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 1.18, 0.54, 1, rx - 0.12, 1.83, rz, false, false);
+      recScreen.rotation.y = -Math.PI / 2;
       group.add(recScreen);
 
       // 4. Vertical Oak Slat Acoustic Partition Screen behind Reception
       const slatMat = MAT.oakFluted;
-      for (let i = 0; i < 18; i++) {
-        const sz = rz - 2.0 + i * 0.24;
+      for (let i = 0; i < 16; i++) {
+        const sz = rz - 1.8 + i * 0.24;
         group.add(createMesh(floorId, GEO.box, slatMat, 0.06, 5.2, 0.06, rx + 1.2, 2.6, sz, true, false));
       }
 
       // 5. Potted Ficus Tree in White Planter beside Reception
-      group.add(createMesh(floorId, GEO.cyl, MAT.potWhite, 0.45, 0.85, 0.45, rx - 1.2, 0.43, rz - 2.2, true, true));
-      group.add(createMesh(floorId, GEO.sphere, MAT.plantGreen, 0.9, 1.4, 0.9, rx - 1.2, 1.7, rz - 2.2, true, false));
+      buildArchitecturalPlant(floorId, group, "fiddle_leaf", "white_cyl", rx - 1.2, 0, rz - 2.4, 1.25);
 
       collisionRegistryRef.current.registerObstacle({
         id: `floor-reception-${floorId}`,
@@ -2425,43 +2697,9 @@ export default function MyOfficeDiorama({
       });
     };
 
-    // FLOOR 5: Core Engineering, Cybersecurity SOC & AI Server Bay
+    // FLOOR 5: Core Engineering, Cybersecurity SOC (Airy Scandinavian Layout Matching Image 2)
     const buildFloor5CoreEngineeringAndSOC = (floorId: number, group: THREE.Group) => {
-      // 1. Mission-Critical Glass-Enclosed AI Server Datacenter Bay (East Utility Wing: X in [16.5, 20.5], Z in [-10.5, -4.5])
-      const srvX = 18.5, srvZ = -7.5;
-      const srvGlassMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({
-        color: 0x0284c7,
-        transparent: true,
-        opacity: 0.35,
-        roughness: 0.1,
-        metalness: 0.2
-      }));
-      // West viewing glass wall
-      group.add(createMesh(floorId, GEO.box, srvGlassMat, 0.08, 5.2, 5.8, 16.5, 2.6, srvZ, false, false));
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.12, 5.2, 0.12, 16.5, 2.6, srvZ - 2.9, false, false));
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.12, 5.2, 0.12, 16.5, 2.6, srvZ + 2.9, false, false));
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 0.12, 0.14, 5.8, 16.5, 5.2, srvZ, false, false));
-
-      // 4 High-Density Enterprise Server Racks inside the Datacenter Bay
-      for (let i = 0; i < 4; i++) {
-        const zPos = -9.2 + i * 1.2;
-        group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 1.4, 4.4, 0.9, srvX, 2.2, zPos, true, true));
-        for (let row = 0; row < 6; row++) {
-          const ledCol = (row + i) % 2 === 0 ? 0x38bdf8 : 0x10b981;
-          group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: ledCol }), 0.08, 0.14, 0.7, srvX - 0.72, 0.8 + row * 0.65, zPos, false, false));
-        }
-        collisionRegistryRef.current.registerObstacle({
-          id: `server-rack-${floorId}-${i}`,
-          floor: floorId,
-          minX: srvX - 0.8,
-          maxX: srvX + 0.8,
-          minZ: zPos - 0.5,
-          maxZ: zPos + 0.5,
-          label: `AI Server Rack ${i}`
-        });
-      }
-
-      // 2. Agile Sprint Scrum Whiteboard Wall on Solid North Column (X = 5.0, Z = -18.7)
+      // 1. Agile Sprint Scrum Whiteboard Wall on Solid North Column (X = 5.0, Z = -18.7)
       const sbx = 5.0, sbz = -18.7;
       group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 3.8, 2.8, 0.14, sbx, 3.2, sbz, true, false));
       group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 3.6, 2.6, 0.05, sbx, 3.2, sbz + 0.08, false, false));
@@ -2473,32 +2711,27 @@ export default function MyOfficeDiorama({
         }
       }
 
-      // 3. IT / Electrical Utility Closet (X = 22.0, Z = -11.0)
-      const ux = 22.0, uz = -11.0;
-      group.add(createMesh(floorId, GEO.box, MAT.darkMetal, 2.8, 4.4, 2.0, ux, 2.2, uz, true, true));
-      group.add(createMesh(floorId, GEO.box, new THREE.MeshBasicMaterial({ color: 0x38bdf8 }), 0.08, 0.6, 0.8, ux - 1.42, 2.2, uz, false, false));
+      // 2. High-End Scandinavian Storage Credenza with Tech Artifacts & Potted Snake Plants (X = 18.0, Z = -7.5)
+      const credX = 18.0, credZ = -7.5;
+      const credMat = registerFloorMaterial(floorId, new THREE.MeshStandardMaterial({ color: 0xd8c29d, roughness: 0.55 }));
+      group.add(createMesh(floorId, GEO.box, credMat, 0.65, 1.05, 3.6, credX, 0.53, credZ, true, true));
+      group.add(createMesh(floorId, GEO.box, MAT.whitePlastic, 0.70, 0.06, 3.65, credX, 1.08, credZ, true, true));
+      buildArchitecturalPlant(floorId, group, "snake_plant", "white_cyl", credX, 1.08, credZ - 1.0, 0.6);
+      buildArchitecturalPlant(floorId, group, "monstera", "white_cyl", credX, 1.08, credZ + 1.0, 0.65);
+      // Modern Server / Tech Book Stack
+      group.add(createMesh(floorId, GEO.box, new THREE.MeshStandardMaterial({ color: 0x0284c7 }), 0.32, 0.16, 0.42, credX, 1.18, credZ, false, false));
 
       // Build Standard Pantry & Coffee
       buildFloorPantryAndLounge(floorId, group);
 
-      // Register Utility Closet & Server Enclosure Collision
       collisionRegistryRef.current.registerObstacle({
-        id: `server-bay-${floorId}`,
+        id: `engineering-cred-${floorId}`,
         floor: floorId,
-        minX: 16.3,
-        maxX: 21.0,
-        minZ: srvZ - 3.2,
-        maxZ: srvZ + 3.2,
-        label: "AI Server Bay & SOC Datacenter"
-      });
-      collisionRegistryRef.current.registerObstacle({
-        id: `utility-closet-${floorId}`,
-        floor: floorId,
-        minX: ux - 1.6,
-        maxX: ux + 1.6,
-        minZ: uz - 1.2,
-        maxZ: uz + 1.2,
-        label: "IT Electrical Utility Closet"
+        minX: credX - 0.5,
+        maxX: credX + 0.5,
+        minZ: credZ - 2.0,
+        maxZ: credZ + 2.0,
+        label: "Engineering Architectural Storage Credenza"
       });
     };
 
@@ -2726,6 +2959,12 @@ export default function MyOfficeDiorama({
       group.add(createMesh(f, GEO.box, floorMat, ROOM_W, 0.6, ROOM_D, 0, -0.3, 0, false, true));
       group.add(createMesh(f, GEO.box, MAT.darkMetal, ROOM_W + 0.4, 0.2, ROOM_D + 0.4, 0, -0.5, 0, false, false));
 
+      // Clean Architectural Model Cutaway Fascia & Black Capping Trim (Matching Image 2 Isometric Perimeter)
+      group.add(createMesh(f, GEO.box, MAT.whitePlastic, ROOM_W, 0.58, 0.16, 0, -0.29, ROOM_D / 2 + 0.08, false, true));
+      group.add(createMesh(f, GEO.box, MAT.darkMetal, ROOM_W, 0.06, 0.22, 0, 0.03, ROOM_D / 2 + 0.08, false, false));
+      group.add(createMesh(f, GEO.box, MAT.whitePlastic, 0.16, 0.58, ROOM_D, ROOM_W / 2 + 0.08, -0.29, 0, false, true));
+      group.add(createMesh(f, GEO.box, MAT.darkMetal, 0.22, 0.06, ROOM_D, ROOM_W / 2 + 0.08, 0.03, 0, false, false));
+
       // Cutaway Walls with Architectural Window Bays (North & West Exterior Walls)
       const wallH = 6.8;
 
@@ -2861,13 +3100,13 @@ export default function MyOfficeDiorama({
       ];
 
       skyTowerConfigs.forEach(st => {
-        // Skyscraper body
-        const towerMat = new THREE.MeshStandardMaterial({ color: st.col, roughness: 0.4, metalness: 0.3 });
+        // Skyscraper body in soft atmospheric mist
+        const towerMat = new THREE.MeshStandardMaterial({ color: st.col, roughness: 0.6, metalness: 0.1 });
         group.add(createMesh(f, GEO.box, towerMat, st.w, st.h, st.d, st.x, st.h / 2, st.z, false, false));
         // Rooftop mechanical penthouse
         group.add(createMesh(f, GEO.box, MAT.darkMetal, st.w * 0.5, 2.5, st.d * 0.5, st.x, st.h + 1.25, st.z, false, false));
-        // Cool blue glass facade strips
-        const facadeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+        // Soft daylight reflective glass facade strips (matching Image 2)
+        const facadeMat = new THREE.MeshBasicMaterial({ color: 0xbfdbfe });
         group.add(createMesh(f, GEO.box, facadeMat, st.w * 0.85, st.h * 0.75, 0.05, st.x, st.h * 0.45, st.z + st.d / 2 + 0.03, false, false));
       });
 
@@ -2989,11 +3228,17 @@ export default function MyOfficeDiorama({
           }
         });
 
+        // Mid-East Blonde Oak Storage Cabinet between Pod 3 and Pod 4 (Matching Image 2)
+        const cabX = 12.5, cabZ = -4.5;
+        group.add(createMesh(f, GEO.box, MAT.woodLight, 2.8, 1.35, 0.65, cabX, 0.68, cabZ, true, true));
+        group.add(createMesh(f, GEO.box, MAT.whitePlastic, 2.85, 0.06, 0.70, cabX, 1.38, cabZ, true, true));
+        buildArchitecturalPlant(f, group, "snake_plant", "white_cyl", cabX - 0.8, 1.38, cabZ, 0.55);
+        group.add(createMesh(f, GEO.box, new THREE.MeshStandardMaterial({ color: 0x38bdf8 }), 0.26, 0.28, 0.38, cabX + 0.6, 1.54, cabZ, false, false));
+        group.add(createMesh(f, GEO.box, new THREE.MeshStandardMaterial({ color: 0x64748b }), 0.26, 0.28, 0.38, cabX + 0.9, 1.54, cabZ, false, false));
+
         // Architectural Potted Plants along perimeter
-        group.add(createMesh(f, GEO.cyl, MAT.potTerracotta, 0.6, 1.1, 0.5, -ROOM_W / 2 + 2.5, 0.55, ROOM_D / 2 - 2.5, true, true));
-        group.add(createMesh(f, GEO.sphere, MAT.plantGreen, 1.1, 1.4, 1.1, -ROOM_W / 2 + 2.5, 1.8, ROOM_D / 2 - 2.5, true, false));
-        group.add(createMesh(f, GEO.cyl, MAT.potTerracotta, 0.6, 1.1, 0.5, ROOM_W / 2 - 2.5, 0.55, ROOM_D / 2 - 2.5, true, true));
-        group.add(createMesh(f, GEO.sphere, MAT.plantGreen, 1.1, 1.4, 1.1, ROOM_W / 2 - 2.5, 1.8, ROOM_D / 2 - 2.5, true, false));
+        buildArchitecturalPlant(f, group, "fiddle_leaf", "terracotta", -ROOM_W / 2 + 2.5, 0, ROOM_D / 2 - 2.5, 1.3);
+        buildArchitecturalPlant(f, group, "monstera", "white_cyl", ROOM_W / 2 - 2.5, 0, ROOM_D / 2 - 2.5, 1.2);
       } else if (f === 7) {
         // Floor 7: Sky Recreation & Entertainment Complex (Strictly NO departmental workstations)
         buildFloor7RecreationCenter(f, group);
@@ -3024,6 +3269,8 @@ export default function MyOfficeDiorama({
       signMesh: THREE.Mesh;
       isHovered: boolean = false;
       isSelected: boolean = false;
+      hasActiveSpeech: boolean = false;
+      speechTimeout: any = null;
       currentActionLabel: string = "Đang gõ code tại bàn";
       breakTimeout: any = null;
       assignedChairPos: { x: number; z: number; rotY: number };
@@ -3065,96 +3312,96 @@ export default function MyOfficeDiorama({
         const blushMat = registerFloorMaterial(this.floor, new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
         const eyeMat = registerFloorMaterial(this.floor, new THREE.MeshBasicMaterial({ color: 0x090d16 }));
 
-        // Torso
+        // Slender Architectural Torso (Smart Office Blazer / Shirt)
         this.torso = new THREE.Mesh(GEO.cyl, shirtMat);
-        this.torso.scale.set(0.38, 0.65, 0.28);
-        this.torso.position.y = 0.82;
+        this.torso.scale.set(0.32, 0.54, 0.22);
+        this.torso.position.y = 0.88;
         this.torso.castShadow = true;
         this.bodyGroup.add(this.torso);
 
-        // Chibi Cute Head
+        // Stylish Architectural Head (Human-Proportioned)
         this.headGroup = new THREE.Group();
-        this.headGroup.position.set(0, 1.62, 0);
+        this.headGroup.position.set(0, 1.38, 0);
         this.bodyGroup.add(this.headGroup);
 
         const headMesh = new THREE.Mesh(GEO.sphere, skinMat);
-        headMesh.scale.set(0.48, 0.44, 0.45);
+        headMesh.scale.set(0.24, 0.26, 0.24);
         headMesh.castShadow = true;
         this.headGroup.add(headMesh);
 
-        // Hair Cap
+        // Styled Hair Cut
         const hairMesh = new THREE.Mesh(GEO.sphere, hairMat);
-        hairMesh.scale.set(0.52, 0.42, 0.48);
-        hairMesh.position.set(0, 0.12, -0.04);
+        hairMesh.scale.set(0.26, 0.24, 0.26);
+        hairMesh.position.set(0, 0.08, -0.02);
         hairMesh.castShadow = true;
         this.headGroup.add(hairMesh);
 
         // Face Features
         const leftEye = new THREE.Mesh(GEO.sphere, eyeMat);
-        leftEye.scale.set(0.06, 0.085, 0.04);
-        leftEye.position.set(-0.16, 0.02, 0.42);
+        leftEye.scale.set(0.035, 0.045, 0.02);
+        leftEye.position.set(-0.08, 0.01, 0.22);
         const rightEye = leftEye.clone();
-        rightEye.position.x = 0.16;
+        rightEye.position.x = 0.08;
 
         const leftBlush = new THREE.Mesh(GEO.sphere, blushMat);
-        leftBlush.scale.set(0.065, 0.035, 0.03);
-        leftBlush.position.set(-0.24, -0.07, 0.40);
+        leftBlush.scale.set(0.035, 0.02, 0.02);
+        leftBlush.position.set(-0.12, -0.04, 0.21);
         const rightBlush = leftBlush.clone();
-        rightBlush.position.x = 0.24;
+        rightBlush.position.x = 0.12;
         this.headGroup.add(leftEye, rightEye, leftBlush, rightBlush);
 
         // Accessories
         if (this.cfg.accessory === "headphones") {
           const band = new THREE.Mesh(GEO.box, MAT.chrome);
-          band.scale.set(1.02, 0.12, 0.18);
-          band.position.set(0, 0.42, 0);
+          band.scale.set(0.55, 0.06, 0.10);
+          band.position.set(0, 0.24, 0);
           const earL = new THREE.Mesh(GEO.cyl, shirtMat);
           earL.rotation.z = Math.PI / 2;
-          earL.scale.set(0.16, 0.12, 0.16);
-          earL.position.set(-0.49, 0.05, 0);
+          earL.scale.set(0.09, 0.06, 0.09);
+          earL.position.set(-0.25, 0.03, 0);
           const earR = earL.clone();
-          earR.position.x = 0.49;
+          earR.position.x = 0.25;
           this.headGroup.add(band, earL, earR);
         } else if (this.cfg.accessory === "glasses") {
           const rimL = new THREE.Mesh(GEO.box, MAT.chrome);
-          rimL.scale.set(0.18, 0.12, 0.05);
-          rimL.position.set(-0.16, 0.03, 0.45);
+          rimL.scale.set(0.09, 0.06, 0.025);
+          rimL.position.set(-0.08, 0.01, 0.23);
           const rimR = rimL.clone();
-          rimR.position.x = 0.16;
+          rimR.position.x = 0.08;
           this.headGroup.add(rimL, rimR);
         } else if (this.cfg.accessory === "beret") {
           const beret = new THREE.Mesh(GEO.cyl, shirtMat);
-          beret.scale.set(0.46, 0.12, 0.46);
-          beret.position.set(0.08, 0.43, 0);
+          beret.scale.set(0.28, 0.08, 0.28);
+          beret.position.set(0.04, 0.24, 0);
           beret.rotation.z = -0.2;
           this.headGroup.add(beret);
         } else if (this.cfg.accessory === "crown") {
           const crown = new THREE.Mesh(GEO.cyl, new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.3 }));
-          crown.scale.set(0.28, 0.18, 0.28);
-          crown.position.set(0, 0.48, 0);
+          crown.scale.set(0.18, 0.12, 0.18);
+          crown.position.set(0, 0.28, 0);
           this.headGroup.add(crown);
         }
 
-        // Shoulder-Pivoted Arms
+        // Slender Shoulder-Pivoted Arms
         this.leftArmPivot = new THREE.Group();
-        this.leftArmPivot.position.set(-0.42, 1.12, 0);
+        this.leftArmPivot.position.set(-0.24, 1.05, 0);
         const leftArmMesh = new THREE.Mesh(GEO.cyl, shirtMat);
-        leftArmMesh.scale.set(0.10, 0.46, 0.10);
+        leftArmMesh.scale.set(0.08, 0.44, 0.08);
         leftArmMesh.position.y = -0.20;
         this.leftArmPivot.add(leftArmMesh);
 
         this.rightArmPivot = new THREE.Group();
-        this.rightArmPivot.position.set(0.42, 1.12, 0);
+        this.rightArmPivot.position.set(0.24, 1.05, 0);
         const rightArmMesh = leftArmMesh.clone();
         this.rightArmPivot.add(rightArmMesh);
 
         // Procedural Prop Attachments: Ceramic Mug & Cue Stick
         this.cupMesh = new THREE.Mesh(GEO.cyl, MAT.whitePlastic);
-        this.cupMesh.scale.set(0.09, 0.14, 0.09);
-        this.cupMesh.position.set(0, -0.38, 0.12);
+        this.cupMesh.scale.set(0.07, 0.11, 0.07);
+        this.cupMesh.position.set(0, -0.28, 0.12);
         const liquid = new THREE.Mesh(GEO.cyl, new THREE.MeshBasicMaterial({ color: 0x451a03 }));
-        liquid.scale.set(0.08, 0.02, 0.08);
-        liquid.position.y = 0.07;
+        liquid.scale.set(0.06, 0.02, 0.06);
+        liquid.position.y = 0.055;
         this.cupMesh.add(liquid);
         this.cupMesh.visible = false;
         this.rightArmPivot.add(this.cupMesh);
@@ -3168,16 +3415,16 @@ export default function MyOfficeDiorama({
 
         this.bodyGroup.add(this.leftArmPivot, this.rightArmPivot);
 
-        // Hip-Pivoted Legs
+        // Slender Hip-Pivoted Legs
         this.leftHipPivot = new THREE.Group();
-        this.leftHipPivot.position.set(-0.16, 0.52, 0);
+        this.leftHipPivot.position.set(-0.11, 0.48, 0);
         const leftLegMesh = new THREE.Mesh(GEO.cyl, pantsMat);
-        leftLegMesh.scale.set(0.12, 0.52, 0.12);
-        leftLegMesh.position.y = -0.26;
+        leftLegMesh.scale.set(0.09, 0.48, 0.09);
+        leftLegMesh.position.y = -0.24;
         this.leftHipPivot.add(leftLegMesh);
 
         this.rightHipPivot = new THREE.Group();
-        this.rightHipPivot.position.set(0.16, 0.52, 0);
+        this.rightHipPivot.position.set(0.11, 0.48, 0);
         const rightLegMesh = leftLegMesh.clone();
         this.rightHipPivot.add(rightLegMesh);
 
@@ -3225,6 +3472,19 @@ export default function MyOfficeDiorama({
         ctx.textAlign = "center";
         ctx.fillText(text, 210, 58);
         this.signTex.needsUpdate = true;
+      }
+
+      showSpeechBubble(text: string, durationSeconds = 5) {
+        const clean = stripMarkdownForSpeechBubble(text).slice(0, 32);
+        this.updateStatusText(clean, "#fbbf24");
+        if (this.signMesh) this.signMesh.visible = true;
+        this.hasActiveSpeech = true;
+        if (this.speechTimeout) clearTimeout(this.speechTimeout);
+        this.speechTimeout = setTimeout(() => {
+          this.hasActiveSpeech = false;
+          this.speechTimeout = null;
+          this.updateStatusText(`${this.cfg.name} • Đang trực`, "#38bdf8");
+        }, durationSeconds * 1000);
       }
 
       sitAtWorkstationImmediate() {
@@ -3374,7 +3634,7 @@ export default function MyOfficeDiorama({
       }
 
       update(dt: number, elapsed: number, camPos: THREE.Vector3, activeControllers?: any[]) {
-        const isVisible = Boolean(this.isHovered || this.isSelected || (this.cfg.id === camStateRef.current.trackingAgentId));
+        const isVisible = Boolean(this.isHovered || this.isSelected || (this.cfg.id === camStateRef.current.trackingAgentId) || this.hasActiveSpeech);
         if (this.signMesh) {
           this.signMesh.visible = isVisible;
           if (isVisible) {
@@ -3428,7 +3688,7 @@ export default function MyOfficeDiorama({
             this.rightHipPivot.rotation.x = -swing;
             this.leftArmPivot.rotation.x = -swing * 0.75;
             this.rightArmPivot.rotation.x = swing * 0.75;
-            this.headGroup.position.y = 1.62 + Math.abs(Math.cos(this.walkPhase)) * 0.05;
+            this.headGroup.position.y = 1.38 + Math.abs(Math.cos(this.walkPhase)) * 0.04;
           }
         } else if (this.state === "sitting") {
           const typeWave = Math.sin(elapsed * 8 + this.floor) * 0.12;
@@ -3460,7 +3720,7 @@ export default function MyOfficeDiorama({
           const tapWave = Math.sin(elapsed * 14);
           this.leftArmPivot.rotation.x = -0.65 + tapWave * 0.2;
           this.rightArmPivot.rotation.x = -0.65 - tapWave * 0.2;
-          this.headGroup.position.y = 1.62 + Math.abs(tapWave) * 0.03;
+          this.headGroup.position.y = 1.38 + Math.abs(tapWave) * 0.03;
         } else if (this.state === "snack") {
           this.cupMesh.visible = false;
           this.cueMesh.visible = false;
@@ -3603,9 +3863,11 @@ export default function MyOfficeDiorama({
 
     // Asynchronously fetch and populate the complete backend workforce (276 total)
     const loadAndPopulateWorkforce = async () => {
+      console.log('[loadWorkforce] STARTING...');
       try {
         await ensureAuthenticatedSession();
         const backendAgents = await getAgents({ limit: 350 });
+        console.log('[loadWorkforce] Fetched backend agents:', backendAgents?.length);
         if (backendAgents && backendAgents.length > 0) {
           const configList: AgentConfig[] = [];
           const hairPalettes = [0x1e293b, 0x334155, 0x475569, 0x78350f, 0xb45309, 0xd97706, 0x451a03];
@@ -3623,55 +3885,122 @@ export default function MyOfficeDiorama({
             ag => (CANONICAL_AGENTS[ag.id] || ag.id.startsWith("agent-spec-")) && ag.status !== "offline"
           );
 
-          activeAgents.forEach((ag, idx) => {
+          // Group agents by floor
+          const agentsByFloor: Record<number, any[]> = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
+          activeAgents.forEach(ag => {
             if (CANONICAL_AGENTS[ag.id]) {
-              configList.push(CANONICAL_AGENTS[ag.id]);
-              return;
+              const fl = CANONICAL_AGENTS[ag.id].floor;
+              agentsByFloor[fl].push({ ...ag, isCanonical: true });
+            } else {
+              const divKey = resolveDivisionKey(ag.station || "engineering");
+              const fl = getFloorForDivision(divKey);
+              agentsByFloor[fl].push({ ...ag, divKey, floor: fl });
             }
-
-            if (agentControllersRef.current[ag.id]) {
-              configList.push(agentControllersRef.current[ag.id].cfg);
-              return;
-            }
-
-            const divKey = resolveDivisionKey(ag.station || "engineering");
-            const fl = getFloorForDivision(divKey);
-            const deskIdx = deskIndexMap[divKey] || 0;
-            deskIndexMap[divKey] = deskIdx + 1;
-
-            const ws = getDivisionWorkstation(divKey, deskIdx);
-            const deskPos = ws.deskPos;
-            const chairPos = ws.chairPos;
-            const divCol = DIVISION_THEME_COLORS[divKey] || 0x3b82f6;
-
-            const hash = ag.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-            const hairCol = hairPalettes[hash % hairPalettes.length];
-
-            const cfg: AgentConfig = {
-              id: ag.id,
-              name: ag.name,
-              role: ag.role,
-              division: divKey,
-              floor: fl,
-              badgeColor: "sky",
-              shirtColor: ag.color ? (parseInt(ag.color.replace("#", "0x")) || divCol) : divCol,
-              hairColor: hairCol,
-              skinColor: 0xffedd5,
-              accessory: idx % 3 === 0 ? "glasses" : idx % 3 === 1 ? "headphones" : "badge",
-              deskPos: deskPos,
-              chairPos: chairPos,
-              loungePos: { x: 0.0, z: -1.2, rotY: 0 },
-              coffeePos: { x: 13.0, z: -16.8, rotY: 0 },
-              keywords: [ag.name.toLowerCase(), ag.role.toLowerCase(), divKey],
-              persona: `Bạn là ${ag.name} (${ag.role} thuộc phân ban ${divKey} Tầng ${fl}F).`
-            };
-
-            const chibi = new Chibi(cfg);
-            chibi.assignedChairPos = { ...chairPos };
-            chibi.assignedDeskPos = { ...deskPos };
-            agentControllersRef.current[ag.id] = chibi;
-            configList.push(cfg);
           });
+
+          // For each floor, map active agents into guaranteed unique physical slots (Matching Image 2)
+          for (let f = 0; f <= 7; f++) {
+            const floorAgents = agentsByFloor[f] || [];
+            const slots = getFloorSlotLocations(f);
+            let slotIndex = 0;
+
+            floorAgents.forEach((ag, fIdx) => {
+              if (CANONICAL_AGENTS[ag.id]) {
+                configList.push(CANONICAL_AGENTS[ag.id]);
+                return;
+              }
+
+              if (agentControllersRef.current[ag.id]) {
+                configList.push(agentControllersRef.current[ag.id].cfg);
+                return;
+              }
+
+              const divKey = ag.divKey || (CANONICAL_AGENTS[ag.id]?.division) || "engineering";
+              const divCol = DIVISION_THEME_COLORS[divKey] || 0x3b82f6;
+              const hash = ag.id.split("").reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
+              const hairCol = hairPalettes[hash % hairPalettes.length];
+
+              // Pick slot for this agent
+              const slot = slots[slotIndex % slots.length];
+              const deskPos = slot.deskPos;
+              const chairPos = slot.chairPos;
+
+              const cfg: AgentConfig = {
+                id: ag.id,
+                name: ag.name,
+                role: ag.role,
+                division: divKey,
+                floor: f,
+                badgeColor: "sky",
+                shirtColor: ag.color ? (parseInt(ag.color.replace("#", "0x")) || divCol) : divCol,
+                hairColor: hairCol,
+                skinColor: 0xffedd5,
+                accessory: fIdx % 3 === 0 ? "glasses" : fIdx % 3 === 1 ? "headphones" : "badge",
+                deskPos: deskPos,
+                chairPos: chairPos,
+                loungePos: { x: 0.0, z: -1.2, rotY: 0 },
+                coffeePos: { x: 13.0, z: -16.8, rotY: 0 },
+                keywords: [ag.name.toLowerCase(), ag.role.toLowerCase(), divKey],
+                persona: `Bạn là ${ag.name} (${ag.role} thuộc phân ban ${divKey} Tầng ${f}F).`
+              };
+
+              // Instantiate 3D Chibi for the active on-duty characters on this floor
+              // Up to slots.length distinct slots per floor = ZERO overlap, zero stacking!
+              if (slotIndex < slots.length) {
+                const chibi = new Chibi(cfg);
+                chibi.assignedChairPos = { ...chairPos };
+                chibi.assignedDeskPos = { ...deskPos };
+
+                if (slot.roleType === "boardroom") {
+                  chibi.state = "sitting";
+                  chibi.currentActionLabel = "📊 Họp chiến lược tại Boardroom";
+                } else if (slot.roleType === "focus") {
+                  chibi.state = "sitting";
+                  chibi.currentActionLabel = "💡 Thảo luận nhóm kỹ thuật";
+                } else if (slot.roleType === "lounge") {
+                  chibi.state = "lounge";
+                  chibi.currentActionLabel = "🛋️ Trao đổi tại Sofa Lounge";
+                  chibi.root.position.y = 0.22;
+                  chibi.cupMesh.visible = true;
+                } else if (slot.roleType === "bar") {
+                  chibi.state = "sitting";
+                  chibi.currentActionLabel = "☕ Ngắm view thành phố & làm việc";
+                  chibi.root.position.y = 0.55;
+                  chibi.cupMesh.visible = true;
+                } else if (slot.roleType === "reception") {
+                  chibi.state = "reception";
+                  chibi.currentActionLabel = "📋 Hỗ trợ lễ tân & đón khách";
+                } else if (slot.roleType === "standing_discuss") {
+                  chibi.state = "standing";
+                  chibi.currentActionLabel = "💬 Đang thảo luận công việc";
+                  chibi.bodyGroup.position.y = 0;
+                  chibi.leftHipPivot.rotation.x = 0;
+                  chibi.rightHipPivot.rotation.x = 0;
+                  chibi.cupMesh.visible = true;
+                } else if (slot.roleType === "corridor_patrol") {
+                  chibi.state = "walking";
+                  chibi.currentActionLabel = "🚶 Đi kiểm tra tiến độ dự án";
+                  chibi.bodyGroup.position.y = 0;
+                  chibi.leftHipPivot.rotation.x = 0;
+                  chibi.rightHipPivot.rotation.x = 0;
+                  chibi.waypoints = [
+                    { x: 5.0, z: 5.0 },
+                    { x: -9.0, z: 5.0 },
+                    { x: -9.0, z: -5.0 },
+                    { x: 5.0, z: -5.0 },
+                  ];
+                } else {
+                  chibi.state = "sitting";
+                  chibi.currentActionLabel = "💻 Đang gõ code tại bàn";
+                }
+
+                agentControllersRef.current[ag.id] = chibi;
+                slotIndex++;
+              }
+
+              configList.push(cfg);
+            });
+          }
 
           setWorkforceList(configList);
         }
@@ -4012,7 +4341,96 @@ export default function MyOfficeDiorama({
     };
   }, []);
 
-  // Autonomous Routine Simulation: Dispatches 1-2 random sitting agents on current floor on breaks
+  // Autonomous 3D Physical Collaboration Engine (Task 4)
+  const triggerAgentCollaboration = useCallback(() => {
+    const activeCtrls = Object.values(agentControllersRef.current).filter(
+      (ctrl: any) => ctrl.floor === currentFloorRef.current && ctrl.state === "sitting"
+    );
+    if (activeCtrls.length < 2) return;
+
+    // Pick 2 agents on floor
+    const ctrlA = activeCtrls[0];
+    const ctrlB = activeCtrls[1];
+
+    const dialogPairs = [
+      {
+        topic: "Tối ưu hóa Microservices & Kiến trúc",
+        a: "Đã tối ưu hóa API và kiểm thử tải thành công!",
+        b: "Rất tốt, tôi sẽ merge PR vào nhánh release.",
+        status: "✓ Đã đồng bộ mã nguồn"
+      },
+      {
+        topic: "Bảo mật Zero-Trust & Phân quyền",
+        a: "Đã cập nhật token xác thực và quét mã độc hệ thống.",
+        b: "Đồng ý, tôi ghi nhận vào nhật ký bảo mật trung tâm.",
+        status: "✓ Kiểm toán bảo mật đạt chuẩn"
+      },
+      {
+        topic: "Đồng bộ Sổ Cái & VietQR Napas247",
+        a: "Giao dịch thanh toán VietQR vừa hoàn tất xác thực.",
+        b: "Đã ghi nhận doanh thu vào ngân khố doanh nghiệp.",
+        status: "✓ Sổ cái khớp dữ liệu ngân hàng"
+      },
+      {
+        topic: "Trải nghiệm Người Dùng & UI Obsidian Glass",
+        a: "Giao diện Obsidian Glass mới hiển thị rất sắc nét.",
+        b: "Tuyệt vời, tôi sẽ hoàn tất tài liệu bàn giao sản phẩm.",
+        status: "✓ Đã duyệt thiết kế giao diện"
+      }
+    ];
+
+    const chosen = dialogPairs[Math.floor(Math.random() * dialogPairs.length)];
+    const bChair = ctrlB.assignedChairPos || ctrlB.cfg.chairPos;
+    const approachSpot = {
+      x: bChair.x + (bChair.x > 0 ? -0.85 : 0.85),
+      z: bChair.z + 0.45,
+      rotY: 0
+    };
+
+    ctrlA.walkToSpot(approachSpot, `Trao đổi với ${ctrlB.cfg.name}`, () => {
+      // Face each other
+      const dx = bChair.x - ctrlA.root.position.x;
+      const dz = bChair.z - ctrlA.root.position.z;
+      ctrlA.root.rotation.y = Math.atan2(dx, dz);
+      ctrlB.root.rotation.y = Math.atan2(-dx, -dz);
+      ctrlA.state = "chatting";
+      ctrlB.state = "chatting";
+
+      // A speaks
+      ctrlA.showSpeechBubble(chosen.a, 5);
+
+      // B speaks after 2.8s
+      setTimeout(() => {
+        ctrlB.showSpeechBubble(chosen.b, 4.5);
+      }, 2800);
+
+      // Add to internal collaboration feed
+      setCollabMessages(prev => [
+        {
+          id: "collab-" + Date.now(),
+          sender: ctrlA.cfg.name,
+          senderRole: ctrlA.cfg.role,
+          recipient: ctrlB.cfg.name,
+          recipientRole: ctrlB.cfg.role,
+          topic: chosen.topic,
+          dialogueA: chosen.a,
+          dialogueB: chosen.b,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          floorCode: FLOORS[currentFloorRef.current]?.code || "5F",
+          deliverableStatus: chosen.status,
+        },
+        ...prev
+      ]);
+
+      // Return to desks after dialogue completes
+      setTimeout(() => {
+        ctrlA.returnToWorkstation();
+        ctrlB.sitAtWorkstationImmediate();
+      }, 7500);
+    });
+  }, []);
+
+  // Autonomous Routine Simulation: Dispatches breaks and collaboration
   useEffect(() => {
     const isAnimDisabled = typeof window !== "undefined" && (window as any).__MY_OFFICE_ANIMATION_DISABLED__ === true;
     if (isAnimDisabled) return;
@@ -4044,8 +4462,15 @@ export default function MyOfficeDiorama({
       }
     }, 12000);
 
-    return () => clearInterval(routineInterval);
-  }, [currentFloor]);
+    const collabInterval = setInterval(() => {
+      triggerAgentCollaboration();
+    }, 28000);
+
+    return () => {
+      clearInterval(routineInterval);
+      clearInterval(collabInterval);
+    };
+  }, [currentFloor, triggerAgentCollaboration]);
 
   // Update visibility on floor change or ghost mode toggle
   useEffect(() => {
@@ -4190,10 +4615,10 @@ export default function MyOfficeDiorama({
       stopTrackingCamera();
       s.destX = 0;
       s.destY = baseY;
-      s.destZ = 0;
-      s.destRadius = 46;
+      s.destZ = 0.5;
+      s.destRadius = 52;
       s.destTheta = Math.PI / 4;
-      s.destPhi = Math.PI / 3.1;
+      s.destPhi = Math.PI / 3.25;
       s.isCinematicMoving = true;
       setZoomLevel(100);
     } else if (preset === "desks") {
@@ -4218,21 +4643,12 @@ export default function MyOfficeDiorama({
       setZoomLevel(230);
     } else if (preset === "servers") {
       stopTrackingCamera();
-      if (currentFloorRef.current === 5) {
-        s.destX = 18.0;
-        s.destY = baseY;
-        s.destZ = -7.5;
-        s.destRadius = 20;
-        s.destTheta = 0.85;
-        s.destPhi = Math.PI / 3.4;
-      } else {
-        s.destX = 0;
-        s.destY = baseY;
-        s.destZ = 0.5;
-        s.destRadius = 24;
-        s.destTheta = Math.PI / 4;
-        s.destPhi = Math.PI / 3.2;
-      }
+      s.destX = 0;
+      s.destY = baseY;
+      s.destZ = 0.3;
+      s.destRadius = 24;
+      s.destTheta = Math.PI / 4;
+      s.destPhi = Math.PI / 3.2;
       s.isCinematicMoving = true;
       setZoomLevel(210);
     } else if (preset === "avatar") {
@@ -4415,6 +4831,17 @@ export default function MyOfficeDiorama({
             <span className="font-mono bg-slate-950 text-amber-400 px-1 py-0.2 rounded text-[11px]">
               {FLOORS[currentFloor]?.code}
             </span>
+          </button>
+
+          {/* Executive Treasury & VietQR Bank Payout */}
+          <button
+            onClick={() => setIsTreasuryOpen(true)}
+            className="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xl shadow-amber-500/25 transition transform active:scale-95"
+            title="Sổ Cái Ngân Khố & Cổng Thanh Toán Napas247 VietQR"
+          >
+            <CreditCard className="w-3.5 h-3.5 text-slate-950" />
+            <span className="hidden sm:inline">Kho Bạc & VietQR</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
           </button>
 
           {/* Reset Camera */}
@@ -4681,7 +5108,7 @@ export default function MyOfficeDiorama({
             </span>
           </div>
 
-          {/* Tab Selector: Timeline vs AI Chat */}
+          {/* Tab Selector: Timeline vs AI Chat vs Collab */}
           <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-xl border border-slate-800">
             <button
               onClick={() => setRightPanelTab("timeline")}
@@ -4696,6 +5123,13 @@ export default function MyOfficeDiorama({
                 }`}
             >
               Trò chuyện AI
+            </button>
+            <button
+              onClick={() => setRightPanelTab("collab")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${rightPanelTab === "collab" ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow" : "text-slate-400 hover:text-white"
+                }`}
+            >
+              Hợp tác Nội bộ
             </button>
           </div>
 
@@ -4792,7 +5226,7 @@ export default function MyOfficeDiorama({
               ))}
             </div>
           </div>
-        ) : (
+        ) : rightPanelTab === "chat" ? (
           /* TAB 2: AI CHAT (Fast mathematical auto-router engine) */
           <div className="flex-1 flex flex-col min-h-0">
             {/* Messages */}
@@ -4832,8 +5266,8 @@ export default function MyOfficeDiorama({
                           </div>
                         </details>
                       )}
-                      <div className="text-xs sm:text-[13px] leading-relaxed text-slate-100 whitespace-pre-line">
-                        {msg.text}
+                      <div className="text-xs sm:text-[13px] leading-relaxed text-slate-100">
+                        <FormattedChatMessage content={msg.text} />
                       </div>
                     </div>
                   )}
@@ -4899,6 +5333,75 @@ export default function MyOfficeDiorama({
               </button>
             </form>
           </div>
+        ) : (
+          /* TAB 3: HỢP TÁC NỘI BỘ (Autonomous Agent-to-Agent Multi-Agent Comms) */
+          <div className="flex-1 flex flex-col min-h-0 bg-[#070b14]/90 text-slate-100 p-3.5 space-y-3 overflow-y-auto">
+            {/* Header Action Banner */}
+            <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#0d1527] to-[#070b14] border border-amber-500/30 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-amber-400" />
+                  <span>Kênh Hợp Tác Liên Phòng Ban</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">
+                  Tự động điều phối 3D: Nhân sự di chuyển & đối thoại
+                </div>
+              </div>
+              <button
+                onClick={() => triggerAgentCollaboration()}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-extrabold text-[11px] shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition active:scale-95 shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Kích hoạt 3D</span>
+              </button>
+            </div>
+
+            {/* List of collaboration dialogues */}
+            <div className="space-y-3">
+              {collabMessages.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 hover:border-amber-500/30 transition shadow-lg space-y-2.5"
+                >
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-bold text-amber-300 font-mono flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      {item.topic}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">{item.floorCode} • {item.time}</span>
+                  </div>
+
+                  {/* Initiator bubble */}
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                      A
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold text-sky-300">{item.sender} <span className="text-slate-500 font-normal">({item.senderRole})</span></div>
+                      <div className="text-xs text-slate-200 mt-0.5">{item.dialogueA}</div>
+                    </div>
+                  </div>
+
+                  {/* Partner bubble */}
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                      B
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold text-amber-300">{item.recipient} <span className="text-slate-500 font-normal">({item.recipientRole})</span></div>
+                      <div className="text-xs text-slate-200 mt-0.5">{item.dialogueB}</div>
+                    </div>
+                  </div>
+
+                  {/* Deliverable tag */}
+                  <div className="text-[10px] text-emerald-400 font-mono font-medium flex items-center gap-1 pt-0.5">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    <span>{item.deliverableStatus}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </aside>
 
@@ -4960,8 +5463,8 @@ export default function MyOfficeDiorama({
                   : "bg-slate-800/80 text-slate-300 hover:bg-slate-700"
                 }`}
             >
-              <span>{currentFloor === 5 ? "🖥️" : "🛋️"}</span>
-              <span>{currentFloor === 5 ? "Máy chủ" : "Khu trung tâm"}</span>
+              <span>🛋️</span>
+              <span>Lounge trung tâm</span>
             </button>
           </div>
 
@@ -5025,11 +5528,6 @@ export default function MyOfficeDiorama({
               <span>Hoá thân</span>
             </button>
           </div>
-        </div>
-
-        {/* Subtitle Banner (Matching Image 1) */}
-        <div className="px-4 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-slate-800/80 text-[11px] text-slate-400 font-medium shadow-lg">
-          Mỗi phiên Claude Code là một nhân vật: đọc file ra thư viện, sửa code thì ngồi gõ
         </div>
       </div>
 
@@ -5162,6 +5660,12 @@ export default function MyOfficeDiorama({
           </div>
         </div>
       )}
+
+      {/* EXECUTIVE TREASURY & VIETQR PAYMENT MODAL */}
+      <ExecutiveTreasuryModal
+        isOpen={isTreasuryOpen}
+        onClose={() => setIsTreasuryOpen(false)}
+      />
     </div>
   );
 }

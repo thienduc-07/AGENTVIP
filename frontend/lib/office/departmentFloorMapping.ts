@@ -342,104 +342,87 @@ export const POD_SEAT_OFFSETS = [
 // - Elevator Core & Fluted Reception Desk in East (X >= 18.0)
 // - Clean 4-Person Pod Islands in South Open Office (Z in [7.0, 16.0], X in [-18.0, 12.0])
 export const DIVISION_POD_CENTERS: Record<string, Array<{ x: number; z: number }>> = {
-  // FLOOR 1: Operations, Support & Healthcare (8 pods = 32 workstations)
+  // FLOOR 1: Operations, Support & Healthcare (5 pods = 20 workstations)
   operations: [
-    { x: -8.5, z: 9.0 },
-    { x: -2.5, z: 9.0 },
-    { x: -8.5, z: 14.5 },
+    { x: -8.5, z: 11.5 },
+    { x: 0.0, z: 11.5 },
   ],
   support: [
-    { x: 4.5, z: 9.0 },
-    { x: 10.5, z: 9.0 },
-    { x: 4.5, z: 14.5 },
+    { x: 8.5, z: 11.5 },
+    { x: 12.5, z: -1.5 },
   ],
   healthcare: [
-    { x: -2.5, z: 14.5 },
-    { x: 10.5, z: 14.5 },
+    { x: 12.5, z: -8.0 },
   ],
 
-  // FLOOR 2: Finance & Specialized Advisory (8 pods = 32 workstations)
+  // FLOOR 2: Finance & Specialized Advisory (5 pods = 20 workstations)
   finance: [
-    { x: -8.5, z: 9.0 },
-    { x: -2.5, z: 9.0 },
-    { x: -8.5, z: 14.5 },
+    { x: -8.5, z: 11.5 },
+    { x: 0.0, z: 11.5 },
   ],
   specialized: [
-    { x: 4.5, z: 9.0 },
-    { x: 10.5, z: 9.0 },
-    { x: -2.5, z: 14.5 },
-    { x: 4.5, z: 14.5 },
-    { x: 10.5, z: 14.5 },
+    { x: 8.5, z: 11.5 },
+    { x: 12.5, z: -1.5 },
+    { x: 12.5, z: -8.0 },
   ],
 
-  // FLOOR 3: Marketing, Paid-Media & Sales (8 pods = 32 workstations)
+  // FLOOR 3: Marketing, Paid-Media & Sales (5 pods = 20 workstations)
   marketing: [
-    { x: -8.5, z: 9.0 },
-    { x: -2.5, z: 9.0 },
-    { x: -8.5, z: 14.5 },
+    { x: -8.5, z: 11.5 },
+    { x: 0.0, z: 11.5 },
   ],
   "paid-media": [
-    { x: 4.5, z: 9.0 },
-    { x: -2.5, z: 14.5 },
+    { x: 8.5, z: 11.5 },
   ],
   sales: [
-    { x: 10.5, z: 9.0 },
-    { x: 4.5, z: 14.5 },
-    { x: 10.5, z: 14.5 },
+    { x: 12.5, z: -1.5 },
+    { x: 12.5, z: -8.0 },
   ],
 
-  // FLOOR 4: Design, Product, PM, Game Dev & Spatial Computing (8 pods = 32 workstations)
+  // FLOOR 4: Design, Product, PM, Game Dev & Spatial Computing (5 pods = 20 workstations)
   design: [
-    { x: -8.5, z: 9.0 },
-    { x: -8.5, z: 14.5 },
+    { x: -8.5, z: 11.5 },
+    { x: 0.0, z: 11.5 },
   ],
   product: [
-    { x: -2.5, z: 9.0 },
-    { x: -2.5, z: 14.5 },
+    { x: 8.5, z: 11.5 },
   ],
   "project-management": [
-    { x: 4.5, z: 9.0 },
+    { x: 8.5, z: 11.5 },
   ],
   "game-development": [
-    { x: 10.5, z: 9.0 },
-    { x: 10.5, z: 14.5 },
+    { x: 12.5, z: -1.5 },
   ],
   "spatial-computing": [
-    { x: 4.5, z: 14.5 },
+    { x: 12.5, z: -8.0 },
   ],
 
-  // FLOOR 5: Engineering, Security, Testing, GIS (8 pods = 32 workstations)
+  // FLOOR 5: Engineering, Security, Testing, GIS (5 pods = 20 workstations)
   engineering: [
-    { x: -8.5, z: 9.0 },
-    { x: -2.5, z: 9.0 },
-    { x: -8.5, z: 14.5 },
+    { x: -8.5, z: 11.5 },
+    { x: 0.0, z: 11.5 },
   ],
   security: [
-    { x: 4.5, z: 9.0 },
-    { x: 4.5, z: 14.5 },
+    { x: 8.5, z: 11.5 },
   ],
   testing: [
-    { x: 10.5, z: 9.0 },
-    { x: 10.5, z: 14.5 },
+    { x: 12.5, z: -1.5 },
   ],
   gis: [
-    { x: -2.5, z: 14.5 },
+    { x: 12.5, z: -8.0 },
   ],
 
-  // FLOOR 6: Executive, Research & Academic (8 pods = 32 workstations)
+  // FLOOR 6: Executive, Research & Academic (5 pods = 20 workstations)
   research: [
-    { x: -8.5, z: 9.0 },
-    { x: -2.5, z: 9.0 },
-    { x: -8.5, z: 14.5 },
+    { x: -8.5, z: 11.5 },
+    { x: 0.0, z: 11.5 },
   ],
   executive: [
-    { x: 4.5, z: 9.0 },
-    { x: 4.5, z: 14.5 },
+    { x: 8.5, z: 11.5 },
+    { x: 12.5, z: -1.5 },
   ],
   academic: [
-    { x: 10.5, z: 9.0 },
-    { x: -2.5, z: 14.5 },
-    { x: 10.5, z: 14.5 },
+    { x: 12.5, z: -8.0 },
   ],
 };
 
