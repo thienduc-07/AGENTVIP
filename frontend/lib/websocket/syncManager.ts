@@ -87,8 +87,8 @@ export class SyncManager {
   constructor(config: SyncManagerConfig = {}) {
     const defaultWsUrl =
       typeof window !== "undefined"
-        ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${process.env.NEXT_PUBLIC_WS_HOST || "localhost:8000"}/api/v1/events/ws`
-        : "ws://localhost:8000/api/v1/events/ws";
+        ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${process.env.NEXT_PUBLIC_WS_HOST || window.location.host}/api/v1/events/ws`
+        : `ws://${process.env.BACKEND_URL ? process.env.BACKEND_URL.replace(/^https?:\/\//, "") : "localhost:8000"}/api/v1/events/ws`;
 
     this.config = {
       wsUrl: config.wsUrl || defaultWsUrl,

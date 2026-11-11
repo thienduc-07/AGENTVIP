@@ -4499,7 +4499,10 @@ export default function MyOfficeDiorama({
       const token = getAuthToken();
 
       // 2. Call backend conversation endpoint
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const API_BASE_URL =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        (typeof window !== "undefined" ? "" : (process.env.BACKEND_URL || "http://127.0.0.1:8000"));
       const res = await fetch(`${API_BASE_URL}/api/v1/conversations/chat`, {
         method: "POST",
         headers: {

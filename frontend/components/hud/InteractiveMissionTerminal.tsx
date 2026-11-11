@@ -87,7 +87,11 @@ export default function InteractiveMissionTerminal() {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/v1/skills");
+        const apiBase =
+          process.env.NEXT_PUBLIC_API_BASE_URL ||
+          process.env.NEXT_PUBLIC_API_URL ||
+          (typeof window !== "undefined" ? "" : (process.env.BACKEND_URL || "http://localhost:8000"));
+        const res = await fetch(`${apiBase}/api/v1/skills`);
         if (res.ok) {
           const data = await res.json();
           setLoadedSkills(data.skills || []);

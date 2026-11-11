@@ -21,7 +21,7 @@ import { stateBridge } from "@/lib/stateBridge";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (typeof window !== "undefined" ? "" : "http://localhost:8000");
+  (typeof window !== "undefined" ? "" : (process.env.BACKEND_URL || "http://localhost:8000"));
 
 const AGENT_MAPPING: Record<string, string> = {
   leo: "agent-eng-lead",

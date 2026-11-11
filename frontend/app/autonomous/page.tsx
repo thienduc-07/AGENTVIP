@@ -38,7 +38,10 @@ export default function AutonomousCompanyCommandCenter() {
   } | null>(null);
   const [executionResult, setExecutionResult] = useState<Record<string, unknown> | null>(null);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    (typeof window !== "undefined" ? "" : (process.env.BACKEND_URL || "http://localhost:8000"));
 
   const fetchTelemetry = async () => {
     try {

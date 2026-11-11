@@ -1,13 +1,18 @@
 import { ToolDefinition, ToolExecutionRecord, ToolTestResult } from '../../types/tool';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+function getApiBase(): string {
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  }
+  return process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+}
 
 export async function fetchTools(category?: string, is_enabled?: boolean): Promise<ToolDefinition[]> {
   const params = new URLSearchParams();
   if (category) params.append('category', category);
   if (is_enabled !== undefined) params.append('is_enabled', String(is_enabled));
 
-  const url = `${API_BASE}/api/v1/tools${params.toString() ? '?' + params.toString() : ''}`;
+  const url = `${getApiBase()}/api/v1/tools${params.toString() ? '?' + params.toString() : ''}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch tools: ${res.statusText}`);
@@ -16,7 +21,7 @@ export async function fetchTools(category?: string, is_enabled?: boolean): Promi
 }
 
 export async function fetchTool(name: string): Promise<ToolDefinition> {
-  const res = await fetch(`${API_BASE}/api/v1/tools/${encodeURIComponent(name)}`);
+  const res = await fetch(`${getApiBase()}/api/v1/tools/${encodeURIComponent(name)}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch tool '${name}': ${res.statusText}`);
   }
@@ -24,7 +29,7 @@ export async function fetchTool(name: string): Promise<ToolDefinition> {
 }
 
 export async function toggleTool(name: string, enable?: boolean): Promise<ToolDefinition> {
-  const res = await fetch(`${API_BASE}/api/v1/tools/${encodeURIComponent(name)}/toggle`, {
+  const res = await fetch(`${getApiBase()}/api/v1/tools/${encodeURIComponent(name)}/toggle`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ enable }),
@@ -49,7 +54,7 @@ export async function fetchToolExecutions(params?: {
   if (params?.status) query.append('status', params.status);
   if (params?.limit) query.append('limit', String(params.limit));
 
-  const url = `${API_BASE}/api/v1/tools/executions/history${query.toString() ? '?' + query.toString() : ''}`;
+  const url = `${getApiBase()}/api/v1/tools/executions/history${query.toString() ? '?' + query.toString() : ''}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch tool executions: ${res.statusText}`);
@@ -62,7 +67,7 @@ export async function testExecuteTool(
   args: Record<string, any>,
   agentId?: string
 ): Promise<ToolTestResult> {
-  const res = await fetch(`${API_BASE}/api/v1/tools/${encodeURIComponent(name)}/test`, {
+  const res = await fetch(`${getApiBase()}/api/v1/tools/${encodeURIComponent(name)}/test`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ arguments: args, agent_id: agentId || 'agent-exec-ceo' }),

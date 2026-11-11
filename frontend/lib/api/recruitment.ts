@@ -1,6 +1,9 @@
 import { apiClient, ApiClientError } from '@/lib/api/client';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (typeof window !== "undefined" ? "" : (process.env.BACKEND_URL || "http://localhost:8000"));
 
 export interface SpecialistSummary {
   id: string;

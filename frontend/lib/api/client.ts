@@ -1,9 +1,20 @@
 import { ApiErrorResponse } from "@/types/api";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" ? "" : "http://127.0.0.1:8000");
+export function getApiBaseUrl(): string {
+  // Client-side in browser: relative URL goes through Vercel rewrites or Next.js proxy
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "";
+  }
+  // Server-side (functions/SSR): use BACKEND_URL injected by Vercel service binding
+  return (
+    process.env.BACKEND_URL ||
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://127.0.0.1:8000"
+  );
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 let globalAuthToken: string | null = null;
 let globalTenantOrg: string | null = null;
@@ -57,7 +68,8 @@ export async function ensureAuthenticatedSession(): Promise<string | null> {
 
   authBootstrapPromise = (async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -111,7 +123,8 @@ export interface RequestOptions extends RequestInit {
 export async function apiClient<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { params, headers, token, organizationId, timeoutMs = 15000, signal, ...customConfig } = options;
 
-  let url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+  const baseUrl = getApiBaseUrl();
+  let url = `${baseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
   if (params) {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
