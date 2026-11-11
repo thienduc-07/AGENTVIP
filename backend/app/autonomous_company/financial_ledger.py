@@ -106,7 +106,15 @@ class RealFinancialLedger:
             with open(self.persistence_path, "w", encoding="utf-8") as f:
                 json.dump([tx.model_dump() for tx in self.transactions], f, indent=2, ensure_ascii=False)
         except Exception as e:
-            logger.error(f"Failed to save ledger to disk: {e}")
+            logger.warning(f"Failed to save ledger to {self.persistence_path}: {e}. Falling back to temp directory...")
+            try:
+                import tempfile
+                fallback_path = os.path.join(tempfile.gettempdir(), "real_financial_ledger.json")
+                with open(fallback_path, "w", encoding="utf-8") as f:
+                    json.dump([tx.model_dump() for tx in self.transactions], f, indent=2, ensure_ascii=False)
+                self.persistence_path = fallback_path
+            except Exception as e2:
+                logger.error(f"Fallback save to temp directory also failed: {e2}")
 
     @staticmethod
     def calculate_vietnam_tax(gross_vnd: float, business_type: str = "software_service") -> float:

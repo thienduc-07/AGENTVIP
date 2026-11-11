@@ -23,19 +23,39 @@ from .marketplace_integrations import OpportunityScanner, PLATFORM_SPECS
 from .deliverable_verifier import DeliverableVerifier
 from .compliance_registry import ComplianceRegistry, AuthorizationTier
 from .revenue_departments import RevenueDepartmentOrchestrator
+from backend.app.core.config import settings
 
-DB_URL = os.getenv("DATABASE_URL", "sqlite:///./agency.db")
+def get_ledger_filepath() -> str:
+    env_ledger = os.getenv("REAL_FINANCIAL_LEDGER_PATH")
+    if env_ledger:
+        return env_ledger
+    default_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "real_financial_ledger.json"
+    )
+    data_dir = os.path.dirname(default_path)
+    if (
+        os.getenv("VERCEL")
+        or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+        or not os.access(data_dir if os.path.exists(data_dir) else os.path.dirname(data_dir), os.W_OK)
+    ):
+        import tempfile
+        return os.path.join(tempfile.gettempdir(), "real_financial_ledger.json")
+    return default_path
+
+DB_URL = settings.DATABASE_URL
 connect_args = {"check_same_thread": False} if DB_URL.startswith("sqlite") else {}
 engine_db = create_engine(DB_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine_db)
 
 # Ensure all Module 1-7 tables exist without resetting existing tables
-Base.metadata.create_all(bind=engine_db)
+try:
+    Base.metadata.create_all(bind=engine_db)
+except Exception as e:
+    import logging
+    logging.getLogger("agency.autonomous_company").warning(f"Could not create tables on startup: {e}")
 
 # Central persistent instances
-LEDGER_FILE = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "real_financial_ledger.json"
-)
+LEDGER_FILE = get_ledger_filepath()
 real_ledger = RealFinancialLedger(persistence_path=LEDGER_FILE)
 revenue_engine = AutonomousRevenueEngine(real_ledger)
 opportunity_scanner = OpportunityScanner()
@@ -276,137 +296,149 @@ def execute_controlled_live_pilot(owner_auth_key: str = "OWNER-PILOT-AUTH-999"):
     Executes the entire end-to-end verified lifecycle:
     Opportunity -> Customer -> Contract -> Work -> Delivery -> Payment -> Bank Reconciliation -> Profit.
     """
-    # 1. Create a fresh dedicated Opportunity for the Pilot
-    opp = BusinessOpportunity(
-        opportunity_id=f"OPP-PILOT-{uuid.uuid4().hex[:6].upper()}",
-        source_platform="Upwork",
-        customer_or_business="FinTech Solutions UK Ltd (United Kingdom)",
-        title="Develop Async FastAPI Microservices with Redis Caching & Docker Swarm",
-        description="Build high-throughput financial telemetry microservices in Python 3.11 with FastAPI, Redis caching, 90%+ test coverage, and Docker Swarm deployment.",
-        required_skills=["python", "fastapi", "redis", "docker", "microservices"],
-        estimated_revenue_usd=1200.0,
-        platform_fee_rate=0.10,
-        estimated_costs_usd=8.50,
-        estimated_execution_time_hours=36.0,
-        risk_score=0.12,
-        legal_compliance_status=ComplianceStatus.COMPLIANT,
-        platform_policy_status=PlatformPolicyStatus.ALLOWED,
-    )
-    revenue_engine.register_opportunity(opp)
-
-    # 2. Qualify Opportunity
-    revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.QUALIFIED)
-
-    # 3. Request Owner Level 3 Approval
-    revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.AWAITING_APPROVAL)
-
-    # 4. Accept Contract with Level 3 Owner Key
-    contract_ref = f"UPWORK-ESCROW-CTR-2026-{uuid.uuid4().hex[:6].upper()}"
-    revenue_engine.transition_state(
-        opp.opportunity_id,
-        TaskExecutionState.ACCEPTED,
-        owner_authorization_key=owner_auth_key,
-        contract_reference=contract_ref,
-    )
-
-    # 5. Execute Work (In Progress)
-    revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.IN_PROGRESS)
-
-    # 6. Quality Review & Manufacture Real Deliverable with Passing Pytest Suite
-    source_files = {
-        "fastapi_telemetry_service.py": (
-            "from fastapi import FastAPI\n"
-            "app = FastAPI(title='Financial Telemetry Service')\n\n"
-            "@app.get('/health')\n"
-            "def health():\n"
-            "    return {'status': 'healthy', 'service': 'fastapi-telemetry'}\n\n"
-            "@app.get('/metrics')\n"
-            "def metrics():\n"
-            "    return {'active_connections': 120, 'latency_ms': 1.4}\n"
+    try:
+        # 1. Create a fresh dedicated Opportunity for the Pilot
+        opp = BusinessOpportunity(
+            opportunity_id=f"OPP-PILOT-{uuid.uuid4().hex[:6].upper()}",
+            source_platform="Upwork",
+            customer_or_business="FinTech Solutions UK Ltd (United Kingdom)",
+            title="Develop Async FastAPI Microservices with Redis Caching & Docker Swarm",
+            description="Build high-throughput financial telemetry microservices in Python 3.11 with FastAPI, Redis caching, 90%+ test coverage, and Docker Swarm deployment.",
+            required_skills=["python", "fastapi", "redis", "docker", "microservices"],
+            estimated_revenue_usd=1200.0,
+            platform_fee_rate=0.10,
+            estimated_costs_usd=8.50,
+            estimated_execution_time_hours=36.0,
+            risk_score=0.12,
+            legal_compliance_status=ComplianceStatus.COMPLIANT,
+            platform_policy_status=PlatformPolicyStatus.ALLOWED,
         )
-    }
-    test_files = {
-        "test_telemetry.py": (
-            "from fastapi_telemetry_service import app\n"
-            "from fastapi.testclient import TestClient\n"
-            "client = TestClient(app)\n\n"
-            "def test_health():\n"
-            "    res = client.get('/health')\n"
-            "    assert res.status_code == 200\n"
-            "    assert res.json()['status'] == 'healthy'\n\n"
-            "def test_metrics():\n"
-            "    res = client.get('/metrics')\n"
-            "    assert res.status_code == 200\n"
-            "    assert res.json()['latency_ms'] < 5.0\n"
+        revenue_engine.register_opportunity(opp)
+
+        # 2. Qualify Opportunity
+        revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.QUALIFIED)
+
+        # 3. Request Owner Level 3 Approval
+        revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.AWAITING_APPROVAL)
+
+        # 4. Accept Contract with Level 3 Owner Key
+        contract_ref = f"UPWORK-ESCROW-CTR-2026-{uuid.uuid4().hex[:6].upper()}"
+        revenue_engine.transition_state(
+            opp.opportunity_id,
+            TaskExecutionState.ACCEPTED,
+            owner_authorization_key=owner_auth_key,
+            contract_reference=contract_ref,
         )
-    }
-    revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.QUALITY_REVIEW)
 
-    # Package & verify deliverable
-    cert = deliverable_verifier.package_and_verify_deliverable(
-        opportunity_id=opp.opportunity_id,
-        files=source_files,
-        test_files=test_files,
-        specialist_name=opp.assigned_specialist_name or "David Chen",
-    )
+        # 5. Execute Work (In Progress)
+        revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.IN_PROGRESS)
 
-    # 7. Deliver with Verifiable SHA-256 Bundle Hash
-    revenue_engine.transition_state(
-        opp.opportunity_id,
-        TaskExecutionState.DELIVERED,
-        deliverable_artifacts=[f"bundle_hash:{cert.bundle_hash_sha256}"],
-    )
+        # 6. Quality Review & Manufacture Real Deliverable with Passing Pytest Suite
+        source_files = {
+            "fastapi_telemetry_service.py": (
+                "from fastapi import FastAPI\n"
+                "app = FastAPI(title='Financial Telemetry Service')\n\n"
+                "@app.get('/health')\n"
+                "def health():\n"
+                "    return {'status': 'healthy', 'service': 'fastapi-telemetry'}\n\n"
+                "@app.get('/metrics')\n"
+                "def metrics():\n"
+                "    return {'active_connections': 120, 'latency_ms': 1.4}\n"
+            )
+        }
+        test_files = {
+            "test_telemetry.py": (
+                "from fastapi_telemetry_service import app\n"
+                "from fastapi.testclient import TestClient\n"
+                "client = TestClient(app)\n\n"
+                "def test_health():\n"
+                "    res = client.get('/health')\n"
+                "    assert res.status_code == 200\n"
+                "    assert res.json()['status'] == 'healthy'\n\n"
+                "def test_metrics():\n"
+                "    res = client.get('/metrics')\n"
+                "    assert res.status_code == 200\n"
+                "    assert res.json()['latency_ms'] < 5.0\n"
+            )
+        }
+        revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.QUALITY_REVIEW)
 
-    # 8. Client Acceptance & Escrow Release (Awaiting Payment)
-    revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.AWAITING_PAYMENT)
+        # Package & verify deliverable
+        cert = deliverable_verifier.package_and_verify_deliverable(
+            opportunity_id=opp.opportunity_id,
+            files=source_files,
+            test_files=test_files,
+            specialist_name=opp.assigned_specialist_name or "David Chen",
+        )
 
-    # 9. Provider Webhook Payment Confirmation (Upwork / Stripe / Napas247)
-    tx_ref = f"UPW-TX-{uuid.uuid4().hex[:10].upper()}"
-    webhook_proof = hashlib.sha256(f"{tx_ref}:{opp.estimated_revenue_usd}:VERIFIED".encode("utf-8")).hexdigest()
-    revenue_engine.transition_state(
-        opp.opportunity_id,
-        TaskExecutionState.PAYMENT_RECEIVED,
-        provider_transaction_ref=tx_ref,
-        provider_evidence_hash=webhook_proof,
-    )
+        # 7. Deliver with Verifiable SHA-256 Bundle Hash
+        revenue_engine.transition_state(
+            opp.opportunity_id,
+            TaskExecutionState.DELIVERED,
+            deliverable_artifacts=[f"bundle_hash:{cert.bundle_hash_sha256}"],
+        )
 
-    # 10. Complete Task
-    revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.COMPLETED)
+        # 8. Client Acceptance & Escrow Release (Awaiting Payment)
+        revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.AWAITING_PAYMENT)
 
-    # Find the received transaction in ledger
-    received_tx = next(t for t in real_ledger.transactions if t.external_provider_ref == tx_ref)
+        # 9. Provider Webhook Payment Confirmation (Upwork / Stripe / Napas247)
+        tx_ref = f"UPW-TX-{uuid.uuid4().hex[:10].upper()}"
+        webhook_proof = hashlib.sha256(f"{tx_ref}:{opp.estimated_revenue_usd}:VERIFIED".encode("utf-8")).hexdigest()
+        revenue_engine.transition_state(
+            opp.opportunity_id,
+            TaskExecutionState.PAYMENT_RECEIVED,
+            provider_transaction_ref=tx_ref,
+            provider_evidence_hash=webhook_proof,
+        )
 
-    # 11. Level 4 Bank Reconciliation to MB Bank 01993667799
-    bank_tx_id = f"FT-MB-20261107-{uuid.uuid4().hex[:8].upper()}"
-    napas_trace = f"NP7799-{uuid.uuid4().hex[:6].upper()}"
-    bank_reconciled = real_ledger.verify_and_reconcile_bank_deposit(
-        received_tx_id=received_tx.transaction_id,
-        bank_transaction_id=bank_tx_id,
-        napas_trace_code=napas_trace,
-        bank_account="01993667799",
-        owner_auth_signature="OWNER-MASTER-SIGNATURE-2026",
-    )
+        # 10. Complete Task
+        revenue_engine.transition_state(opp.opportunity_id, TaskExecutionState.COMPLETED)
 
-    return {
-        "status": "SUCCESS",
-        "pilot_summary": {
-            "opportunity_id": opp.opportunity_id,
-            "title": opp.title,
-            "client": opp.customer_or_business,
-            "contract_reference": contract_ref,
-            "specialist": opp.assigned_specialist_name,
-            "deliverable_sha256": cert.bundle_hash_sha256,
-            "test_summary": cert.test_suite_summary,
-            "provider_payment_ref": tx_ref,
-            "bank_deposit_reference": bank_tx_id,
-            "napas_trace_code": napas_trace,
-            "beneficiary_account": "MB Bank 01993667799 (LE THIEN DUC)",
-            "gross_revenue_usd": opp.estimated_revenue_usd,
-            "platform_fee_usd": received_tx.platform_fees,
-            "operating_expense_usd": received_tx.operating_expenses,
-            "tax_liability_usd": received_tx.tax_liability,
-            "net_profit_usd": received_tx.net_amount,
-            "net_profit_vnd": int(received_tx.net_amount * 25000.0),
-        },
-        "financial_summary": real_ledger.get_financial_summary(),
-    }
+        # Find the received transaction in ledger
+        received_tx = next(t for t in real_ledger.transactions if t.external_provider_ref == tx_ref)
+
+        # 11. Level 4 Bank Reconciliation to MB Bank 01993667799
+        bank_tx_id = f"FT-MB-20261107-{uuid.uuid4().hex[:8].upper()}"
+        napas_trace = f"NP7799-{uuid.uuid4().hex[:6].upper()}"
+        bank_reconciled = real_ledger.verify_and_reconcile_bank_deposit(
+            received_tx_id=received_tx.transaction_id,
+            bank_transaction_id=bank_tx_id,
+            napas_trace_code=napas_trace,
+            bank_account="01993667799",
+            owner_auth_signature="OWNER-MASTER-SIGNATURE-2026",
+        )
+
+        return {
+            "status": "SUCCESS",
+            "pilot_summary": {
+                "opportunity_id": opp.opportunity_id,
+                "title": opp.title,
+                "client": opp.customer_or_business,
+                "contract_reference": contract_ref,
+                "specialist": opp.assigned_specialist_name,
+                "deliverable_sha256": cert.bundle_hash_sha256,
+                "test_summary": cert.test_suite_summary,
+                "provider_payment_ref": tx_ref,
+                "bank_deposit_reference": bank_tx_id,
+                "napas_trace_code": napas_trace,
+                "beneficiary_account": "MB Bank 01993667799 (LE THIEN DUC)",
+                "gross_revenue_usd": opp.estimated_revenue_usd,
+                "platform_fee_usd": received_tx.platform_fees,
+                "operating_expense_usd": received_tx.operating_expenses,
+                "tax_liability_usd": received_tx.tax_liability,
+                "net_profit_usd": received_tx.net_amount,
+                "net_profit_vnd": int(received_tx.net_amount * 25000.0),
+            },
+            "financial_summary": real_ledger.get_financial_summary(),
+        }
+    except (ValueError, KeyError, PermissionError) as e:
+        import logging
+        logging.getLogger("agency.autonomous_company").error(f"Live Pilot validation error: {e}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.getLogger("agency.autonomous_company").exception(f"Live Pilot execution error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Live Pilot server execution error: {str(e)}"
+        )

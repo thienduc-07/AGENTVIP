@@ -60,9 +60,12 @@ class LocalEnterpriseRuntime:
             clean_slug = f"project_{int(time.time())}"
         self.project_slug = clean_slug
 
-        root_sandbox = base_sandbox_dir or (settings.BASE_DIR / "workspace_sandbox" / "projects")
+        root_sandbox = base_sandbox_dir or (settings.SANDBOX_DIR / "projects")
         self.project_dir = (root_sandbox / self.project_slug).resolve()
-        self.project_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.project_dir.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
         self.audit_log: List[Dict[str, Any]] = []
 
     def resolve_safe_path(self, relative_path: str) -> Path:

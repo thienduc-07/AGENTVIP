@@ -3,8 +3,36 @@ from pathlib import Path
 from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-WORKSPACE_SANDBOX = BASE_DIR / "workspace_sandbox"
-WORKSPACE_SANDBOX.mkdir(exist_ok=True)
+
+def _resolve_sandbox() -> Path:
+    env_dir = os.getenv("WORKSPACE_SANDBOX_DIR")
+    if env_dir:
+        return Path(env_dir)
+    if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME") or not os.access(str(BASE_DIR), os.W_OK):
+        import tempfile
+        return Path(tempfile.gettempdir()) / "provipagent_sandbox"
+    return BASE_DIR / "workspace_sandbox"
+
+WORKSPACE_SANDBOX = _resolve_sandbox()
+try:
+    WORKSPACE_SANDBOX.mkdir(parents=True, exist_ok=True)
+except Exception:
+    import tempfile
+    WORKSPACE_SANDBOX = Path(tempfile.gettempdir()) / "provipagent_sandbox"
+    try:
+        WORKSPACE_SANDBOX.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
+def _resolve_db_url() -> str:
+    env_db = os.getenv("DATABASE_URL")
+    if env_db:
+        return env_db
+    local_db = BASE_DIR / "agency.db"
+    if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME") or not os.access(str(BASE_DIR), os.W_OK):
+        import tempfile
+        return f"sqlite:///{Path(tempfile.gettempdir()) / 'agency.db'}"
+    return f"sqlite:///{local_db}"
 
 class Settings(BaseSettings):
     APP_NAME: str = "AI Agency — Autonomous Business Headquarters"
@@ -12,7 +40,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # Database
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'agency.db'}"
+    DATABASE_URL: str = _resolve_db_url()
     
     # Sandbox restrictions
     SANDBOX_DIR: Path = WORKSPACE_SANDBOX

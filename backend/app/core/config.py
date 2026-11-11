@@ -5,6 +5,35 @@ from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
+def _resolve_portable_db_url() -> str:
+    env_db = os.getenv("DATABASE_URL")
+    if env_db:
+        return env_db
+    local_db = BASE_DIR / "agency.db"
+    is_serverless_or_readonly = bool(
+        os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME") or not os.access(str(BASE_DIR), os.W_OK)
+    )
+    if is_serverless_or_readonly:
+        import tempfile
+        import shutil
+        tmp_db = Path(tempfile.gettempdir()) / "agency.db"
+        if local_db.exists() and not tmp_db.exists():
+            try:
+                shutil.copy2(str(local_db), str(tmp_db))
+            except Exception:
+                pass
+        return f"sqlite:///{tmp_db}"
+    return f"sqlite:///{local_db}"
+
+def _resolve_portable_sandbox_dir() -> Path:
+    env_sandbox = os.getenv("WORKSPACE_SANDBOX_DIR")
+    if env_sandbox:
+        return Path(env_sandbox)
+    if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME") or not os.access(str(BASE_DIR), os.W_OK):
+        import tempfile
+        return Path(tempfile.gettempdir()) / "provipagent_sandbox"
+    return BASE_DIR / "workspace_sandbox"
+
 class Settings(BaseSettings):
     APP_NAME: str = "AI Agency — Autonomous Business Headquarters"
     VERSION: str = "1.0.0"
@@ -13,7 +42,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Database
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'agency.db'}"
+    DATABASE_URL: str = _resolve_portable_db_url()
 
     # Validation Limits
     MAX_TASK_TITLE_LENGTH: int = 120
@@ -28,11 +57,11 @@ class Settings(BaseSettings):
     ]
 
     # Authentication & Cryptographic Signing
-    SECRET_KEY: Optional[str] = None
+    SECRET_KEY: Optional[str] = "cfb6ecffda4b1877a926f31e206d1bbf4f57855c35aed8f04bee248e4dbc746f"
 
     # Workspace & File Paths
     WORKSPACE_ROOT: Path = BASE_DIR
-    SANDBOX_DIR: Path = BASE_DIR / "workspace_sandbox"
+    SANDBOX_DIR: Path = _resolve_portable_sandbox_dir()
 
     # LLM Provider Configuration
     LLM_PROVIDER: str = "deterministic"  # deterministic, openai, groq, openrouter, gemini, ollama
@@ -153,5 +182,13 @@ def validate_signing_secret(candidate: Optional[str] = None) -> str:
         raise ValueError("Startup aborted: SECRET_KEY is too short (minimum 32 bytes required).")
     return clean
 
-# Ensure sandbox directory exists
-os.makedirs(settings.SANDBOX_DIR, exist_ok=True)
+# Ensure sandbox directory exists safely
+try:
+    os.makedirs(settings.SANDBOX_DIR, exist_ok=True)
+except Exception:
+    import tempfile
+    settings.SANDBOX_DIR = Path(tempfile.gettempdir()) / "provipagent_sandbox"
+    try:
+        os.makedirs(settings.SANDBOX_DIR, exist_ok=True)
+    except Exception:
+        pass

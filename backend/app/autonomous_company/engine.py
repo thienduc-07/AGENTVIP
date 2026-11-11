@@ -70,8 +70,20 @@ GENERATED_SDK_TEMPLATE = '\n'.join([
 class AutonomousCompanyEngine:
     def __init__(self, db: Session, artifacts_root: Optional[Path] = None):
         self.db = db
-        self.artifacts_root = artifacts_root or Path("./generated_products")
-        self.artifacts_root.mkdir(parents=True, exist_ok=True)
+        if artifacts_root:
+            self.artifacts_root = artifacts_root
+        else:
+            default_dir = Path("./generated_products")
+            try:
+                default_dir.mkdir(parents=True, exist_ok=True)
+                self.artifacts_root = default_dir
+            except Exception:
+                import tempfile
+                self.artifacts_root = Path(tempfile.gettempdir()) / "generated_products"
+                try:
+                    self.artifacts_root.mkdir(parents=True, exist_ok=True)
+                except Exception:
+                    pass
         self.active_specialists: Dict[str, Dict[str, Any]] = {}
         self.executive_status: Dict[str, Dict[str, Any]] = {
             k: {"agent_id": k, **v, "status": "idle", "current_task": None, "tokens_used": 0, "cost_usd": 0.0}
